@@ -22,6 +22,13 @@ export default function renderUserStroke(
   ctx.strokeStyle = `rgba(${r},${g},${b},${a})`;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';
-  drawPath(ctx, points);
+  if (points.length === 1) {
+    ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+    ctx.beginPath();
+    ctx.arc(points[0].x, points[0].y, strokeWidth / 2, 0, 2 * Math.PI);
+    ctx.fill();
+  } else if (points.length > 1) {
+    drawPath(ctx, points);
+  }
   ctx.restore();
 }

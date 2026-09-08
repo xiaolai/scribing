@@ -18,9 +18,14 @@ jobs:
       - run: yarn typecheck
       - run: yarn lint-test
       - run: yarn test --runInBand
+      - run: yarn test-data
+      - run: yarn check-data
+      - run: yarn check-data-reproducible
       - run: yarn build
       - run: yarn check-demo
       - run: yarn check-package
+      - run: yarn playwright install --with-deps chromium
+      - run: yarn check-multilingual-demo
 
 # Publishing is intentionally manual until the fork's npm ownership and release
 # policy are established. CI must never publish automatically from master.

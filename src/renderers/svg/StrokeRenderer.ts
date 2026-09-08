@@ -6,6 +6,8 @@ import Stroke from '../../models/Stroke';
 import SVGRenderTarget from './RenderTarget';
 import { ColorObject } from '../../typings/types';
 
+import { revealPoints, unitPieces, segmentPortion } from '../unitGeometry';
+
 const STROKE_WIDTH = 200;
 
 type StrokeRenderProps = {
@@ -17,6 +19,8 @@ type StrokeRenderProps = {
 
 /** This is a stroke composed of several stroke parts **/
 export default class StrokeRenderer extends StrokeRendererBase {
+  _unitElements: SVGElement[] = [];
+
   _oldProps: StrokeRenderProps | undefined = undefined;
 
   _animationPath: SVGPathElement | undefined;
@@ -28,6 +32,19 @@ export default class StrokeRenderer extends StrokeRendererBase {
   }
 
   mount(target: SVGRenderTarget) {
+    if (this.stroke.unit) {
+      const unit = this.stroke.unit;
+      this._unitElements = Array.from(
+        { length: unit.kind === 'dot' ? 1 : unitPieces(unit).length },
+        () => {
+          const element = svg.createElm(unit.kind === 'dot' ? 'circle' : 'path');
+          element.style.opacity = '0';
+          target.svg.appendChild(element);
+          return element;
+        },
+      );
+      return this;
+    }
     this._animationPath = svg.createElm('path') as SVGPathElement;
     this._clip = svg.createElm('clipPath') as SVGClipPathElement;
     this._strokePath = svg.createElm('path') as SVGPathElement;
@@ -56,6 +73,46 @@ export default class StrokeRenderer extends StrokeRendererBase {
   }
 
   render(props: StrokeRenderProps) {
+    if (this.stroke.unit) {
+      if (props === this._oldProps) return;
+      const unit = this.stroke.unit;
+      const { r, g, b, a } = this._getColor(props);
+      const color = `rgba(${r},${g},${b},${a})`;
+      const portion = Math.max(0, Math.min(1, props.displayPortion));
+      if (unit.kind === 'dot') {
+        const element = this._unitElements[0];
+        if (!element) return;
+        svg.attrs(element, {
+          cx: String(unit.points[0].x),
+          cy: String(unit.points[0].y),
+          r: String(unit.radius! * portion),
+          fill: color,
+        });
+        element.style.opacity = String(portion > 0 ? props.opacity : 0);
+      } else {
+        unitPieces(unit).forEach((piece, index) => {
+          const element = this._unitElements[index];
+          if (!element) return;
+          const points = revealPoints(
+            piece.points,
+            segmentPortion(portion, piece.start, piece.end),
+          );
+          svg.attrs(element, {
+            d: points
+              .map((point, i) => `${i ? 'L' : 'M'} ${point.x} ${point.y}`)
+              .join(' '),
+            fill: 'none',
+            stroke: color,
+            'stroke-width': String(piece.width),
+            'stroke-linecap': 'round',
+            'stroke-linejoin': 'round',
+          });
+          element.style.opacity = String(points.length ? props.opacity : 0);
+        });
+      }
+      this._oldProps = props;
+      return;
+    }
     if (props === this._oldProps || !this._animationPath) {
       return;
     }

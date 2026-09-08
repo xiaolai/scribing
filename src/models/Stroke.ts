@@ -1,7 +1,9 @@
 import { subtract, distance, length } from '../geometry';
 import { Point } from '../typings/types';
+import { CompiledMotorStroke } from '../units/types';
 
 export default class Stroke {
+  unit?: CompiledMotorStroke;
   path: string;
   points: Point[];
   strokeNum: number;

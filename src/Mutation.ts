@@ -27,7 +27,7 @@ class Delay implements GenericMutation {
   _duration: number;
   _startTime: number | null;
   _paused: boolean;
-  _timeout!: NodeJS.Timeout;
+  _timeout!: ReturnType<typeof setTimeout>;
   _resolve: (() => void) | undefined;
 
   constructor(duration: number) {
@@ -41,7 +41,6 @@ class Delay implements GenericMutation {
     this._startTime = performanceNow();
     this._runningPromise = new Promise((resolve) => {
       this._resolve = resolve;
-      // @ts-ignore return type of "setTimeout" in builds is parsed as `number` instead of `Timeout`
       this._timeout = setTimeout(() => this.cancel(), this._duration);
     }) as Promise<void>;
     return this._runningPromise;
@@ -59,7 +58,6 @@ class Delay implements GenericMutation {
   resume() {
     if (!this._paused) return;
     this._startTime = performanceNow();
-    // @ts-ignore return type of "setTimeout" in builds is parsed as `number` instead of `Timeout`
     this._timeout = setTimeout(() => this.cancel(), this._duration);
     this._paused = false;
   }

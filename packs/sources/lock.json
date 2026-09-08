@@ -1,0 +1,851 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "letterpaths",
+      "file": "letterpaths.json.gz",
+      "sha256": "5036e95b05e2fe14fd19f6e75c7c6cc635a7b314fba41515d47814555db0c838",
+      "licenseFile": "letterpaths.LICENSE",
+      "licenseSHA256": "c16d33e3c4a8bba01353d002746ab8067ca26a2ad717a68f393a5a59bd0b295a",
+      "source": {
+        "name": "letterpaths",
+        "url": "https://github.com/RobinL/letterpaths",
+        "revision": "fb5a1d0ebe88e462fcc89c50921d7732a44eeeab",
+        "license": "MIT"
+      },
+      "inputCount": 52
+    },
+    {
+      "id": "glyphed",
+      "file": "glyphed.json.gz",
+      "sha256": "e6057efe32ad2e41e68bee242d41599b25f2db8f9687d0224ffccacd72aecf73",
+      "licenseFile": "glyphed.LICENSE",
+      "licenseSHA256": "8dce7477ddd08241f386b70b1aff355cb5eeb21d6070c4b3ef1f077662d916c5",
+      "source": {
+        "name": "glyphed.js",
+        "url": "https://github.com/a-elhaag/glyphed.js",
+        "revision": "82dc60759dda2341e3ae9026212ea43222519692",
+        "license": "ISC"
+      },
+      "inputCount": 86
+    },
+    {
+      "id": "kanjivg",
+      "file": "kanjivg.json.gz",
+      "sha256": "d4776e1b372cb3f28bf9acc14522639a23935c27e5e95ced883ca29fa3b3c765",
+      "licenseFile": "kanjivg.LICENSE",
+      "licenseSHA256": "d255e07978fd16ddfec38bc59dc9d857b885dd44ddbf4e79baf207d30746bdcc",
+      "source": {
+        "name": "KanjiVG",
+        "url": "https://github.com/KanjiVG/kanjivg",
+        "revision": "55b5ba92a7cad78a62ef04db4be6f9562d949b7f",
+        "license": "CC-BY-SA-3.0"
+      },
+      "inputCount": 6704
+    },
+    {
+      "id": "omniglot-alphabet-of-the-magi",
+      "file": "omniglot-alphabet-of-the-magi.json.gz",
+      "sha256": "28763dece9cac1c2e100c67e982810e92b6b1cd1865cc52a9ddd533532e7f59a",
+      "licenseFile": "omniglot-alphabet-of-the-magi.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Alphabet_of_the_Magi",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Alphabet_of_the_Magi",
+        "split": "background"
+      },
+      "inputCount": 400
+    },
+    {
+      "id": "omniglot-anglo-saxon-futhorc",
+      "file": "omniglot-anglo-saxon-futhorc.json.gz",
+      "sha256": "750c3bb9d79e0bb1542fcf65377c15ebd46b0f81edf80f5a3abbdf2f1ca9329c",
+      "licenseFile": "omniglot-anglo-saxon-futhorc.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Anglo-Saxon_Futhorc",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Anglo-Saxon_Futhorc",
+        "split": "background"
+      },
+      "inputCount": 580
+    },
+    {
+      "id": "omniglot-arcadian",
+      "file": "omniglot-arcadian.json.gz",
+      "sha256": "8558ecc5d74d1d7bb85579cbc874244aa1f0432b32b019ce715f5fd0b7df3060",
+      "licenseFile": "omniglot-arcadian.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Arcadian",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Arcadian",
+        "split": "background"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-armenian",
+      "file": "omniglot-armenian.json.gz",
+      "sha256": "4fde8992f36d51a255747766112847ed504c8e04aca3e86ddabf481cd8741d6d",
+      "licenseFile": "omniglot-armenian.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Armenian",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Armenian",
+        "split": "background"
+      },
+      "inputCount": 820
+    },
+    {
+      "id": "omniglot-asomtavruli-georgian",
+      "file": "omniglot-asomtavruli-georgian.json.gz",
+      "sha256": "93c5ef5cc1294439e4f68919328c46095a698d2a22acd5802f2f68199fd3d8f1",
+      "licenseFile": "omniglot-asomtavruli-georgian.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Asomtavruli_(Georgian)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Asomtavruli_(Georgian)",
+        "split": "background"
+      },
+      "inputCount": 800
+    },
+    {
+      "id": "omniglot-balinese",
+      "file": "omniglot-balinese.json.gz",
+      "sha256": "612990b3d84b293aff2bc306ec99716afb881a62f34fbf6c0caffebb162696bf",
+      "licenseFile": "omniglot-balinese.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Balinese",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Balinese",
+        "split": "background"
+      },
+      "inputCount": 480
+    },
+    {
+      "id": "omniglot-bengali",
+      "file": "omniglot-bengali.json.gz",
+      "sha256": "26e59f609190a5e516fb40ffc77c6814cd85c944c7581748c4f6f463f9c64c64",
+      "licenseFile": "omniglot-bengali.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Bengali",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Bengali",
+        "split": "background"
+      },
+      "inputCount": 920
+    },
+    {
+      "id": "omniglot-blackfoot-canadian-aboriginal-syllabics",
+      "file": "omniglot-blackfoot-canadian-aboriginal-syllabics.json.gz",
+      "sha256": "f72c289f5bf3b746ec706a4992a1d35980fe377f1796f65fd639928ba8ce9bec",
+      "licenseFile": "omniglot-blackfoot-canadian-aboriginal-syllabics.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Blackfoot_(Canadian_Aboriginal_Syllabics)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Blackfoot_(Canadian_Aboriginal_Syllabics)",
+        "split": "background"
+      },
+      "inputCount": 280
+    },
+    {
+      "id": "omniglot-braille",
+      "file": "omniglot-braille.json.gz",
+      "sha256": "1434964c3a50543d40f0db80dc070802669c91915904ec82d64047fb408215ea",
+      "licenseFile": "omniglot-braille.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Braille",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Braille",
+        "split": "background"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-burmese-myanmar",
+      "file": "omniglot-burmese-myanmar.json.gz",
+      "sha256": "151ec1acf5203deb9dcf65cde9f4528cb4a0fc80ec172347b5827519bd1e0791",
+      "licenseFile": "omniglot-burmese-myanmar.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Burmese_(Myanmar)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Burmese_(Myanmar)",
+        "split": "background"
+      },
+      "inputCount": 680
+    },
+    {
+      "id": "omniglot-cyrillic",
+      "file": "omniglot-cyrillic.json.gz",
+      "sha256": "022cec03d5e8cb6a8bb38837578e9d58598c118d3d7fb3aa467b1d9b20bd5a0a",
+      "licenseFile": "omniglot-cyrillic.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Cyrillic",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Cyrillic",
+        "split": "background"
+      },
+      "inputCount": 660
+    },
+    {
+      "id": "omniglot-early-aramaic",
+      "file": "omniglot-early-aramaic.json.gz",
+      "sha256": "d56f620c633758280ef4221b255d0e46da6c7e2a859883a1833bd35258d148fa",
+      "licenseFile": "omniglot-early-aramaic.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Early_Aramaic",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Early_Aramaic",
+        "split": "background"
+      },
+      "inputCount": 440
+    },
+    {
+      "id": "omniglot-futurama",
+      "file": "omniglot-futurama.json.gz",
+      "sha256": "aa18aaab6f4655f7ff683a8b6b6c34bee06ec1280fb86b43827112098d245c7e",
+      "licenseFile": "omniglot-futurama.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Futurama",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Futurama",
+        "split": "background"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-grantha",
+      "file": "omniglot-grantha.json.gz",
+      "sha256": "26eab815ed0b0755b4b334d347b40159ec4cbb1c3f3ebcd3f126348a87a332cf",
+      "licenseFile": "omniglot-grantha.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Grantha",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Grantha",
+        "split": "background"
+      },
+      "inputCount": 860
+    },
+    {
+      "id": "omniglot-greek",
+      "file": "omniglot-greek.json.gz",
+      "sha256": "57adddc7ad35955ed4eebd3d2e28bb65871dea2b43cba8e0aaab8da712e53d8d",
+      "licenseFile": "omniglot-greek.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Greek",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Greek",
+        "split": "background"
+      },
+      "inputCount": 480
+    },
+    {
+      "id": "omniglot-gujarati",
+      "file": "omniglot-gujarati.json.gz",
+      "sha256": "0378b3bf93d6a2f9fbed0ecf30e8fe79335ea88931dc1a7d73b75e8ee47c7950",
+      "licenseFile": "omniglot-gujarati.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Gujarati",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Gujarati",
+        "split": "background"
+      },
+      "inputCount": 960
+    },
+    {
+      "id": "omniglot-hebrew",
+      "file": "omniglot-hebrew.json.gz",
+      "sha256": "3eae5bef5a3afd544b362cfedf5ef1bb3edaaf31a34327cde4ca56702d7209f0",
+      "licenseFile": "omniglot-hebrew.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Hebrew",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Hebrew",
+        "split": "background"
+      },
+      "inputCount": 440
+    },
+    {
+      "id": "omniglot-inuktitut-canadian-aboriginal-syllabics",
+      "file": "omniglot-inuktitut-canadian-aboriginal-syllabics.json.gz",
+      "sha256": "78b38a383ded04aa1a5eb234b70ee383fdd706ac223def5da3aa527af408a8a5",
+      "licenseFile": "omniglot-inuktitut-canadian-aboriginal-syllabics.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Inuktitut_(Canadian_Aboriginal_Syllabics)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Inuktitut_(Canadian_Aboriginal_Syllabics)",
+        "split": "background"
+      },
+      "inputCount": 320
+    },
+    {
+      "id": "omniglot-japanese-hiragana",
+      "file": "omniglot-japanese-hiragana.json.gz",
+      "sha256": "25b17ca4a7a426ebd6061bc80698d1001d9b367dfadec09269fd47a403474e11",
+      "licenseFile": "omniglot-japanese-hiragana.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Japanese_(hiragana)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Japanese_(hiragana)",
+        "split": "background"
+      },
+      "inputCount": 1040
+    },
+    {
+      "id": "omniglot-japanese-katakana",
+      "file": "omniglot-japanese-katakana.json.gz",
+      "sha256": "b90bf3d92e31183b4d8e859d34cf1db7ac22c8300a1cc7c7fdc7d0fda2be667e",
+      "licenseFile": "omniglot-japanese-katakana.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Japanese_(katakana)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Japanese_(katakana)",
+        "split": "background"
+      },
+      "inputCount": 940
+    },
+    {
+      "id": "omniglot-korean",
+      "file": "omniglot-korean.json.gz",
+      "sha256": "c4009b6177cbbe9615bb3f9ae7a0fc307c749cbc77b22b03e63bc9e21ad785b3",
+      "licenseFile": "omniglot-korean.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Korean",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Korean",
+        "split": "background"
+      },
+      "inputCount": 800
+    },
+    {
+      "id": "omniglot-latin",
+      "file": "omniglot-latin.json.gz",
+      "sha256": "ddb82df2ca5e0916f8743694c377fa174c6e6a164990ccb24fa85ef37f9461bb",
+      "licenseFile": "omniglot-latin.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Latin",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Latin",
+        "split": "background"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-malay-jawi-arabic",
+      "file": "omniglot-malay-jawi-arabic.json.gz",
+      "sha256": "819fa5dac8d0aff728f49d243e752ba7dc989831aac2dbd805124d0590687052",
+      "licenseFile": "omniglot-malay-jawi-arabic.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Malay_(Jawi_-_Arabic)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Malay_(Jawi_-_Arabic)",
+        "split": "background"
+      },
+      "inputCount": 800
+    },
+    {
+      "id": "omniglot-mkhedruli-georgian",
+      "file": "omniglot-mkhedruli-georgian.json.gz",
+      "sha256": "2a5f74984fbb7c0507122e81f5542ea708ee1417f7e08662b918018b884fe72c",
+      "licenseFile": "omniglot-mkhedruli-georgian.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Mkhedruli_(Georgian)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Mkhedruli_(Georgian)",
+        "split": "background"
+      },
+      "inputCount": 820
+    },
+    {
+      "id": "omniglot-n-ko",
+      "file": "omniglot-n-ko.json.gz",
+      "sha256": "c0a80ba8cea4be337be86a52423acdb72727b94ff90acab844b06430d49744a9",
+      "licenseFile": "omniglot-n-ko.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / N_Ko",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "N_Ko",
+        "split": "background"
+      },
+      "inputCount": 660
+    },
+    {
+      "id": "omniglot-ojibwe-canadian-aboriginal-syllabics",
+      "file": "omniglot-ojibwe-canadian-aboriginal-syllabics.json.gz",
+      "sha256": "b555dd758690939d2518d983a2a89e500c9533477eb60e86a33531652783db01",
+      "licenseFile": "omniglot-ojibwe-canadian-aboriginal-syllabics.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Ojibwe_(Canadian_Aboriginal_Syllabics)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Ojibwe_(Canadian_Aboriginal_Syllabics)",
+        "split": "background"
+      },
+      "inputCount": 280
+    },
+    {
+      "id": "omniglot-sanskrit",
+      "file": "omniglot-sanskrit.json.gz",
+      "sha256": "0f3561a0cbbad4850299bdc45fd83a265d236b269de05169167f3efac3c07ddb",
+      "licenseFile": "omniglot-sanskrit.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Sanskrit",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Sanskrit",
+        "split": "background"
+      },
+      "inputCount": 840
+    },
+    {
+      "id": "omniglot-syriac-estrangelo",
+      "file": "omniglot-syriac-estrangelo.json.gz",
+      "sha256": "d5cc364786489f520f93b51515e0d712aaa62c4b9ac335bec31d98d81071fb9f",
+      "licenseFile": "omniglot-syriac-estrangelo.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Syriac_(Estrangelo)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Syriac_(Estrangelo)",
+        "split": "background"
+      },
+      "inputCount": 460
+    },
+    {
+      "id": "omniglot-tagalog",
+      "file": "omniglot-tagalog.json.gz",
+      "sha256": "08096ff9392188c8fbae2d1d186d2525012750143b637bd9ec001a64e2f50eb6",
+      "licenseFile": "omniglot-tagalog.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Tagalog",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Tagalog",
+        "split": "background"
+      },
+      "inputCount": 340
+    },
+    {
+      "id": "omniglot-tifinagh",
+      "file": "omniglot-tifinagh.json.gz",
+      "sha256": "72e3ba19a4116a39d5054f3202c9dd90cf800c3330ca0300ed6da7eefda1bdca",
+      "licenseFile": "omniglot-tifinagh.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Tifinagh",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:c1e445d158fd74b6adf81f1387ebe051f5a23923bdb0c16f539d6e707ce056d4",
+        "license": "MIT",
+        "alphabet": "Tifinagh",
+        "split": "background"
+      },
+      "inputCount": 1100
+    },
+    {
+      "id": "omniglot-angelic",
+      "file": "omniglot-angelic.json.gz",
+      "sha256": "193509654fc7296c0fbcd2fd149cdaea991bc8cebf10d2dc3933c83882bce503",
+      "licenseFile": "omniglot-angelic.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Angelic",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Angelic",
+        "split": "evaluation"
+      },
+      "inputCount": 400
+    },
+    {
+      "id": "omniglot-atemayar-qelisayer",
+      "file": "omniglot-atemayar-qelisayer.json.gz",
+      "sha256": "f60e4e4c05a3d1632564cf1abbc21efd0554314580a52093fb3dd87dfa410897",
+      "licenseFile": "omniglot-atemayar-qelisayer.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Atemayar_Qelisayer",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Atemayar_Qelisayer",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-atlantean",
+      "file": "omniglot-atlantean.json.gz",
+      "sha256": "1670b0fdcaea3f72a391f8283f313a53e6456be870258c245d9b4d2efeb54eef",
+      "licenseFile": "omniglot-atlantean.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Atlantean",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Atlantean",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-aurek-besh",
+      "file": "omniglot-aurek-besh.json.gz",
+      "sha256": "78c4f98398ecc43c584b6d35e66681172791e82a18b663062748d7d7c66fcc53",
+      "licenseFile": "omniglot-aurek-besh.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Aurek-Besh",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Aurek-Besh",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-avesta",
+      "file": "omniglot-avesta.json.gz",
+      "sha256": "5ea47ee0d3b78ec030d1b8e9671fb4e26f3a68aa13cc8f049cb303d14ac95b2f",
+      "licenseFile": "omniglot-avesta.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Avesta",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Avesta",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-ge-ez",
+      "file": "omniglot-ge-ez.json.gz",
+      "sha256": "4be0bed68a9162d4e05c7ea7bbe9819e3f32a06bb67f26cd81eac1f5b93bc985",
+      "licenseFile": "omniglot-ge-ez.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Ge_ez",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Ge_ez",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-glagolitic",
+      "file": "omniglot-glagolitic.json.gz",
+      "sha256": "a42cb97029333b2bc25fe5ee70cf4501a6b35a4a701592dee388c13fc6f4c775",
+      "licenseFile": "omniglot-glagolitic.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Glagolitic",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Glagolitic",
+        "split": "evaluation"
+      },
+      "inputCount": 900
+    },
+    {
+      "id": "omniglot-gurmukhi",
+      "file": "omniglot-gurmukhi.json.gz",
+      "sha256": "b9f1d2df25bddabd3695b9211f23e1937824a0e82df1f66cdbe838c2e2527d34",
+      "licenseFile": "omniglot-gurmukhi.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Gurmukhi",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Gurmukhi",
+        "split": "evaluation"
+      },
+      "inputCount": 900
+    },
+    {
+      "id": "omniglot-kannada",
+      "file": "omniglot-kannada.json.gz",
+      "sha256": "a371f919533bdf44c581279ce22e6a5eadb72044907597bd3dc26eeca893218c",
+      "licenseFile": "omniglot-kannada.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Kannada",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Kannada",
+        "split": "evaluation"
+      },
+      "inputCount": 820
+    },
+    {
+      "id": "omniglot-keble",
+      "file": "omniglot-keble.json.gz",
+      "sha256": "8da847f4d7356024bff19890841aa22ac3b15e907a2c63d07bfce8f87dd25c3e",
+      "licenseFile": "omniglot-keble.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Keble",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Keble",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    },
+    {
+      "id": "omniglot-malayalam",
+      "file": "omniglot-malayalam.json.gz",
+      "sha256": "a5eab13325e21f4c472953b59b4c7fa98395c6a991d374b0c1b72ec4fc7dad30",
+      "licenseFile": "omniglot-malayalam.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Malayalam",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Malayalam",
+        "split": "evaluation"
+      },
+      "inputCount": 940
+    },
+    {
+      "id": "omniglot-manipuri",
+      "file": "omniglot-manipuri.json.gz",
+      "sha256": "0f5b5a6140d2922751f43adf5054f05d600ffc5aa797073f27e727730b3e3ad7",
+      "licenseFile": "omniglot-manipuri.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Manipuri",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Manipuri",
+        "split": "evaluation"
+      },
+      "inputCount": 800
+    },
+    {
+      "id": "omniglot-mongolian",
+      "file": "omniglot-mongolian.json.gz",
+      "sha256": "d4a3c90a0c3a300319618f2623a3ca383830b6760e04358af429e64405fa98d2",
+      "licenseFile": "omniglot-mongolian.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Mongolian",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Mongolian",
+        "split": "evaluation"
+      },
+      "inputCount": 600
+    },
+    {
+      "id": "omniglot-old-church-slavonic-cyrillic",
+      "file": "omniglot-old-church-slavonic-cyrillic.json.gz",
+      "sha256": "f37761e5143439d36fc1240687d26b54e683420515cd1eeb26bb91f582dd2d96",
+      "licenseFile": "omniglot-old-church-slavonic-cyrillic.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Old_Church_Slavonic_(Cyrillic)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Old_Church_Slavonic_(Cyrillic)",
+        "split": "evaluation"
+      },
+      "inputCount": 900
+    },
+    {
+      "id": "omniglot-oriya",
+      "file": "omniglot-oriya.json.gz",
+      "sha256": "4c607b43139103722a16a8c63bd2d8f4d4f3068c3e742fb35733078b72a22257",
+      "licenseFile": "omniglot-oriya.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Oriya",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Oriya",
+        "split": "evaluation"
+      },
+      "inputCount": 920
+    },
+    {
+      "id": "omniglot-sylheti",
+      "file": "omniglot-sylheti.json.gz",
+      "sha256": "3b368964a63b9d98b5102dc26553281f9a5e198981a4a67c52eee17eab448f85",
+      "licenseFile": "omniglot-sylheti.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Sylheti",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Sylheti",
+        "split": "evaluation"
+      },
+      "inputCount": 560
+    },
+    {
+      "id": "omniglot-syriac-serto",
+      "file": "omniglot-syriac-serto.json.gz",
+      "sha256": "5bdb3d7293959016c2c360077f33bf649bdd925416401fe59ee29c22a7f36c8d",
+      "licenseFile": "omniglot-syriac-serto.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Syriac_(Serto)",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Syriac_(Serto)",
+        "split": "evaluation"
+      },
+      "inputCount": 460
+    },
+    {
+      "id": "omniglot-tengwar",
+      "file": "omniglot-tengwar.json.gz",
+      "sha256": "9e2427c31c04c9efe5b2313f07ffb8e2ba105451bbf59c5ab992345f774d7e01",
+      "licenseFile": "omniglot-tengwar.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Tengwar",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Tengwar",
+        "split": "evaluation"
+      },
+      "inputCount": 500
+    },
+    {
+      "id": "omniglot-tibetan",
+      "file": "omniglot-tibetan.json.gz",
+      "sha256": "b8e3edad38756843a9fea44e9dc1d04cb6be01dd48632269f8e3ff93c3369a8c",
+      "licenseFile": "omniglot-tibetan.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / Tibetan",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "Tibetan",
+        "split": "evaluation"
+      },
+      "inputCount": 840
+    },
+    {
+      "id": "omniglot-ulog",
+      "file": "omniglot-ulog.json.gz",
+      "sha256": "6d24b3e0c9402b489f49dc329236ef88f38f92bbada75fb1db63d08d33bc125f",
+      "licenseFile": "omniglot-ulog.LICENSE",
+      "licenseSHA256": "2efb425d9850e7bce985f151dc2ee1f4485e926a3582e08fd879cd28eb0388f5",
+      "source": {
+        "name": "Omniglot / ULOG",
+        "url": "https://github.com/brendenlake/omniglot",
+        "revision": "archive-sha256:17185a39049e62d6e6a26070fa5c58e5ce7dbaff826a9f78595bdd7881d2070b",
+        "license": "MIT",
+        "alphabet": "ULOG",
+        "split": "evaluation"
+      },
+      "inputCount": 520
+    }
+  ],
+  "mapping": {
+    "file": "korean-mapping.json",
+    "sha256": "5a395abe6459e2d7f85c6f6361b35d2b9abaadfa45f6084dc7a4ab683459f1ed"
+  }
+}

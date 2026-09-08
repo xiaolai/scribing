@@ -1,0 +1,4 @@
+# Preserve upstream license/notice bytes, including their original whitespace.
+packs/sources/*.LICENSE -whitespace
+packs/generated/*.NOTICE.txt -whitespace
+scripts/data/test/fixtures/*LICENSE.txt -whitespace

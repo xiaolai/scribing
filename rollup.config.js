@@ -44,6 +44,7 @@ export default [
       filesize(),
       ts({
         transpiler: 'babel',
+        tsconfig: 'tsconfig.build.json',
       }),
       resolve({ extensions }),
       babel({

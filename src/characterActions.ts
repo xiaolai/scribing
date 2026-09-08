@@ -157,13 +157,26 @@ export const showStroke = (
   ];
 };
 
+const animationStrokes = (character: Character, planId?: string): Stroke[] => {
+  if (!character.unit) {
+    if (planId !== undefined) throw new Error('Animation plans require a writing unit.');
+    return character.strokes;
+  }
+  const selectedId = planId === undefined ? character.unit.defaultPlanId : planId;
+  const plan = character.unit.plans.find((candidate) => candidate.id === selectedId);
+  if (!plan) throw new Error(`Unknown writing unit animation plan: ${selectedId}`);
+  return plan.steps.map((step) => character.strokes[step.strokeIndex]);
+};
+
 export const animateCharacter = (
   charName: CharacterName,
   character: Character,
   fadeDuration: number,
   speed: number,
   delayBetweenStrokes: number,
+  planId?: string,
 ): GenericMutation[] => {
+  const strokes = animationStrokes(character, planId);
   let mutations: GenericMutation[] = hideCharacter(charName, character, fadeDuration);
   mutations = mutations.concat(showStrokes(charName, character, 0));
   mutations.push(
@@ -176,7 +189,7 @@ export const animateCharacter = (
       { force: true },
     ),
   );
-  character.strokes.forEach((stroke, i) => {
+  strokes.forEach((stroke, i) => {
     if (i > 0) mutations.push(new Mutation.Delay(delayBetweenStrokes));
     mutations = mutations.concat(animateStroke(charName, stroke, speed));
   });
@@ -190,6 +203,7 @@ export const animateCharacterLoop = (
   speed: number,
   delayBetweenStrokes: number,
   delayBetweenLoops: number,
+  planId?: string,
 ): GenericMutation[] => {
   const mutations = animateCharacter(
     charName,
@@ -197,6 +211,7 @@ export const animateCharacterLoop = (
     fadeDuration,
     speed,
     delayBetweenStrokes,
+    planId,
   );
   mutations.push(new Mutation.Delay(delayBetweenLoops));
   return mutations;

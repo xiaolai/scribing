@@ -1,7 +1,7 @@
 import { ColorObject, RecursivePartial } from './typings/types';
 
 // hacky way to get around rollup not properly setting `global` to `window` in browser
-const globalObj = typeof window === 'undefined' ? global : window;
+const globalObj = typeof window === 'undefined' ? globalThis : window;
 
 export const performanceNow =
   (globalObj.performance && (() => globalObj.performance.now())) || (() => Date.now());

@@ -1,4 +1,5 @@
 import { Point } from './typings/types';
+import { UnitBounds } from './units/types';
 
 // All makemeahanzi characters have the same bounding box
 const CHARACTER_BOUNDS = [
@@ -10,6 +11,7 @@ const preScaledWidth = to.x - from.x;
 const preScaledHeight = to.y - from.y;
 
 export type PositionerOptions = {
+  bounds?: UnitBounds;
   /** Default: 0 */
   width: number;
   /** Default: 0 */
@@ -32,19 +34,26 @@ export default class Positioner {
     this.width = width;
     this.height = height;
 
-    const effectiveWidth = width - 2 * padding;
-    const effectiveHeight = height - 2 * padding;
-    const scaleX = effectiveWidth / preScaledWidth;
-    const scaleY = effectiveHeight / preScaledHeight;
+    const bounds = options.bounds;
+    const origin = bounds ? { x: bounds[0], y: bounds[1] } : from;
+    const sourceWidth = bounds ? bounds[2] : preScaledWidth;
+    const sourceHeight = bounds ? bounds[3] : preScaledHeight;
+    const effectiveWidth = bounds
+      ? Math.max(1e-6, width - 2 * padding)
+      : width - 2 * padding;
+    const effectiveHeight = bounds
+      ? Math.max(1e-6, height - 2 * padding)
+      : height - 2 * padding;
+    const scaleX = effectiveWidth / sourceWidth;
+    const scaleY = effectiveHeight / sourceHeight;
 
     this.scale = Math.min(scaleX, scaleY);
 
-    const xCenteringBuffer = padding + (effectiveWidth - this.scale * preScaledWidth) / 2;
-    const yCenteringBuffer =
-      padding + (effectiveHeight - this.scale * preScaledHeight) / 2;
+    const xCenteringBuffer = padding + (effectiveWidth - this.scale * sourceWidth) / 2;
+    const yCenteringBuffer = padding + (effectiveHeight - this.scale * sourceHeight) / 2;
 
-    this.xOffset = -1 * from.x * this.scale + xCenteringBuffer;
-    this.yOffset = -1 * from.y * this.scale + yCenteringBuffer;
+    this.xOffset = -1 * origin.x * this.scale + xCenteringBuffer;
+    this.yOffset = -1 * origin.y * this.scale + yCenteringBuffer;
   }
 
   convertExternalPoint(point: Point) {

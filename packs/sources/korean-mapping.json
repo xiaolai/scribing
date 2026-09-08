@@ -1,0 +1,208 @@
+{
+  "schemaVersion": 1,
+  "sourceAlphabet": "Korean",
+  "status": "visually-derived",
+  "review": "Three recorded examples per class inspected; two agents agree; no native curriculum certification",
+  "entries": [
+    {
+      "sourceClass": "character01",
+      "character": "ㅏ",
+      "codepoint": "U+314F"
+    },
+    {
+      "sourceClass": "character02",
+      "character": "ㅐ",
+      "codepoint": "U+3150"
+    },
+    {
+      "sourceClass": "character03",
+      "character": "ㅑ",
+      "codepoint": "U+3151"
+    },
+    {
+      "sourceClass": "character04",
+      "character": "ㅒ",
+      "codepoint": "U+3152"
+    },
+    {
+      "sourceClass": "character05",
+      "character": "ㅓ",
+      "codepoint": "U+3153"
+    },
+    {
+      "sourceClass": "character06",
+      "character": "ㅔ",
+      "codepoint": "U+3154"
+    },
+    {
+      "sourceClass": "character07",
+      "character": "ㅕ",
+      "codepoint": "U+3155"
+    },
+    {
+      "sourceClass": "character08",
+      "character": "ㅖ",
+      "codepoint": "U+3156"
+    },
+    {
+      "sourceClass": "character09",
+      "character": "ㅗ",
+      "codepoint": "U+3157"
+    },
+    {
+      "sourceClass": "character10",
+      "character": "ㅘ",
+      "codepoint": "U+3158"
+    },
+    {
+      "sourceClass": "character11",
+      "character": "ㅙ",
+      "codepoint": "U+3159"
+    },
+    {
+      "sourceClass": "character12",
+      "character": "ㅚ",
+      "codepoint": "U+315A"
+    },
+    {
+      "sourceClass": "character13",
+      "character": "ㅛ",
+      "codepoint": "U+315B"
+    },
+    {
+      "sourceClass": "character14",
+      "character": "ㅜ",
+      "codepoint": "U+315C"
+    },
+    {
+      "sourceClass": "character15",
+      "character": "ㅝ",
+      "codepoint": "U+315D"
+    },
+    {
+      "sourceClass": "character16",
+      "character": "ㅞ",
+      "codepoint": "U+315E"
+    },
+    {
+      "sourceClass": "character17",
+      "character": "ㅟ",
+      "codepoint": "U+315F"
+    },
+    {
+      "sourceClass": "character18",
+      "character": "ㅠ",
+      "codepoint": "U+3160"
+    },
+    {
+      "sourceClass": "character19",
+      "character": "ㅡ",
+      "codepoint": "U+3161"
+    },
+    {
+      "sourceClass": "character20",
+      "character": "ㅢ",
+      "codepoint": "U+3162"
+    },
+    {
+      "sourceClass": "character21",
+      "character": "ㅣ",
+      "codepoint": "U+3163"
+    },
+    {
+      "sourceClass": "character22",
+      "character": "ㄱ",
+      "codepoint": "U+3131"
+    },
+    {
+      "sourceClass": "character23",
+      "character": "ㄲ",
+      "codepoint": "U+3132"
+    },
+    {
+      "sourceClass": "character24",
+      "character": "ㄴ",
+      "codepoint": "U+3134"
+    },
+    {
+      "sourceClass": "character25",
+      "character": "ㄷ",
+      "codepoint": "U+3137"
+    },
+    {
+      "sourceClass": "character26",
+      "character": "ㄸ",
+      "codepoint": "U+3138"
+    },
+    {
+      "sourceClass": "character27",
+      "character": "ㄹ",
+      "codepoint": "U+3139"
+    },
+    {
+      "sourceClass": "character28",
+      "character": "ㅁ",
+      "codepoint": "U+3141"
+    },
+    {
+      "sourceClass": "character29",
+      "character": "ㅂ",
+      "codepoint": "U+3142"
+    },
+    {
+      "sourceClass": "character30",
+      "character": "ㅃ",
+      "codepoint": "U+3143"
+    },
+    {
+      "sourceClass": "character31",
+      "character": "ㅅ",
+      "codepoint": "U+3145"
+    },
+    {
+      "sourceClass": "character32",
+      "character": "ㅆ",
+      "codepoint": "U+3146"
+    },
+    {
+      "sourceClass": "character33",
+      "character": "ㅇ",
+      "codepoint": "U+3147"
+    },
+    {
+      "sourceClass": "character34",
+      "character": "ㅈ",
+      "codepoint": "U+3148"
+    },
+    {
+      "sourceClass": "character35",
+      "character": "ㅉ",
+      "codepoint": "U+3149"
+    },
+    {
+      "sourceClass": "character36",
+      "character": "ㅊ",
+      "codepoint": "U+314A"
+    },
+    {
+      "sourceClass": "character37",
+      "character": "ㅋ",
+      "codepoint": "U+314B"
+    },
+    {
+      "sourceClass": "character38",
+      "character": "ㅌ",
+      "codepoint": "U+314C"
+    },
+    {
+      "sourceClass": "character39",
+      "character": "ㅍ",
+      "codepoint": "U+314D"
+    },
+    {
+      "sourceClass": "character40",
+      "character": "ㅎ",
+      "codepoint": "U+314E"
+    }
+  ]
+}

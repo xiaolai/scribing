@@ -1,0 +1,47 @@
+{
+  "status": "passed",
+  "bundleSHA256": "c0da2b6eb2ebed5e3d58e07bb4e0fa1434ad8543901c1c85781ed294e3a6b47b",
+  "catalogSHA256": "1ba57cb44b0e0f7de3042e04fa8b15d719ff064065655ea99c4913c24d6aac26",
+  "browser": "151.0.7922.34",
+  "checks": [
+    "loaded english-letterpaths-print",
+    "loaded english-glyphed",
+    "loaded japanese-kana",
+    "loaded japanese-grade-1",
+    "loaded korean-omniglot",
+    "loaded omniglot-alphabet-of-the-magi",
+    "unsupported lookup and safe text recovery",
+    "source tolerance defaults, actual quiz leniency, active and queued cancellation",
+    "selected stroke plan passed to actual animation",
+    "svg 960px actual mouse i: 2 strokes complete",
+    "svg 960px actual mouse あ: 3 strokes complete",
+    "svg 960px actual mouse ぬ: 2 strokes complete",
+    "canvas 960px actual mouse i: 2 strokes complete",
+    "canvas 960px actual mouse あ: 3 strokes complete",
+    "canvas 960px actual mouse ぬ: 2 strokes complete",
+    "svg 320px actual mouse i: 2 strokes complete",
+    "svg 320px actual mouse あ: 3 strokes complete",
+    "svg 320px actual mouse ぬ: 2 strokes complete",
+    "canvas 320px actual mouse i: 2 strokes complete",
+    "canvas 320px actual mouse あ: 3 strokes complete",
+    "canvas 320px actual mouse ぬ: 2 strokes complete"
+  ],
+  "externalRequests": 0,
+  "pageErrors": [],
+  "benchmark": {
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+    "fixture": "letterpaths print i; supplied-model replay",
+    "warmups": 5,
+    "compileAndMount": {
+      "samples": 40,
+      "p50ms": 0.5999999046325684,
+      "p95ms": 0.7000000476837158
+    },
+    "directGestureCalls": {
+      "samples": 80,
+      "p50ms": 0.3999999761581421,
+      "p95ms": 0.7999999523162842
+    },
+    "limitation": "Headless desktop Chromium; synthetic source replay, not physical-device or human-input validation."
+  }
+}

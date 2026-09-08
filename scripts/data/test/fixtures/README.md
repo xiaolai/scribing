@@ -1,0 +1,5 @@
+# Parser fixtures and terms
+
+`tomoe-excerpt.xml` preserves the exact character XML blocks for あ, ぬ and every 字 variant from the pinned Tegaki/Tomoe dictionary at commit `7a74e442c4130cccc226a7e7c2b683ac94c0cccb`. The surrounding dictionary wrapper is reduced for a bounded test. Original source: https://github.com/tegaki/tegaki/blob/7a74e442c4130cccc226a7e7c2b683ac94c0cccb/tegaki-models/data/train/japanese/handwriting-ja.xml. Full model-source license is retained in TOMOE-LICENSE.txt. This fixture is separately licensed test data, not part of an engine or generated runtime pack.
+
+`recording.inkml`, `recording.unipen` and `recording.json` are format re-encodings of actual MIT Omniglot recording `strokes_background/Korean/character01/0643_01.txt`. Numeric XYT values and motor boundaries are preserved. These wrappers were generated for parser interoperability tests; they are not claimed as upstream-native InkML/UNIPEN downloads. Full terms are in OMNIGLOT-LICENSE.txt. The original text remains inside the locked Omniglot source snapshot.

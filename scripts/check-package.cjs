@@ -24,35 +24,47 @@ async function main() {
     for (const name of [pkg.main, pkg.module, pkg.types, 'dist/scribing.js', 'dist/scribing.min.js', 'LICENSE', 'COPYING.md', 'CITATION.cff']) {
       assert(files.has(name), `Missing packaged file: ${name}`);
     }
-    assert(!packed.files.some((file) => /(^src\/|\.test\.|^node_modules\/)/.test(file.path)), 'Development files leaked into package');
+    assert(!packed.files.some((file) => /(^src\/|\.test\.|^node_modules\/|^packs\/|^scripts\/)/.test(file.path)), 'Development files leaked into package');
     for (const name of [pkg.main, pkg.module, 'dist/scribing.js', 'dist/scribing.min.js']) {
       const code = fs.readFileSync(path.join(packageRoot, name), 'utf8');
       assert(code.includes('Copyright (c) 2014 David Chanin'), `${name} lost upstream attribution`);
       assert(code.includes('Permission is hereby granted, free of charge'), `${name} lost the MIT permission notice`);
     }
+    const unit = { schemaVersion: 2, id: 'i', text: 'i', coordinates: { em: 1000, yAxis: 'up', bounds: [0, 0, 1000, 1000] }, motorStrokes: [{ id: 'dot', kind: 'dot', center: [500, 700], radius: 25 }], plans: [{ id: 'default', steps: [{ strokeId: 'dot' }] }], defaultPlanId: 'default' };
+    const pack = { schemaVersion: 1, id: 'offline', name: 'Offline', version: '1', license: 'MIT', status: 'technical-preview', provenance: 'authored', source: { name: 'Fixture', url: 'https://example.test/fixture' }, units: { i: unit } };
     const commonjs = require(packageRoot);
     assert.strictEqual(typeof commonjs.create, 'function', 'CommonJS default constructor is unavailable');
+    assert.deepStrictEqual(await commonjs.createDataProvider(pack).load({ id: 'i' }, { signal: new AbortController().signal }), unit);
     // The module field is intended for bundlers. Copy to .mjs to exercise its ESM syntax in Node.
     const esmPath = path.join(temp, 'scribing.mjs');
     fs.copyFileSync(path.join(packageRoot, pkg.module), esmPath);
     const esm = await import(pathToFileURL(esmPath).href);
     assert.strictEqual(typeof esm.default.create, 'function', 'ESM default constructor is unavailable');
+    assert.deepStrictEqual(await esm.default.createDataProvider(pack).load({ id: 'i' }, { signal: new AbortController().signal }), unit);
     for (const name of ['dist/scribing.js', 'dist/scribing.min.js']) {
       const context = { setTimeout, clearTimeout };
       context.window = context;
       vm.runInNewContext(fs.readFileSync(path.join(packageRoot, name), 'utf8'), context);
       assert.strictEqual(typeof context.Scribing.create, 'function', `${name} does not expose Scribing`);
       assert(context.Scribing.getScalingTransform(100, 100).scale > 0);
+      assert.strictEqual(typeof context.Scribing.createDataProvider, 'function');
+      assert.strictEqual(typeof context.Scribing.prototype.setUnit, 'function');
+      assert.strictEqual(typeof context.Scribing.prototype.quizUnit, 'function');
     }
     fs.writeFileSync(path.join(temp, 'consumer.ts'), `
-import Scribing, { ScribingOptions, CharacterJson } from 'scribing';
+import Scribing, { ScribingOptions, CharacterJson, WritingUnit, WritingDataPack, UnitStrokeFeedback } from 'scribing';
 const options: Partial<ScribingOptions> = { renderer: 'svg', showCharacter: false };
 const writer: Scribing = Scribing.create('target', '我', options);
 const data: Promise<CharacterJson | void> = Scribing.loadCharacterData('我');
-void writer; void data;
+const unit: WritingUnit = ${JSON.stringify(unit)};
+const pack: WritingDataPack = ${JSON.stringify(pack)};
+const pending: Promise<void> = writer.setUnit({ id: 'i', provider: Scribing.createDataProvider(pack) });
+const selected: Promise<WritingUnit> = writer.getUnitData();
+writer.quizUnit({ guided: true, onMistake: (event: UnitStrokeFeedback) => console.log(event.reason) });
+void writer; void data; void unit; void pending; void selected;
 `);
     execFileSync(process.execPath, [require.resolve('typescript/bin/tsc'), '--noEmit', '--strict', '--target', 'es2015', '--moduleResolution', 'node', '--types', 'scribing', path.join(temp, 'consumer.ts')], { cwd: temp, stdio: 'pipe' });
-    console.log(`Package smoke passed: ${packed.filename}; CJS, ESM, browser globals, license, and TypeScript consumer.`);
+    console.log(`Package smoke passed: ${packed.filename}; CJS/ESM offline providers, browser globals, licenses, data exclusion, and old/new TypeScript consumers.`);
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }

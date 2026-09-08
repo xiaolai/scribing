@@ -2,7 +2,7 @@
 
 Scribing is an open-source JavaScript library for stroke-order animations and interactive handwriting practice, forked from [Hanzi Writer](https://github.com/chanind/hanzi-writer) by David Chanin.
 
-It currently supports Simplified and Traditional Chinese through the existing Hanzi Writer dataset. Support for additional writing systems is planned; this rebrand does not add new language datasets.
+It supports Simplified and Traditional Chinese through the existing Hanzi Writer dataset, plus optional multilingual writing units and offline source packs for English, Japanese, Korean letters and broader recorded collections. These new packs are technical previews, not certified teaching curricula. See the [multilingual API and data guide](docs/multilingual.md) for exact source boundaries and usage.
 
 ## Development
 
@@ -13,7 +13,7 @@ yarn install --frozen-lockfile
 yarn build
 ```
 
-Serve the repository with a local HTTP server and open `/demo/` to try the demo.
+Serve the repository with a local HTTP server and open `/demo/` for Chinese or `/demo/multilingual/` for local multilingual packs. The multilingual demo loads the selected pack from `packs/generated/`; it does not use a remote data service.
 
 ## Usage
 
@@ -57,6 +57,8 @@ CI runs these checks with Node.js 22. Publishing is manual; pushing to `master` 
 Call `writer.destroy()` when removing a writing exercise from your page. It cancels the current load and animations, removes input listeners, and removes DOM nodes created by the writer. SVG or canvas elements supplied by the caller remain in place. Calling `destroy()` again is safe; create a new instance to resume practice.
 
 ## Custom writing data
+
+For native centerlines, true dots, source metrics and alternative order plans, use [v2 writing units and `setUnit()`](docs/multilingual.md). The following is the legacy filled-outline data format.
 
 Supply `charDataLoader` to use local data or data for another writing system. It can return a data object, return a promise, or call its success/error callbacks. Supply one SVG outline and one ordered centerline per pen stroke:
 

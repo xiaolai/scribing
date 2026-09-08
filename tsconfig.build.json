@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "types": [] },
+  "include": ["src/Scribing.ts"],
+  "exclude": ["node_modules", "dist", "src/**/__tests__/**", "src/testFixtures/**"]
+}
