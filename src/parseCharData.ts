@@ -1,3 +1,4 @@
+import validateCharData from './validateCharData';
 import Stroke from './models/Stroke';
 import Character from './models/Character';
 import { CharacterJson } from './typings/types';
@@ -14,6 +15,7 @@ function generateStrokes({ radStrokes, strokes, medians }: CharacterJson) {
 }
 
 export default function parseCharData(symbol: string, charJson: CharacterJson) {
+  validateCharData(charJson);
   const strokes = generateStrokes(charJson);
   return new Character(symbol, strokes);
 }

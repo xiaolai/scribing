@@ -34,6 +34,51 @@ const assertNotMatches = (
 };
 
 describe('strokeMatches', () => {
+  it('matches a custom median containing duplicate samples and a reversal', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 0, y: 0 },
+    ];
+    const character = parseCharData('X', {
+      strokes: ['M0 0L100 0L0 0'],
+      medians: [
+        [
+          [0, 0],
+          [0, 0],
+          [100, 0],
+          [100, 0],
+          [0, 0],
+        ],
+      ],
+    });
+    expect(strokeMatches({ points } as UserStroke, character, 0).isMatch).toBe(true);
+    expect(character.strokes[0].getVectors()).toEqual([
+      { x: 100, y: 0 },
+      { x: -100, y: 0 },
+    ]);
+  });
+
+  it('does not match a zero-length reference median', () => {
+    const character = parseCharData('X', {
+      strokes: ['M0 0L0 0'],
+      medians: [
+        [
+          [0, 0],
+          [0, 0],
+        ],
+      ],
+    });
+    const points = [
+      { x: 0, y: 0 },
+      { x: 1, y: 0 },
+    ];
+    expect(strokeMatches({ points } as UserStroke, character, 0)).toEqual({
+      isMatch: false,
+      meta: { isStrokeBackwards: false },
+    });
+  });
+
   it('does not match if the user stroke is a single point', () => {
     const stroke = new Stroke(
       '',

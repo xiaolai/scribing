@@ -73,6 +73,124 @@ const createRenderState = (optOverrides = {}) => {
 };
 
 describe('Quiz', () => {
+  it('ignores pointer input and skipping after canceling an unfinished stroke', async () => {
+    const renderState = createRenderState();
+    const quiz = new Quiz(char, renderState, new Positioner(opts));
+    const onMistake = jest.fn();
+    const onComplete = jest.fn();
+    quiz.startQuiz({ ...opts, onMistake, onComplete });
+    quiz.startUserStroke({ x: 0, y: 0 });
+    await quiz.continueUserStroke({ x: 10, y: 10 });
+    quiz.cancel();
+    const state = renderState.state;
+    await quiz.continueUserStroke({ x: 20, y: 20 });
+    quiz.endUserStroke();
+    quiz.nextStroke();
+    expect(quiz._userStroke).toBeUndefined();
+    expect(quiz._currentStrokeIndex).toBe(0);
+    expect(renderState.state).toBe(state);
+    expect(strokeMatches).not.toHaveBeenCalled();
+    expect(onMistake).not.toHaveBeenCalled();
+    expect(onComplete).not.toHaveBeenCalled();
+    renderState.cancelAll();
+  });
+
+  it('discards a canceled touch without grading it or ending the quiz', async () => {
+    const renderState = createRenderState();
+    const quiz = new Quiz(char, renderState, new Positioner(opts));
+    quiz.startQuiz(opts);
+    quiz.startUserStroke({ x: 0, y: 0 });
+    await quiz.continueUserStroke({ x: 10, y: 10 });
+    const id = quiz._userStroke!.id;
+    quiz.cancelUserStroke();
+    quiz.endUserStroke();
+    expect(quiz._userStroke).toBeUndefined();
+    expect(quiz._isActive).toBe(true);
+    expect(strokeMatches).not.toHaveBeenCalled();
+    await resolvePromises();
+    expect(renderState.state.userStrokes?.[id]?.opacity).toBe(0);
+    quiz.cancel();
+    renderState.cancelAll();
+  });
+
+  it('discards an unfinished stroke when restarting a quiz', () => {
+    const renderState = createRenderState();
+    const quiz = new Quiz(char, renderState, new Positioner(opts));
+    quiz.startQuiz(opts);
+    quiz.startUserStroke({ x: 0, y: 0 });
+    const oldStroke = quiz._userStroke;
+    quiz.startQuiz(opts);
+    expect(quiz._userStroke).toBeUndefined();
+    quiz.startUserStroke({ x: 10, y: 10 });
+    expect(quiz._userStroke).toBeDefined();
+    expect(quiz._userStroke).not.toBe(oldStroke);
+    quiz.cancel();
+    renderState.cancelAll();
+  });
+
+  describe('callback reentrancy', () => {
+    it('does not schedule completion animation after disposal in onComplete', () => {
+      const renderState = createRenderState();
+      const quiz = new Quiz(char, renderState, new Positioner(opts));
+      quiz.startQuiz({
+        ...opts,
+        onComplete: () => {
+          quiz.cancel();
+          renderState.cancelAll();
+        },
+      });
+      quiz.nextStroke();
+      quiz.nextStroke();
+      expect(renderState._mutationChains).toHaveLength(0);
+    });
+
+    it('does not schedule a hint after disposal in onMistake', async () => {
+      const renderState = createRenderState();
+      const quiz = new Quiz(char, renderState, new Positioner(opts));
+      (strokeMatches as jest.Mock).mockReturnValue({ isMatch: false, meta: {} });
+      quiz.startQuiz({
+        ...opts,
+        showHintAfterMisses: 1,
+        onMistake: () => {
+          quiz.cancel();
+          renderState.cancelAll();
+        },
+      });
+      quiz.startUserStroke({ x: 0, y: 0 });
+      await quiz.continueUserStroke({ x: 10, y: 10 });
+      quiz.endUserStroke();
+      expect(renderState._mutationChains).toHaveLength(0);
+    });
+
+    it.each(['onCorrectStroke', 'onMistake'])(
+      'preserves a new quiz started inside %s',
+      async (callback) => {
+        const renderState = createRenderState();
+        const quiz = new Quiz(char, renderState, new Positioner(opts));
+        (strokeMatches as jest.Mock).mockReturnValue({
+          isMatch: callback === 'onCorrectStroke',
+          meta: {},
+        });
+        let newStroke: typeof quiz._userStroke;
+        quiz.startQuiz({
+          ...opts,
+          [callback]: () => {
+            quiz.startQuiz(opts);
+            quiz.startUserStroke({ x: 30, y: 30 });
+            newStroke = quiz._userStroke;
+          },
+        });
+        quiz.startUserStroke({ x: 0, y: 0 });
+        await quiz.continueUserStroke({ x: 10, y: 10 });
+        quiz.endUserStroke();
+        expect(quiz._currentStrokeIndex).toBe(0);
+        expect(quiz._userStroke).toBe(newStroke);
+        quiz.cancel();
+        renderState.cancelAll();
+      },
+    );
+  });
+
   describe('startQuiz', () => {
     it('resets the quiz and makes it active', async () => {
       const renderState = createRenderState();

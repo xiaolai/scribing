@@ -41,12 +41,15 @@ export const cosineSimilarity = (point1: Point, point2: Point) => {
  */
 export const _extendPointOnLine = (p1: Point, p2: Point, dist: number) => {
   const vect = subtract(p2, p1);
-  const norm = dist / magnitude(vect);
+  const vectMagnitude = magnitude(vect);
+  if (vectMagnitude === 0) return { ...p2 };
+  const norm = dist / vectMagnitude;
   return { x: p2.x + norm * vect.x, y: p2.y + norm * vect.y };
 };
 
 /** based on http://www.kr.tuwien.ac.at/staff/eiter/et-archive/cdtr9464.pdf */
 export const frechetDist = (curve1: Point[], curve2: Point[]) => {
+  if (!curve1.length || !curve2.length) return Infinity;
   const longCurve = curve1.length >= curve2.length ? curve1 : curve2;
   const shortCurve = curve1.length >= curve2.length ? curve2 : curve1;
 
@@ -94,11 +97,17 @@ export const frechetDist = (curve1: Point[], curve2: Point[]) => {
 
 /** break up long segments in the curve into smaller segments of len maxLen or smaller */
 export const subdivideCurve = (curve: Point[], maxLen = 0.05) => {
+  if (!Number.isFinite(maxLen) || maxLen <= 0) {
+    throw new Error('maxLen must be a positive finite number');
+  }
   const newCurve = curve.slice(0, 1);
 
   for (const point of curve.slice(1)) {
     const prevPoint = newCurve[newCurve.length - 1];
     const segLen = distance(point, prevPoint);
+    if (!Number.isFinite(segLen)) {
+      throw new Error('Curve segment length must be finite');
+    }
     if (segLen > maxLen) {
       const numNewPoints = Math.ceil(segLen / maxLen);
       const newSegLen = segLen / numNewPoints;
@@ -115,7 +124,13 @@ export const subdivideCurve = (curve: Point[], maxLen = 0.05) => {
 
 /** redraw the curve using numPoints equally spaced out along the length of the curve */
 export const outlineCurve = (curve: Point[], numPoints = 30) => {
+  if (!Number.isInteger(numPoints) || numPoints < 2) {
+    throw new Error('numPoints must be an integer of at least two');
+  }
+  if (!curve.length) return [];
   const curveLen = length(curve);
+  if (!Number.isFinite(curveLen)) return [];
+  if (curveLen === 0) return Array.from({ length: numPoints }, () => ({ ...curve[0] }));
   const segmentLen = curveLen / (numPoints - 1);
   const outlinePoints = [curve[0]];
   const endPoint = arrLast(curve);
@@ -126,6 +141,11 @@ export const outlineCurve = (curve: Point[], numPoints = 30) => {
     let remainingDist = segmentLen;
     let outlinePointFound = false;
     while (!outlinePointFound) {
+      // Floating-point rounding may exhaust the segments just before the endpoint.
+      if (!remainingCurvePoints.length) {
+        outlinePoints.push(endPoint);
+        break;
+      }
       const nextPointDist = distance(lastPoint, remainingCurvePoints[0]);
       if (nextPointDist < remainingDist) {
         remainingDist -= nextPointDist;
@@ -149,22 +169,40 @@ export const outlineCurve = (curve: Point[], numPoints = 30) => {
 
 /** translate and scale from https://en.wikipedia.org/wiki/Procrustes_analysis */
 export const normalizeCurve = (curve: Point[]) => {
+  if (
+    !curve.length ||
+    !curve.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y))
+  )
+    return [];
   const outlinedCurve = outlineCurve(curve);
+  if (!outlinedCurve.length) return [];
   const meanX = average(outlinedCurve.map((point) => point.x));
   const meanY = average(outlinedCurve.map((point) => point.y));
   const mean = { x: meanX, y: meanY };
   const translatedCurve = outlinedCurve.map((point) => subtract(point, mean));
-  const scale = Math.sqrt(
+  let scale = Math.sqrt(
     average([
       Math.pow(translatedCurve[0].x, 2) + Math.pow(translatedCurve[0].y, 2),
       Math.pow(arrLast(translatedCurve).x, 2) + Math.pow(arrLast(translatedCurve).y, 2),
     ]),
   );
+  // Endpoints within 10% of the RMS radius are a poor measure of curve size:
+  // tiny endpoint changes can otherwise produce enormous normalized coordinates.
+  const spread = Math.sqrt(
+    average(translatedCurve.map((point) => point.x ** 2 + point.y ** 2)),
+  );
+  if (scale < 0.1 * spread) scale = spread;
+  if (!Number.isFinite(scale) || scale === 0) return [];
   const scaledCurve = translatedCurve.map((point) => ({
     x: point.x / scale,
     y: point.y / scale,
   }));
-  return subdivideCurve(scaledCurve);
+  // Keep the original 0.05 spacing for ordinary strokes. Reserve one point per
+  // outlined vertex so ceil() rounding cannot take the result over 512 points.
+  // This also bounds the quadratic cost of subsequent Frechet comparisons.
+  const maxPoints = 512;
+  const maxLen = Math.max(0.05, length(scaledCurve) / (maxPoints - scaledCurve.length));
+  return subdivideCurve(scaledCurve, maxLen);
 };
 
 // rotate around the origin
@@ -177,22 +215,21 @@ export const rotate = (curve: Point[], theta: number) => {
 
 // remove intermediate points that are on the same line as the points to either side
 export const _filterParallelPoints = (points: Point[]) => {
-  if (points.length < 3) return points;
-  const filteredPoints = [points[0], points[1]];
-  points.slice(2).forEach((point) => {
-    const numFilteredPoints = filteredPoints.length;
-    const curVect = subtract(point, filteredPoints[numFilteredPoints - 1]);
-    const prevVect = subtract(
-      filteredPoints[numFilteredPoints - 1],
-      filteredPoints[numFilteredPoints - 2],
-    );
-    // this is the z coord of the cross-product. If this is 0 then they're parallel
-    const isParallel = curVect.y * prevVect.x - curVect.x * prevVect.y === 0;
-    if (isParallel) {
-      filteredPoints.pop();
+  const filteredPoints: Point[] = [];
+  for (const point of points) {
+    if (filteredPoints.length && equals(point, arrLast(filteredPoints))) continue;
+    if (filteredPoints.length >= 2) {
+      const curVect = subtract(point, arrLast(filteredPoints));
+      const prevVect = subtract(
+        arrLast(filteredPoints),
+        filteredPoints[filteredPoints.length - 2],
+      );
+      const isParallel = curVect.y * prevVect.x - curVect.x * prevVect.y === 0;
+      const isSameDirection = curVect.x * prevVect.x + curVect.y * prevVect.y > 0;
+      if (isParallel && isSameDirection) filteredPoints.pop();
     }
     filteredPoints.push(point);
-  });
+  }
   return filteredPoints;
 };
 

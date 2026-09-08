@@ -6,7 +6,8 @@ import * as quizActions from './quizActions';
 import * as geometry from './geometry';
 import * as characterActions from './characterActions';
 import Character from './models/Character';
-import { ParsedHanziWriterOptions, Point, StrokeData } from './typings/types';
+import Stroke from './models/Stroke';
+import { ParsedScribingOptions, Point, StrokeData } from './typings/types';
 import RenderState from './RenderState';
 import { GenericMutation } from './Mutation';
 
@@ -19,10 +20,11 @@ export default class Quiz {
   _character: Character;
   _renderState: RenderState;
   _isActive: boolean;
+  _generation = 0;
   _positioner: Positioner;
 
   /** Set on startQuiz */
-  _options: ParsedHanziWriterOptions | undefined;
+  _options: ParsedScribingOptions | undefined;
   _currentStrokeIndex = 0;
   _mistakesOnStroke = 0;
   _totalMistakes = 0;
@@ -36,13 +38,13 @@ export default class Quiz {
     this._positioner = positioner;
   }
 
-  startQuiz(options: ParsedHanziWriterOptions) {
+  startQuiz(options: ParsedScribingOptions) {
+    this._generation++;
+    this._userStroke = undefined;
     if (this._userStrokesIds) {
-      this._renderState.run(
-        quizActions.removeAllUserStrokes( this._userStrokesIds ),
-      );
+      this._renderState.run(quizActions.removeAllUserStrokes(this._userStrokesIds));
     }
-    this._userStrokesIds = []
+    this._userStrokesIds = [];
 
     this._isActive = true;
     this._options = options;
@@ -73,12 +75,12 @@ export default class Quiz {
     const point = this._positioner.convertExternalPoint(externalPoint);
     const strokeId = counter();
     this._userStroke = new UserStroke(strokeId, point, externalPoint);
-    this._userStrokesIds?.push(strokeId)
+    this._userStrokesIds?.push(strokeId);
     return this._renderState.run(quizActions.startUserStroke(strokeId, point));
   }
 
   continueUserStroke(externalPoint: Point) {
-    if (!this._userStroke) {
+    if (!this._isActive || !this._userStroke) {
       return Promise.resolve();
     }
     const point = this._positioner.convertExternalPoint(externalPoint);
@@ -94,7 +96,9 @@ export default class Quiz {
   }
 
   endUserStroke() {
-    if (!this._userStroke) return;
+    if (!this._isActive || !this._userStroke) return;
+    const generation = this._generation;
+    const userStroke = this._userStroke;
 
     this._renderState.run(
       quizActions.hideUserStroke(
@@ -135,6 +139,7 @@ export default class Quiz {
       this._handleSuccess(meta);
     } else {
       this._handleFailure(meta);
+      if (generation !== this._generation || !this._isActive) return;
 
       const {
         showHintAfterMisses,
@@ -156,15 +161,24 @@ export default class Quiz {
       }
     }
 
+    if (generation === this._generation && this._userStroke === userStroke) {
+      this._userStroke = undefined;
+    }
+  }
+
+  cancelUserStroke() {
+    if (!this._userStroke) return;
+    const { id } = this._userStroke;
     this._userStroke = undefined;
+    this._renderState.run(quizActions.hideUserStroke(id, 0));
   }
 
   cancel() {
+    this._generation++;
     this._isActive = false;
+    this._userStroke = undefined;
     if (this._userStrokesIds) {
-      this._renderState.run(
-        quizActions.removeAllUserStrokes( this._userStrokesIds ),
-      );
+      this._renderState.run(quizActions.removeAllUserStrokes(this._userStrokesIds));
     }
   }
 
@@ -188,7 +202,8 @@ export default class Quiz {
   }
 
   nextStroke() {
-    if (!this._options) return;
+    if (!this._isActive || !this._options) return;
+    const generation = this._generation;
 
     const { strokes, symbol } = this._character;
 
@@ -229,19 +244,20 @@ export default class Quiz {
       }
     }
 
-    this._renderState.run(animation);
+    if (generation === this._generation) this._renderState.run(animation);
   }
 
   _handleSuccess(meta: StrokeMatchResultMeta) {
     if (!this._options) return;
 
+    const generation = this._generation;
     const { onCorrectStroke } = this._options;
 
     onCorrectStroke?.({
       ...this._getStrokeData({ isCorrect: true, meta }),
     });
 
-    this.nextStroke();
+    if (generation === this._generation) this.nextStroke();
   }
 
   _handleFailure(meta: StrokeMatchResultMeta) {
@@ -250,7 +266,7 @@ export default class Quiz {
     this._options!.onMistake?.(this._getStrokeData({ isCorrect: false, meta }));
   }
 
-  _getCurrentStroke() {
+  _getCurrentStroke(): Stroke {
     return this._character.strokes[this._currentStrokeIndex];
   }
 }

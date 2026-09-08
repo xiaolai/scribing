@@ -5,7 +5,7 @@ coverage/
 data/
 _site/
 dist/data/
-!dist/hanzi-writer.min.js
+!dist/scribing.min.js
 vendor/
 .circleci
 .codecov.yml

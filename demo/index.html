@@ -2,34 +2,34 @@
 <html lang="en-us">
 	<head>
 		<meta charset="utf-8">
-		<title>Hanzi Writer</title>
-		<!-- <link href='http://fonts.googleapis.com/css?family=Raleway' rel='stylesheet' type='text/css'> -->
+		<title>Scribing</title>
 		<link rel="stylesheet" href="styles.css" />
-		<script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
 	</head>
 	<body>
 
-		<h1 class="title">Hanzi Writer</h1>
+		<h1 class="title">Scribing</h1>
 		<form class="js-char-form char-form">
 			<label>
 				Character
-				<input type="text" class="js-char char-input" size="1" maxlength="1" value="我" />
+				<input type="text" class="js-char char-input" size="2" value="我" aria-describedby="character-help status" required />
 			</label>
 			<button type="submit">Update</button>
 		</form>
+		<p id="character-help">Enter one Chinese character. Character data loads from jsDelivr.</p>
+		<p id="status" role="status" aria-live="polite" aria-atomic="true"></p>
 		<div class="actions">
-			<button class="js-toggle">Show/hide</button>
-			<button class="js-toggle-hint">Outline on/off</button>
-			<button class="js-animate">Animate</button>
-			<button class="js-quiz">Quiz yourself</button>
+			<button class="js-toggle" disabled aria-pressed="false">Show/hide</button>
+			<button class="js-toggle-hint" disabled aria-pressed="true">Outline on/off</button>
+			<button class="js-animate" disabled>Animate</button>
+			<button class="js-quiz" disabled>Quiz yourself</button>
 		</div>
 
-		<div id="target">
+		<div id="target" aria-label="Character writing area" aria-busy="true">
 
 		</div>
 
-		<!-- <script src="https://cdn.polyfill.io/v2/polyfill.min.js"></script> -->
-		<script type="application/javascript" src="../dist/hanzi-writer.js"></script>
+		<script type="application/javascript" src="../dist/scribing.js"></script>
 		<script type="application/javascript" src="test.js"></script>
 
 	</body>

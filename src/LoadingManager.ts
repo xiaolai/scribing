@@ -1,11 +1,12 @@
 import { CharacterJson, LoadingManagerOptions } from './typings/types';
+import validateCharData from './validateCharData';
 
 type CustomError = Error & { reason: string };
 
 export default class LoadingManager {
   _loadCounter = 0;
   _isLoading = false;
-  _resolve: ((data: CharacterJson) => void) | undefined;
+  _resolve: ((data: CharacterJson | undefined) => void) | undefined;
   _reject: ((error?: Error | CustomError | string) => void) | undefined;
   _options: LoadingManagerOptions;
 
@@ -22,7 +23,12 @@ export default class LoadingManager {
     // these wrappers ignore all responses except the most recent.
     const wrappedResolve = (data: CharacterJson) => {
       if (count === this._loadCounter) {
-        this._resolve?.(data);
+        try {
+          validateCharData(data);
+          this._resolve?.(data);
+        } catch (error) {
+          this._reject?.(error);
+        }
       }
     };
     const wrappedReject = (reason?: Error | string) => {
@@ -31,37 +37,38 @@ export default class LoadingManager {
       }
     };
 
-    const returnedData = this._options.charDataLoader(
-      char,
-      wrappedResolve,
-      wrappedReject,
-    );
-
-    if (returnedData) {
-      if ('then' in returnedData) {
-        returnedData.then(wrappedResolve).catch(wrappedReject);
-      } else {
-        wrappedResolve(returnedData);
+    try {
+      const returnedData = this._options.charDataLoader(
+        char,
+        wrappedResolve,
+        wrappedReject,
+      );
+      if (returnedData !== undefined) {
+        Promise.resolve(returnedData).then(wrappedResolve, wrappedReject);
       }
+    } catch (error) {
+      wrappedReject(error);
     }
   }
 
-  _setupLoadingPromise() {
+  _setupLoadingPromise(char: string, count: number) {
     return new Promise(
       (
-        resolve: (data: CharacterJson) => void,
+        resolve: (data: CharacterJson | undefined) => void,
         reject: (err?: Error | CustomError | string) => void,
       ) => {
         this._resolve = resolve;
         this._reject = reject;
       },
     )
-      .then((data: CharacterJson) => {
+      .then((data: CharacterJson | undefined) => {
+        if (count !== this._loadCounter || !data) return undefined;
         this._isLoading = false;
         this._options.onLoadCharDataSuccess?.(data);
         return data;
       })
       .catch((reason) => {
+        if (count !== this._loadCounter) return undefined;
         this._isLoading = false;
         this.loadingFailed = true;
 
@@ -69,7 +76,7 @@ export default class LoadingManager {
         // Otherwise, throw the promise
         if (this._options.onLoadCharDataError) {
           this._options.onLoadCharDataError(reason);
-          return;
+          return undefined;
         }
 
         // If error callback wasn't provided, throw an error so the developer will be aware something went wrong
@@ -77,9 +84,7 @@ export default class LoadingManager {
           throw reason;
         }
 
-        const err = new Error(
-          `Failed to load char data for ${this._loadingChar}`,
-        ) as CustomError;
+        const err = new Error(`Failed to load char data for ${char}`) as CustomError;
 
         err.reason = reason;
 
@@ -87,12 +92,21 @@ export default class LoadingManager {
       });
   }
 
-  loadCharData(char: string) {
+  // Explicit cancellation settles the current operation without load callbacks.
+  cancel() {
+    this._loadCounter++;
+    this._isLoading = false;
+    this._resolve?.(undefined);
+    this._resolve = undefined;
+    this._reject = undefined;
+  }
+
+  loadCharData(char: string): Promise<CharacterJson | undefined> {
+    this.cancel();
     this._loadingChar = char;
-    const promise = this._setupLoadingPromise();
+    const promise = this._setupLoadingPromise(char, this._loadCounter);
     this.loadingFailed = false;
     this._isLoading = true;
-    this._loadCounter++;
     this._debouncedLoad(char, this._loadCounter);
     return promise;
   }

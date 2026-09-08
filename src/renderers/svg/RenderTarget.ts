@@ -11,7 +11,7 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
     })();
 
     if (!element) {
-      throw new Error(`HanziWriter target element not found: ${elmOrId}`);
+      throw new Error(`Scribing target element not found: ${elmOrId}`);
     }
     const nodeType = element.nodeName.toUpperCase();
 
@@ -29,7 +29,9 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
     const defs = createElm('defs');
     svg.appendChild(defs);
 
-    return new RenderTarget(svg, defs);
+    const target = new RenderTarget(svg, defs);
+    target._ownsNode = svg !== element;
+    return target;
   }
 
   svg: SVGSVGElement | SVGElement;
@@ -45,6 +47,11 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
     if ('createSVGPoint' in svg) {
       this._pt = svg.createSVGPoint();
     }
+  }
+
+  destroy() {
+    super.destroy();
+    this.defs.remove();
   }
 
   createSubRenderTarget() {

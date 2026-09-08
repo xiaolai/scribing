@@ -3,29 +3,28 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: cimg/node:14.15.1
-
+      - image: cimg/node:22.14
     working_directory: ~/repo
-
     steps:
       - checkout
-
-      # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-            # fallback to using the latest cache if no exact match is found
-            - v1-dependencies-
-
-      - run: yarn install
-
+            - v2-node22-{{ checksum "yarn.lock" }}
+      - run: yarn install --frozen-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: v1-dependencies-{{ checksum "package.json" }}
-
+          key: v2-node22-{{ checksum "yarn.lock" }}
       - run: yarn typecheck
       - run: yarn lint-test
-      - run: yarn test
-      - run: yarn codecov
-      - run: if [ "$CIRCLE_BRANCH" = "master" ]; then yarn semantic-release; fi
+      - run: yarn test --runInBand
+      - run: yarn build
+      - run: yarn check-demo
+      - run: yarn check-package
+
+# Publishing is intentionally manual until the fork's npm ownership and release
+# policy are established. CI must never publish automatically from master.
+workflows:
+  verify:
+    jobs:
+      - build

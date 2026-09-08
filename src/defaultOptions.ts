@@ -1,7 +1,7 @@
-import { HanziWriterOptions } from './typings/types';
+import { ScribingOptions } from './typings/types';
 import defaultCharDataLoader from './defaultCharDataLoader';
 
-const defaultOptions: HanziWriterOptions = {
+const defaultOptions: ScribingOptions = {
   charDataLoader: defaultCharDataLoader,
   onLoadCharDataError: null,
   onLoadCharDataSuccess: null,

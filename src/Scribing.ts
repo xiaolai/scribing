@@ -9,9 +9,9 @@ import LoadingManager from './LoadingManager';
 import * as characterActions from './characterActions';
 import { trim, colorStringToVals, selectIndex, fixIndex } from './utils';
 import Character from './models/Character';
-import HanziWriterRendererBase, {
-  HanziWriterRendererConstructor,
-} from './renderers/HanziWriterRendererBase';
+import ScribingRendererBase, {
+  ScribingRendererConstructor,
+} from './renderers/ScribingRendererBase';
 import RenderTargetBase from './renderers/RenderTargetBase';
 import { GenericMutation } from './Mutation';
 
@@ -19,10 +19,10 @@ import { GenericMutation } from './Mutation';
 import {
   ColorOptions,
   DimensionOptions,
-  HanziWriterOptions,
+  ScribingOptions,
   LoadingManagerOptions,
   OnCompleteFunction,
-  ParsedHanziWriterOptions,
+  ParsedScribingOptions,
   QuizOptions,
   RenderTargetInitFunction,
 } from './typings/types';
@@ -30,8 +30,10 @@ import {
 // Export type interfaces
 export * from './typings/types';
 
-export default class HanziWriter {
-  _options: ParsedHanziWriterOptions;
+export default class Scribing {
+  _options: ParsedScribingOptions;
+  _destroyed = false;
+  _characterGeneration = 0;
   _loadingManager: LoadingManager;
   /** Only set when calling .setCharacter() */
   _char: string | undefined;
@@ -42,13 +44,13 @@ export default class HanziWriter {
   /** Only set when calling .setCharacter() */
   _positioner: Positioner | undefined;
   /** Only set when calling .setCharacter() */
-  _hanziWriterRenderer: HanziWriterRendererBase<HTMLElement, any> | null | undefined;
+  _scribingRenderer: ScribingRendererBase<HTMLElement, any> | null | undefined;
   /** Only set when calling .setCharacter() */
   _withDataPromise: Promise<void> | undefined;
 
   _quiz: Quiz | undefined;
   _renderer: {
-    HanziWriterRenderer: HanziWriterRendererConstructor;
+    ScribingRenderer: ScribingRendererConstructor;
     createRenderTarget: RenderTargetInitFunction<any>;
   };
 
@@ -58,9 +60,9 @@ export default class HanziWriter {
   static create(
     element: string | HTMLElement,
     character: string,
-    options?: Partial<HanziWriterOptions>,
+    options?: Partial<ScribingOptions>,
   ) {
-    const writer = new HanziWriter(element, options);
+    const writer = new Scribing(element, options);
     writer.setCharacter(character);
 
     return writer;
@@ -69,22 +71,17 @@ export default class HanziWriter {
   /** Singleton instance of LoadingManager. Only set in `loadCharacterData` */
   static _loadingManager: LoadingManager | null = null;
   /** Singleton loading options. Only set in `loadCharacterData` */
-  static _loadingOptions: Partial<HanziWriterOptions> | null = null;
+  static _loadingOptions: Partial<ScribingOptions> | null = null;
 
   static loadCharacterData(
     character: string,
     options: Partial<LoadingManagerOptions> = {},
   ) {
-    const loadingManager = (() => {
-      const { _loadingManager, _loadingOptions } = HanziWriter;
-      if (_loadingManager?._loadingChar === character && _loadingOptions === options) {
-        return _loadingManager;
-      }
-      return new LoadingManager({ ...defaultOptions, ...options });
-    })();
+    // Static requests are independent consumers, not successive updates to a writer.
+    const loadingManager = new LoadingManager({ ...defaultOptions, ...options });
 
-    HanziWriter._loadingManager = loadingManager;
-    HanziWriter._loadingOptions = options;
+    Scribing._loadingManager = loadingManager;
+    Scribing._loadingOptions = options;
     return loadingManager.loadCharData(character);
   }
 
@@ -101,13 +98,13 @@ export default class HanziWriter {
     };
   }
 
-  constructor(element: string | HTMLElement, options: Partial<HanziWriterOptions> = {}) {
-    const { HanziWriterRenderer, createRenderTarget } =
+  constructor(element: string | HTMLElement, options: Partial<ScribingOptions> = {}) {
+    const { ScribingRenderer, createRenderTarget } =
       options.renderer === 'canvas' ? canvasRenderer : svgRenderer;
     const rendererOverride = options.rendererOverride || {};
 
     this._renderer = {
-      HanziWriterRenderer: rendererOverride.HanziWriterRenderer || HanziWriterRenderer,
+      ScribingRenderer: rendererOverride.ScribingRenderer || ScribingRenderer,
       createRenderTarget: rendererOverride.createRenderTarget || createRenderTarget,
     };
     // wechat miniprogram component needs direct access to the render target, so this is public
@@ -325,6 +322,7 @@ export default class HanziWriter {
 
   /** Updates the size of the writer instance without resetting render state */
   updateDimensions({ width, height, padding }: Partial<DimensionOptions>) {
+    this._assertNotDestroyed();
     if (width !== undefined) this._options.width = width;
     if (height !== undefined) this._options.height = height;
     if (padding !== undefined) this._options.padding = padding;
@@ -333,16 +331,16 @@ export default class HanziWriter {
     if (
       this._character &&
       this._renderState &&
-      this._hanziWriterRenderer &&
+      this._scribingRenderer &&
       this._positioner
     ) {
-      this._hanziWriterRenderer.destroy();
-      const hanziWriterRenderer = this._initAndMountHanziWriterRenderer(this._character);
+      this._scribingRenderer.destroy();
+      const scribingRenderer = this._initAndMountScribingRenderer(this._character);
       // TODO: this should probably implement EventEmitter instead of manually tracking updates like this
       this._renderState.overwriteOnStateChange((nextState) =>
-        hanziWriterRenderer.render(nextState),
+        scribingRenderer.render(nextState),
       );
-      hanziWriterRenderer.render(this._renderState.state);
+      scribingRenderer.render(this._renderState.state);
       // update the current quiz as well, if one is active
       if (this._quiz) {
         this._quiz.setPositioner(this._positioner);
@@ -419,46 +417,74 @@ export default class HanziWriter {
   }
 
   setCharacter(char: string) {
+    this._assertNotDestroyed();
+    const generation = ++this._characterGeneration;
     this.cancelQuiz();
     this._char = char;
-    if (this._hanziWriterRenderer) {
-      this._hanziWriterRenderer.destroy();
+    if (this._scribingRenderer) {
+      this._scribingRenderer.destroy();
     }
     if (this._renderState) {
       this._renderState.cancelAll();
     }
-    this._hanziWriterRenderer = null;
+    this._scribingRenderer = null;
+    this._character = undefined;
+    this._renderState = undefined;
+    this._positioner = undefined;
     this._withDataPromise = this._loadingManager
       .loadCharData(char)
       .then((pathStrings) => {
         // if "pathStrings" isn't set, ".catch()"" was probably called and loading likely failed
-        if (!pathStrings || this._loadingManager.loadingFailed) {
+        if (
+          this._destroyed ||
+          generation !== this._characterGeneration ||
+          !pathStrings ||
+          this._loadingManager.loadingFailed
+        ) {
           return;
         }
 
         this._character = parseCharData(char, pathStrings);
         this._renderState = new RenderState(this._character, this._options, (nextState) =>
-          hanziWriterRenderer.render(nextState),
+          scribingRenderer.render(nextState),
         );
 
-        const hanziWriterRenderer = this._initAndMountHanziWriterRenderer(
-          this._character,
-        );
-        hanziWriterRenderer.render(this._renderState.state);
+        const scribingRenderer = this._initAndMountScribingRenderer(this._character);
+        scribingRenderer.render(this._renderState.state);
       });
     return this._withDataPromise;
   }
 
-  _initAndMountHanziWriterRenderer(character: Character) {
+  /** Permanently releases this writer's animations, listeners, and generated DOM. */
+  destroy() {
+    if (this._destroyed) return;
+    this._destroyed = true;
+    this._characterGeneration++;
+    this._loadingManager.cancel();
+    this.cancelQuiz();
+    this._renderState?.cancelAll();
+    this._scribingRenderer?.destroy();
+    this.target.destroy?.();
+    this._scribingRenderer = null;
+    this._renderState = undefined;
+    this._character = undefined;
+    this._positioner = undefined;
+  }
+
+  _assertNotDestroyed() {
+    if (this._destroyed) throw new Error('This Scribing instance has been destroyed.');
+  }
+
+  _initAndMountScribingRenderer(character: Character) {
     const { width, height, padding } = this._options;
     this._positioner = new Positioner({ width, height, padding });
-    const hanziWriterRenderer = new this._renderer.HanziWriterRenderer(
+    const scribingRenderer = new this._renderer.ScribingRenderer(
       character,
       this._positioner,
     );
-    hanziWriterRenderer.mount(this.target);
-    this._hanziWriterRenderer = hanziWriterRenderer;
-    return hanziWriterRenderer;
+    scribingRenderer.mount(this.target);
+    this._scribingRenderer = scribingRenderer;
+    return scribingRenderer;
   }
 
   async getCharacterData(): Promise<Character> {
@@ -466,10 +492,15 @@ export default class HanziWriter {
       throw new Error('setCharacter() must be called before calling getCharacterData()');
     }
     const character = await this._withData(() => this._character);
-    return character!;
+    if (!character) {
+      throw new Error(
+        'Character data is unavailable because loading failed or the request was canceled.',
+      );
+    }
+    return character;
   }
 
-  _assignOptions(options: Partial<HanziWriterOptions>): ParsedHanziWriterOptions {
+  _assignOptions(options: Partial<ScribingOptions>): ParsedScribingOptions {
     const mergedOptions = {
       ...defaultOptions,
       ...options,
@@ -491,7 +522,7 @@ export default class HanziWriter {
   }
 
   /** returns a new options object with width and height filled in if missing */
-  _fillWidthAndHeight(options: HanziWriterOptions): ParsedHanziWriterOptions {
+  _fillWidthAndHeight(options: ScribingOptions): ParsedScribingOptions {
     const filledOpts = { ...options };
     if (filledOpts.width && !filledOpts.height) {
       filledOpts.height = filledOpts.width;
@@ -503,10 +534,12 @@ export default class HanziWriter {
       filledOpts.width = minDim;
       filledOpts.height = minDim;
     }
-    return filledOpts as ParsedHanziWriterOptions;
+    return filledOpts as ParsedScribingOptions;
   }
 
   _withData<T>(func: () => T) {
+    this._assertNotDestroyed();
+    const generation = this._characterGeneration;
     // if this._loadingManager.loadingFailed, then loading failed before this method was called
     if (this._loadingManager.loadingFailed) {
       throw Error('Failed to load character data. Call setCharacter and try again.');
@@ -514,12 +547,18 @@ export default class HanziWriter {
 
     if (this._withDataPromise) {
       return this._withDataPromise.then(() => {
-        if (!this._loadingManager.loadingFailed) {
+        if (
+          !this._destroyed &&
+          generation === this._characterGeneration &&
+          !this._loadingManager.loadingFailed
+        ) {
           return func();
         }
       });
     }
-    return Promise.resolve().then(func);
+    return Promise.resolve().then(() => {
+      if (!this._destroyed && generation === this._characterGeneration) return func();
+    });
   }
 
   _setupListeners() {
@@ -534,6 +573,9 @@ export default class HanziWriter {
         evt.preventDefault();
         this._quiz.continueUserStroke(evt.getPoint());
       }
+    });
+    this.target.addPointerCancelListener?.(() => {
+      this._quiz?.cancelUserStroke();
     });
     this.target.addPointerEndListener(() => {
       this._quiz?.endUserStroke();

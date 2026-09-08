@@ -1,3 +1,4 @@
+import { Point } from '../../typings/types';
 import RenderTargetBase from '../RenderTargetBase';
 
 export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
@@ -14,7 +15,7 @@ export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
     })();
 
     if (!element) {
-      throw new Error(`HanziWriter target element not found: ${elmOrId}`);
+      throw new Error(`Scribing target element not found: ${elmOrId}`);
     }
 
     const nodeType = element.nodeName.toUpperCase();
@@ -31,7 +32,30 @@ export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
     canvas.setAttribute('width', width);
     canvas.setAttribute('height', height);
 
-    return new RenderTarget(canvas);
+    const target = new RenderTarget(canvas);
+    target._ownsNode = canvas !== element;
+    return target;
+  }
+
+  destroy() {
+    this.getContext()?.clearRect(0, 0, this.node.width, this.node.height);
+    super.destroy();
+  }
+
+  _scalePoint(point: Point): Point {
+    const { width, height } = this.getBoundingClientRect();
+    return {
+      x: width > 0 ? (point.x * this.node.width) / width : point.x,
+      y: height > 0 ? (point.y * this.node.height) / height : point.y,
+    };
+  }
+
+  _getMousePoint(evt: MouseEvent) {
+    return this._scalePoint(super._getMousePoint(evt));
+  }
+
+  _getTouchPoint(evt: TouchEvent) {
+    return this._scalePoint(super._getTouchPoint(evt));
   }
 
   getContext() {

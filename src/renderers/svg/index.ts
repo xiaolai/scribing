@@ -1,9 +1,9 @@
 import { RenderTargetInitFunction } from '../../typings/types';
-import HanziWriterRenderer from './HanziWriterRenderer';
+import ScribingRenderer from './ScribingRenderer';
 import RenderTarget from './RenderTarget';
 
 export default {
-  HanziWriterRenderer,
+  ScribingRenderer,
   createRenderTarget: RenderTarget.init as RenderTargetInitFunction<
     SVGSVGElement | SVGElement
   >,

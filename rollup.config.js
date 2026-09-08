@@ -5,12 +5,13 @@ import babel from '@rollup/plugin-babel';
 import pkg from './package.json';
 import license from 'rollup-plugin-license';
 import filesize from 'rollup-plugin-filesize';
+import { readFileSync } from 'fs';
 
 const extensions = ['.js', '.ts'];
 
 export default [
   {
-    input: 'src/HanziWriter.ts',
+    input: 'src/Scribing.ts',
     output: [
       {
         file: pkg.main,
@@ -19,17 +20,17 @@ export default [
         exports: 'auto',
       },
       {
-        file: 'dist/hanzi-writer.min.js',
+        file: 'dist/scribing.min.js',
         format: 'iife',
-        name: 'HanziWriter',
+        name: 'Scribing',
         sourcemap: true,
-        plugins: [terser()],
+        plugins: [terser({ numWorkers: 1 })],
         exports: 'default',
       },
       {
-        file: 'dist/hanzi-writer.js',
+        file: 'dist/scribing.js',
         format: 'iife',
-        name: 'HanziWriter',
+        name: 'Scribing',
         exports: 'default',
       },
       {
@@ -51,7 +52,7 @@ export default [
         babelHelpers: 'bundled',
       }),
       license({
-        banner: `Hanzi Writer v<%= pkg.version %> | https://chanind.github.io/hanzi-writer`,
+        banner: `Scribing v<%= pkg.version %> | https://github.com/xiaolai/scribing\n\n${readFileSync('LICENSE', 'utf8')}`,
       }),
     ],
   },

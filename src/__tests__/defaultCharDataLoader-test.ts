@@ -26,7 +26,7 @@ describe('defaultCharDataLoader', () => {
 
     expect(requests.length).toBe(1);
     expect(requests[0].url).toBe(
-      'https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/人.json',
+      'https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/%E4%BA%BA.json',
     );
 
     requests[0].respond(200, { 'Content-Type': 'application/json' }, JSON.stringify(ren));
@@ -69,5 +69,31 @@ describe('defaultCharDataLoader', () => {
 
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onLoad).not.toHaveBeenCalled();
+  });
+  it('reports invalid JSON through onError', () => {
+    const onLoad = jest.fn();
+    const onError = jest.fn();
+    defaultCharDataLoader('人', onLoad, onError);
+    expect(() => requests[0].respond(200, {}, '{invalid')).not.toThrow();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onError.mock.calls[0][0]).toBeInstanceOf(SyntaxError);
+    expect(onLoad).not.toHaveBeenCalled();
+  });
+
+  it('reports aborted requests once', () => {
+    const onLoad = jest.fn();
+    const onError = jest.fn();
+    defaultCharDataLoader('人', onLoad, onError);
+    ((requests[0] as unknown) as XMLHttpRequest).abort();
+    expect(onError).toHaveBeenCalledTimes(1);
+    expect(onLoad).not.toHaveBeenCalled();
+  });
+  it.each(['#', '?', '/', '𠮷'])('encodes the symbol as one filename: %s', (char) => {
+    defaultCharDataLoader(char, jest.fn(), jest.fn());
+    expect(requests[0].url).toBe(
+      `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/${encodeURIComponent(
+        char,
+      )}.json`,
+    );
   });
 });

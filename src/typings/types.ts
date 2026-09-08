@@ -1,5 +1,5 @@
 import RenderTargetBase from '../renderers/RenderTargetBase';
-import { HanziWriterRendererConstructor } from '../renderers/HanziWriterRendererBase';
+import { ScribingRendererConstructor } from '../renderers/ScribingRendererBase';
 import type { PositionerOptions } from '../Positioner';
 
 export type { PositionerOptions };
@@ -86,7 +86,7 @@ export type LoadingManagerOptions = {
   onLoadCharDataError?: null | ((error?: Error | string) => void);
 };
 
-type BaseHanziWriterOptions = {
+type BaseScribingOptions = {
   showOutline: boolean;
   showCharacter: boolean;
   /** Default: svg */
@@ -115,7 +115,7 @@ type BaseHanziWriterOptions = {
   outlineWidth: number;
 
   rendererOverride: {
-    HanziWriterRenderer?: HanziWriterRendererConstructor;
+    ScribingRenderer?: ScribingRendererConstructor;
     createRenderTarget?: RenderTargetInitFunction<any>;
   };
 
@@ -125,11 +125,11 @@ type BaseHanziWriterOptions = {
   strokeHighlightDuration: number;
 };
 
-export type HanziWriterOptions = Partial<PositionerOptions> &
+export type ScribingOptions = Partial<PositionerOptions> &
   QuizOptions &
   ColorOptions &
   LoadingManagerOptions &
-  BaseHanziWriterOptions;
+  BaseScribingOptions;
 
 export type DimensionOptions = {
   width: number;
@@ -137,9 +137,9 @@ export type DimensionOptions = {
   padding: number;
 };
 
-export type ParsedHanziWriterOptions = QuizOptions &
+export type ParsedScribingOptions = QuizOptions &
   LoadingManagerOptions &
-  BaseHanziWriterOptions &
+  BaseScribingOptions &
   ColorOptions &
   DimensionOptions;
 

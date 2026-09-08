@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HanziWriter HanziWriter.create can optionally use a canvas for rendering instead of SVG 1`] = `
+exports[`Scribing Scribing.create can optionally use a canvas for rendering instead of SVG 1`] = `
 CanvasRenderingContext2D {
   "_canvas": <canvas
     height="100%"

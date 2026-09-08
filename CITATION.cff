@@ -1,13 +1,14 @@
 cff-version: 1.2.0
 message: "If you use this software, please cite it as below."
 type: software
-title: "Hanzi Writer"
+title: "Scribing"
 authors:
+  - name: "Xiaolai"
   - family-names: "Chanin"
     given-names: "David"
     orcid: "https://orcid.org/0009-0004-6619-5469"
-repository-code: "https://github.com/chanind/hanzi-writer"
-abstract: "Hanzi Writer is a JavaScript library for Chinese character stroke order animations and practice quizzes"
+repository-code: "https://github.com/xiaolai/scribing"
+abstract: "Scribing is a fork of Hanzi Writer for stroke-order animations and handwriting practice, with additional writing systems planned."
 keywords:
   - chinese
   - hanzi
@@ -15,4 +16,3 @@ keywords:
   - stroke-order
   - animation
 license: MIT
-date-released: 2015-11-27

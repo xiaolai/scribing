@@ -96,6 +96,116 @@ describe('LoadingManager', () => {
       expect(failureReason).toBe('everything is terrible');
     });
 
+    it('routes synchronous loader exceptions through the error callback', async () => {
+      const error = new Error('loader failed');
+      const onLoadCharDataError = jest.fn();
+      const manager = new LoadingManager({
+        charDataLoader: () => {
+          throw error;
+        },
+        onLoadCharDataError,
+      });
+      await expect(manager.loadCharData('人')).resolves.toBeUndefined();
+      expect(onLoadCharDataError).toHaveBeenCalledWith(error);
+      expect(manager.loadingFailed).toBe(true);
+      expect(manager._isLoading).toBe(false);
+    });
+
+    it('rejects synchronous loader exceptions without an error callback', async () => {
+      const error = new Error('loader failed');
+      const manager = new LoadingManager({
+        charDataLoader: () => {
+          throw error;
+        },
+      });
+      await expect(manager.loadCharData('人')).rejects.toBe(error);
+    });
+
+    it.each([null, {}, { strokes: ['M0 0'], medians: [] }])(
+      'rejects malformed custom loader data: %p',
+      async (data) => {
+        const onLoadCharDataSuccess = jest.fn();
+        const manager = new LoadingManager({
+          charDataLoader: () => data as any,
+          onLoadCharDataSuccess,
+        });
+        await expect(manager.loadCharData('人')).rejects.toThrow(
+          'Invalid character data',
+        );
+        expect(onLoadCharDataSuccess).not.toHaveBeenCalled();
+        expect(manager.loadingFailed).toBe(true);
+      },
+    );
+
+    it.each(['success', 'error'])(
+      'ignores queued %s handlers from a superseded load',
+      async (outcome) => {
+        const onLoadCharDataSuccess = jest.fn();
+        const onLoadCharDataError = jest.fn();
+        let completeLatest: (data: typeof ta) => void = () => undefined;
+        const manager = new LoadingManager({
+          charDataLoader: (char, resolve, reject) => {
+            if (char === '人') {
+              if (outcome === 'success') resolve(ren);
+              else reject(new Error('old failure'));
+            } else completeLatest = resolve;
+          },
+          onLoadCharDataSuccess,
+          onLoadCharDataError,
+        });
+        const oldLoad = manager.loadCharData('人');
+        const latestLoad = manager.loadCharData('他');
+        await oldLoad;
+        expect(manager._isLoading).toBe(true);
+        expect(manager.loadingFailed).toBe(false);
+        expect(onLoadCharDataSuccess).not.toHaveBeenCalled();
+        expect(onLoadCharDataError).not.toHaveBeenCalled();
+        completeLatest(ta);
+        await expect(latestLoad).resolves.toBe(ta);
+        expect(manager._isLoading).toBe(false);
+        expect(onLoadCharDataSuccess).toHaveBeenCalledTimes(1);
+      },
+    );
+
+    it('cancels pending data without callbacks and permits a subsequent load', async () => {
+      const onLoadCharDataSuccess = jest.fn();
+      const onLoadCharDataError = jest.fn();
+      const callbacks: Array<(data: typeof ren) => void> = [];
+      const manager = new LoadingManager({
+        charDataLoader: (_char, resolve) => {
+          callbacks.push(resolve);
+        },
+        onLoadCharDataSuccess,
+        onLoadCharDataError,
+      });
+      const canceled = manager.loadCharData('人');
+      manager.cancel();
+      manager.cancel();
+      await expect(canceled).resolves.toBeUndefined();
+      expect(manager._isLoading).toBe(false);
+      const latest = manager.loadCharData('他');
+      callbacks[0](ren);
+      expect(manager._isLoading).toBe(true);
+      callbacks[1](ta);
+      await expect(latest).resolves.toBe(ta);
+      expect(onLoadCharDataSuccess).toHaveBeenCalledTimes(1);
+      expect(onLoadCharDataError).not.toHaveBeenCalled();
+    });
+
+    it('suppresses a queued success when canceled immediately after resolution', async () => {
+      const onLoadCharDataSuccess = jest.fn();
+      const manager = new LoadingManager({
+        charDataLoader: (_char, resolve) => {
+          resolve(ren);
+        },
+        onLoadCharDataSuccess,
+      });
+      const canceled = manager.loadCharData('人');
+      manager.cancel();
+      await expect(canceled).resolves.toBeUndefined();
+      expect(onLoadCharDataSuccess).not.toHaveBeenCalled();
+    });
+
     it('debounces if multiple loads are called at the same time', async () => {
       const onLoadCharDataSuccess = jest.fn();
       const onCompleteFns: Array<(arg: any) => void> = [];
@@ -120,8 +230,9 @@ describe('LoadingManager', () => {
 
       const data = await loadPromise2;
 
-      // ren should not resolve, since we requested something else before it finished loading
-      expect(hasPromise1Resolved).toBe(false);
+      // Superseded operations settle without data or stale callbacks.
+      await expect(loadPromise1).resolves.toBeUndefined();
+      expect(hasPromise1Resolved).toBe(true);
 
       expect(data).toBe(ta);
       expect(onLoadCharDataSuccess.mock.calls.length).toBe(1);

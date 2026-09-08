@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`HanziWriterRenderer handles empty user strokes 1`] = `
+exports[`ScribingRenderer handles empty user strokes 1`] = `
 Array [
   Object {
     "props": Object {
@@ -2783,7 +2783,7 @@ Array [
 ]
 `;
 
-exports[`HanziWriterRenderer renders the character and user strokes into the target 1`] = `
+exports[`ScribingRenderer renders the character and user strokes into the target 1`] = `
 Array [
   Object {
     "props": Object {

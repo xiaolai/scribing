@@ -13,6 +13,8 @@ module.exports = class JSDOMEnvironmentGlobal extends JSDOMEnvironment {
   }
 
   teardown() {
+    // Stop the auto-advancing fake clock before closing its DOM environment.
+    this.global.clock?.uninstall();
     this.global.jsdom = null;
 
     return super.teardown();

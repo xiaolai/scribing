@@ -1,5 +1,5 @@
 import ren from 'hanzi-writer-data/人.json';
-import HanziWriterRenderer from '../HanziWriterRenderer';
+import ScribingRenderer from '../ScribingRenderer';
 import RenderTarget from '../RenderTarget';
 import { copyAndMergeDeep } from '../../../utils';
 import Positioner from '../../../Positioner';
@@ -13,7 +13,7 @@ const positioner = new Positioner({
   padding: 10,
 });
 
-describe('HanziWriterRenderer', () => {
+describe('ScribingRenderer', () => {
   let target: RenderTarget;
 
   beforeEach(() => {
@@ -64,7 +64,7 @@ describe('HanziWriterRenderer', () => {
 
     const props2 = copyAndMergeDeep(props1, { userStrokes: null });
 
-    const renderer = new HanziWriterRenderer(char, positioner);
+    const renderer = new ScribingRenderer(char, positioner);
     renderer.mount(target);
     renderer.render(props1);
 

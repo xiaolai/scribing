@@ -1,5 +1,5 @@
 import ren from 'hanzi-writer-data/人.json';
-import HanziWriterRenderer from '../HanziWriterRenderer';
+import ScribingRenderer from '../ScribingRenderer';
 import RenderTarget from '../RenderTarget';
 import Positioner from '../../../Positioner';
 import parseCharData from '../../../parseCharData';
@@ -12,7 +12,7 @@ const positioner = new Positioner({
   padding: 10,
 });
 
-describe('HanziWriterRenderer', () => {
+describe('ScribingRenderer', () => {
   let target: RenderTarget;
 
   beforeEach(() => {
@@ -61,7 +61,7 @@ describe('HanziWriterRenderer', () => {
       },
     };
 
-    const renderer = new HanziWriterRenderer(char, positioner);
+    const renderer = new ScribingRenderer(char, positioner);
     renderer.mount(target);
     renderer.render(props);
 
@@ -103,7 +103,7 @@ describe('HanziWriterRenderer', () => {
       },
     };
 
-    const renderer = new HanziWriterRenderer(char, positioner);
+    const renderer = new ScribingRenderer(char, positioner);
     renderer.mount(target);
     renderer.render(props);
 

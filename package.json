@@ -1,9 +1,9 @@
 {
-  "name": "hanzi-writer",
+  "name": "scribing",
   "version": "3.0.0",
   "author": "David Chanin <chanindav@gmail.com> (http://chanind.github.io/hanzi-writer/)",
-  "description": "Hanzi Writer is a free and open-source javascript library for both animating simplified Chinese characters and quizzing users on character stroke order.",
-  "repository": "chanind/hanzi-writer",
+  "description": "Scribing is a JavaScript library for stroke-order animations and handwriting practice. Currently supports Chinese; additional writing systems are planned.",
+  "repository": "xiaolai/scribing",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/types/index.esm.d.ts",
@@ -41,13 +41,17 @@
     "lint-test": "eslint -c .eslintrc src",
     "lint-fix": "eslint --fix --ext .tsx,.ts .",
     "build": "rm -rf dist && rollup -c",
-    "prepublishOnly": "rollup -c",
-    "semantic-release": "semantic-release",
+    "prepublishOnly": "npm run build && npm run check-package",
     "prettier": "prettier -w src",
-    "typecheck": "tsc --noEmit --skipLibCheck"
+    "typecheck": "tsc --noEmit --skipLibCheck",
+    "check-package": "node scripts/check-package.cjs",
+    "check-demo": "node scripts/check-demo.cjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "LICENSE",
+    "COPYING.md",
+    "CITATION.cff"
   ],
   "jest": {
     "setupFiles": [
@@ -62,5 +66,9 @@
     "collectCoverage": true,
     "testEnvironment": "<rootDir>/../jest-jsdom-env"
   },
-  "dependencies": {}
+  "dependencies": {},
+  "homepage": "https://github.com/xiaolai/scribing",
+  "bugs": {
+    "url": "https://github.com/xiaolai/scribing/issues"
+  }
 }

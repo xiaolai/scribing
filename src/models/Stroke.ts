@@ -29,11 +29,13 @@ export default class Stroke {
   getVectors() {
     let lastPoint = this.points[0];
     const pointsSansFirst = this.points.slice(1);
-    return pointsSansFirst.map((point) => {
-      const vector = subtract(point, lastPoint);
-      lastPoint = point;
-      return vector;
-    });
+    return pointsSansFirst
+      .map((point) => {
+        const vector = subtract(point, lastPoint);
+        lastPoint = point;
+        return vector;
+      })
+      .filter((vector) => vector.x !== 0 || vector.y !== 0);
   }
 
   getDistance(point: Point) {

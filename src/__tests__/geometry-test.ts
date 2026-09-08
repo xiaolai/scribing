@@ -1,6 +1,107 @@
 import * as geometry from '../geometry';
 
 describe('geometry', () => {
+  it('preserves a collinear reversal while removing repeated samples', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 0 },
+      { x: 0, y: 0 },
+    ];
+    expect(geometry._filterParallelPoints(points)).toEqual([
+      points[0],
+      points[1],
+      points[3],
+    ]);
+    expect(geometry.extendStart(points, 5)).toEqual([
+      { x: -5, y: 0 },
+      { x: 10, y: 0 },
+      { x: 0, y: 0 },
+    ]);
+  });
+
+  it.each([
+    { points: [] },
+    { points: [{ x: 4, y: 4 }] },
+    {
+      points: [
+        { x: 4, y: 4 },
+        { x: 4, y: 4 },
+      ],
+    },
+  ])('normalizes degenerate curves to an empty curve: %p', ({ points }) => {
+    expect(geometry.normalizeCurve(points)).toEqual([]);
+    expect(geometry.frechetDist([], points)).toBe(Infinity);
+  });
+
+  it('normalizes repeated samples like the original curve', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 10 },
+    ];
+    expect(geometry.normalizeCurve([points[0], ...points, points[2]])).toEqual(
+      geometry.normalizeCurve(points),
+    );
+  });
+
+  it('normalizes a closed curve whose endpoints are at its center', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 0, y: 0 },
+      { x: -10, y: 0 },
+      { x: 0, y: 0 },
+    ];
+    const normalized = geometry.normalizeCurve(points);
+    expect(normalized.length).toBeGreaterThan(2);
+    expect(
+      normalized.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y)),
+    ).toBe(true);
+    expect(normalized.length).toBeLessThan(1000);
+  });
+
+  it('bounds normalization for a near-centered closed curve', () => {
+    const curve = [
+      { x: 0, y: 0 },
+      { x: 100, y: 100 },
+      { x: -100, y: 100 },
+      { x: 0, y: 0 },
+      { x: 100, y: -100 },
+      { x: -100, y: -100 },
+      { x: 0, y: 0.000001 },
+    ];
+    const normalized = geometry.normalizeCurve(curve);
+    expect(normalized.length).toBeGreaterThan(30);
+    expect(normalized.length).toBeLessThanOrEqual(512);
+    expect(
+      normalized.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y)),
+    ).toBe(true);
+    const closed = geometry.normalizeCurve([...curve.slice(0, -1), curve[0]]);
+    expect(geometry.frechetDist(normalized, closed)).toBeLessThan(0.001);
+  });
+
+  it('caps subdivision of a repeatedly backtracking curve', () => {
+    const curve = Array.from({ length: 30 }, (_, index) => ({ x: index % 2, y: 0 }));
+    const normalized = geometry.normalizeCurve(curve);
+    expect(normalized.length).toBeLessThanOrEqual(512);
+    expect(
+      normalized.every((point) => Number.isFinite(point.x) && Number.isFinite(point.y)),
+    ).toBe(true);
+  });
+
+  it('rejects a subdivision size that would create an infinite loop', () => {
+    expect(() =>
+      geometry.subdivideCurve(
+        [
+          { x: 0, y: 0 },
+          { x: 10, y: 0 },
+        ],
+        0,
+      ),
+    ).toThrow('maxLen');
+  });
+
   describe('_extendPointOnLine', () => {
     it('returns a point distance away from the end point', () => {
       const p1 = { x: 0, y: 0 };
