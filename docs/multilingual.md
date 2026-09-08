@@ -6,12 +6,12 @@ Scribing supports optional v2 writing units alongside the existing Chinese API. 
 
 Build the library with `yarn build`, serve the repository over HTTP, then open `/demo/multilingual/`. The page reads `packs/generated/catalog.json` and fetches only the chosen local pack. Once those repository assets are available locally, it needs no external runtime data service. `/demo/` remains the Chinese demo and uses its existing remote character loader.
 
-Choose a source, writing unit and SVG or Canvas renderer. Animate follows the selected supplied stroke-order plan; guided practice shows the model and next-stroke guidance; independent practice checks completed strokes. The plan selector applies to animation and new practice sessions. Practice can optionally accept other supplied plans as well. Different glyph/pen-lift variants are separate unit IDs, such as glyphed `A`, `A@1`, and `A@2`. The text lookup uses the selected pack’s IDs and aliases; it does not search every pack or invent missing characters.
+The default **Textbook & vector models** view opens clean English print, with Korean standalone jamo and KanjiVG ordered vector models also available. **Source samples** retains all imported letterpaths/glyphed geometry and Omniglot observations, including rough examples. Switching views cancels the previous session and pending source load. Choose a collection, writing unit and SVG or Canvas renderer. Animate follows the selected supplied stroke-order plan; guided practice shows the model and next-stroke guidance; independent practice checks completed strokes. The plan selector applies to animation and new practice sessions. Practice can optionally accept other supplied plans as well. Different glyph/pen-lift variants are separate unit IDs, such as glyphed `A`, `A@1`, and `A@2`. The text lookup uses the selected pack’s IDs and aliases; it does not search every pack or invent missing characters.
 
 ## Load a pack
 
 ```js
-const pack = await fetch('/packs/generated/english-letterpaths-print.json')
+const pack = await fetch('/packs/generated/english-textbook.json')
   .then(response => {
     if (!response.ok) throw new Error('Writing pack unavailable');
     return response.json();
@@ -63,6 +63,8 @@ Exact emitted IDs, counts and hashes live in `packs/generated/catalog.json`; per
 
 | Collection | Supplied coverage | Interpretation and terms |
 | --- | --- | --- |
+| Scribing English textbook print | 52 uppercase/lowercase English letters | Original clean print geometry with defined stroke plans; MIT. A uses three strokes, with both legs drawn top-down. Not a certified curriculum. |
+| Scribing Korean textbook print | 40 standalone jamo | Original clean print geometry with defined stroke plans; MIT. No syllable composition or certified curriculum claim. |
 | letterpaths print | 52 uppercase/lowercase English letters | Supplied print geometry with explicit marks; MIT, Robin Linacre. |
 | glyphed.js | 83 characters, each with 3 variants: 52 letters, 10 digits, 21 punctuation symbols | Authored monoline geometry; ISC, Anas. Variant count is not character count. |
 | KanjiVG | 6,447 CJK characters (including the 80-item grade-one subset), 184 kana, 68 ASCII characters and 5 symbols | Ordered centerlines; CC BY-SA 3.0. Latin and symbol extras are separate packs, not counted as Japanese kanji. Source coverage is not a claim of complete modern curriculum coverage. |

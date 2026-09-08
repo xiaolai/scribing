@@ -62,13 +62,26 @@ const server = http.createServer((request, response) => {
       };
     });
     const catalog = JSON.parse(fs.readFileSync(path.join(root, 'packs/generated/catalog.json'), 'utf8'));
-    const primary = ['english-letterpaths-print', 'english-glyphed', 'japanese-kana', 'japanese-grade-1', 'korean-omniglot'];
+    const primary = ['english-textbook', 'korean-textbook', 'english-letterpaths-print', 'english-glyphed', 'japanese-kana', 'japanese-grade-1', 'korean-omniglot'];
     const broad = catalog.packs.find(entry => entry.id.startsWith('omniglot-'));
     assert(broad, 'An unmapped source collection must be available');
+    assert.equal(await page.locator('#view').inputValue(), 'models');
+    assert.equal(await page.locator('#pack').inputValue(), 'english-textbook');
+    assert.equal(await page.locator('#unit option').count(), 52);
+    assert.match(await page.locator('#details').textContent(), /Original clean print/);
+    assert.match(await page.locator('#pack option:checked').textContent(), /English/i);
+    assert.equal(await page.locator('#pack option[value="english-letterpaths-print"]').count(), 0);
+    assert.equal(await page.locator('#pack option[value="japanese-kana"]').count(), 1);
+    checks.push('clean English default, readable names, Japanese models available, sources separated');
     async function selectPack(id) {
+      const entry = catalog.packs.find(item => item.id === id);
+      const view = ['textbook', 'vector'].includes(entry.presentation) ? 'models' : 'sources';
+      if (await page.locator('#view').inputValue() !== view) {
+        await page.selectOption('#view', view);
+        await ready();
+      }
       await page.selectOption('#pack', id);
       await ready();
-      const entry = catalog.packs.find(item => item.id === id);
       assert.equal(await page.locator('#unit option').count(), entry.unitCount);
       assert.match(await page.locator('#source').textContent(), /technical-preview/);
     }
@@ -82,6 +95,10 @@ const server = http.createServer((request, response) => {
       checks.push(`loaded ${id}`);
     }
     assert.match(await page.locator('#details').textContent(), /recorded observation/i);
+    const availableSources = await page.locator('#pack option').evaluateAll(nodes => nodes.map(node => node.value));
+    assert.deepEqual(availableSources.sort(), catalog.packs.filter(entry => !['textbook', 'vector'].includes(entry.presentation)).map(entry => entry.id).sort());
+    assert.match(await page.locator('#view-help').textContent(), /rough recorded observations/);
+    checks.push('all source collections accessible with explicit observation context');
     // Unsupported lookups must leave recovery controls usable and never create markup.
     await page.fill('#text', '<img src=x onerror=alert(1)>');
     await page.click('#find');
@@ -110,6 +127,47 @@ const server = http.createServer((request, response) => {
     await page.waitForFunction(() => window.__lastAnimationPlan === document.getElementById('plan').value);
     assert.match(await page.locator('#status').textContent(), /Animating selected stroke plan/);
     checks.push('selected stroke plan passed to actual animation');
+
+    // Switching views must invalidate both active and microtask-queued quizzes.
+    for (const queued of [false, true]) {
+      await selectPack('english-textbook');
+      if (!queued) {
+        await page.click('#guided');
+        await page.waitForFunction(() => !!window.__lastQuizWriter._unitQuiz);
+      }
+      await page.evaluate(queued => {
+        if (queued) document.getElementById('guided').click();
+        window.__departedWriter = window.__lastQuizWriter;
+        const view = document.getElementById('view');
+        view.value = 'sources';
+        view.dispatchEvent(new Event('change'));
+      }, queued);
+      await ready();
+      assert(await page.evaluate(() => window.__departedWriter._destroyed && !window.__departedWriter._unitQuiz));
+    }
+    // Hold a source response while switching back: a late response cannot replace clean models.
+    await selectPack('english-textbook');
+    const sourceEntry = catalog.packs.find(entry => entry.presentation === 'source');
+    let releaseResponse;
+    let responseStarted;
+    const started = new Promise(resolve => { responseStarted = resolve; });
+    const held = new Promise(resolve => { releaseResponse = resolve; });
+    const pattern = '**/packs/generated/' + sourceEntry.file;
+    await page.route(pattern, async route => {
+      responseStarted();
+      await held;
+      await route.fulfill({ status: 200, contentType: 'application/json', body: fs.readFileSync(path.join(root, 'packs/generated', sourceEntry.file), 'utf8') }).catch(() => {});
+    });
+    await page.selectOption('#view', 'sources');
+    await page.selectOption('#pack', sourceEntry.id);
+    await started;
+    await page.selectOption('#view', 'models');
+    await ready();
+    releaseResponse();
+    await page.unrouteAll({ behavior: 'wait' });
+    assert.equal(await page.locator('#pack').inputValue(), 'english-textbook');
+    assert.equal(await page.locator('#unit option').count(), 52);
+    checks.push('view changes cancel active and queued practice and stale source responses');
 
     // A separate writer compiles source geometry to obtain exact source-to-pixel positions.
     // Completion is still driven exclusively through real mouse events on the demo target.
@@ -156,7 +214,7 @@ const server = http.createServer((request, response) => {
       for (const renderer of ['svg', 'canvas']) {
         await page.selectOption('#renderer', renderer);
         await ready();
-        for (const [packId, id, strokeCount] of [['english-letterpaths-print', 'i', 2], ['japanese-kana', 'あ', 3], ['japanese-kana', 'ぬ', 2]]) {
+        for (const [packId, id, strokeCount] of [['english-textbook', 'A', 3], ['english-textbook', 'i', 2], ['korean-textbook', 'ㅏ', 2], ['english-letterpaths-print', 'i', 2], ['japanese-kana', 'あ', 3], ['japanese-kana', 'ぬ', 2]]) {
           await selectPack(packId);
           await selectUnit(id);
           await page.locator('#writing-area').scrollIntoViewIfNeeded();
@@ -191,7 +249,7 @@ const server = http.createServer((request, response) => {
           await page.waitForFunction(() => document.getElementById('status').textContent.startsWith('Complete'));
           assert.match(await page.locator('#status').textContent(), id === 'i' ? /1 mistake/ : /0 mistake/);
           assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Narrow layout must not overflow');
-          checks.push(`${renderer} ${width}px actual mouse ${id}: ${strokeCount} strokes complete`);
+          checks.push(`${renderer} ${width}px ${packId} actual mouse ${id}: ${strokeCount} strokes complete`);
         }
       }
     }

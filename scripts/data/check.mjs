@@ -36,6 +36,15 @@ const compileUnit = require(path.join(runtimeRoot, "src/units/compileUnit.ts"))
 let maxCompiledPoints = 0,
   maxMotorStrokes = 0;
 const catalog = JSON.parse(await readFile(path.join(dir, "catalog.json")));
+for (const item of catalog.authoredSources || []) {
+  assert(
+    sha256(await readFile(path.join(root, 'packs/authored', item.file))) ===
+      item.sha256 &&
+      sha256(await readFile(path.join(root, 'packs/authored', item.licenseFile))) ===
+        item.licenseSHA256,
+    'Authored source or notice hash mismatch: ' + item.file,
+  );
+}
 let units = 0;
 function assert(value, message) {
   if (!value) throw Error(message);
@@ -132,6 +141,7 @@ console.log(
     units,
     rawSamples,
     sourceLocks: lock.sources.length,
+    authoredSources: (catalog.authoredSources || []).length,
     maxCompiledPoints,
     maxMotorStrokes,
     integrity: "verified",

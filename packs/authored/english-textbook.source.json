@@ -1,0 +1,510 @@
+{
+  "id": "english-textbook",
+  "name": "English · textbook print",
+  "license": "MIT",
+  "provenance": "authored",
+  "description": "52 original monoline manuscript practice models, with single-storey a and g and explicit pen lifts. Authored geometry informed by educational formation guidance; not a certified curriculum or a universal stroke-order standard. No fonts or source drawings were traced.",
+  "style": "Scribing textbook print",
+  "script": "Latn",
+  "coordinates": {
+    "em": 1000,
+    "yAxis": "down",
+    "bounds": [
+      0,
+      0,
+      1000,
+      1000
+    ],
+    "baseline": 780,
+    "xHeight": 340
+  },
+  "width": 32,
+  "references": [
+    {
+      "url": "https://uurc.utah.edu/general/letterformation.php",
+      "title": "University of Utah Reading Clinic: Letter Formation Suggestions",
+      "note": "Consulted for motor-formation principles and pen lifts; original coordinates and curves. Chosen variants are documented separately, not presented as an exact reproduction."
+    }
+  ],
+  "units": {
+    "A": {
+      "strokes": [
+        {
+          "path": "M500 180 L260 780"
+        },
+        {
+          "path": "M500 180 L740 780"
+        },
+        {
+          "path": "M348 560 L652 560"
+        }
+      ]
+    },
+    "B": {
+      "strokes": [
+        {
+          "path": "M320 180 L320 780"
+        },
+        {
+          "path": "M320 180 L500 180 C750 180 750 470 500 470 L320 470 L500 470 C790 470 790 780 500 780 L320 780"
+        }
+      ]
+    },
+    "C": {
+      "strokes": [
+        {
+          "path": "M720 260 C620 140 350 140 280 350 C220 530 260 780 500 780 C600 780 675 740 720 690"
+        }
+      ]
+    },
+    "D": {
+      "strokes": [
+        {
+          "path": "M300 180 L300 780"
+        },
+        {
+          "path": "M300 180 L450 180 C820 180 820 780 450 780 L300 780"
+        }
+      ]
+    },
+    "E": {
+      "strokes": [
+        {
+          "path": "M330 180 L330 780"
+        },
+        {
+          "path": "M330 180 L700 180"
+        },
+        {
+          "path": "M330 470 L640 470"
+        },
+        {
+          "path": "M330 780 L700 780"
+        }
+      ]
+    },
+    "F": {
+      "strokes": [
+        {
+          "path": "M340 180 L340 780"
+        },
+        {
+          "path": "M340 180 L710 180"
+        },
+        {
+          "path": "M340 470 L650 470"
+        }
+      ]
+    },
+    "G": {
+      "strokes": [
+        {
+          "path": "M720 260 C620 140 350 140 280 350 C220 530 260 780 500 780 C600 780 720 720 720 640 L720 500 L540 500"
+        }
+      ]
+    },
+    "H": {
+      "strokes": [
+        {
+          "path": "M290 180 L290 780"
+        },
+        {
+          "path": "M290 480 L710 480"
+        },
+        {
+          "path": "M710 180 L710 780"
+        }
+      ]
+    },
+    "I": {
+      "strokes": [
+        {
+          "path": "M330 180 L670 180"
+        },
+        {
+          "path": "M500 180 L500 780"
+        },
+        {
+          "path": "M330 780 L670 780"
+        }
+      ]
+    },
+    "J": {
+      "strokes": [
+        {
+          "path": "M650 180 L650 610 C650 835 320 835 320 640"
+        },
+        {
+          "path": "M390 180 L750 180"
+        }
+      ]
+    },
+    "K": {
+      "strokes": [
+        {
+          "path": "M320 180 L320 780"
+        },
+        {
+          "path": "M730 180 L320 480 L750 780"
+        }
+      ]
+    },
+    "L": {
+      "strokes": [
+        {
+          "path": "M340 180 L340 780 L720 780"
+        }
+      ]
+    },
+    "M": {
+      "strokes": [
+        {
+          "path": "M230 180 L230 780"
+        },
+        {
+          "path": "M230 180 L500 780 L770 180 L770 780"
+        }
+      ]
+    },
+    "N": {
+      "strokes": [
+        {
+          "path": "M290 180 L290 780"
+        },
+        {
+          "path": "M290 180 L710 780"
+        },
+        {
+          "path": "M710 180 L710 780"
+        }
+      ],
+      "notes": "Three-stroke variant keeps both upright stems top-down."
+    },
+    "O": {
+      "strokes": [
+        {
+          "path": "M500 180 C180 180 180 780 500 780 C820 780 820 180 500 180"
+        }
+      ]
+    },
+    "P": {
+      "strokes": [
+        {
+          "path": "M330 180 L330 780"
+        },
+        {
+          "path": "M330 180 L500 180 C790 180 790 480 500 480 L330 480"
+        }
+      ]
+    },
+    "Q": {
+      "strokes": [
+        {
+          "path": "M490 180 C170 180 170 780 490 780 C810 780 810 180 490 180"
+        },
+        {
+          "path": "M570 650 L760 840"
+        }
+      ]
+    },
+    "R": {
+      "strokes": [
+        {
+          "path": "M320 180 L320 780"
+        },
+        {
+          "path": "M320 180 L500 180 C790 180 790 470 500 470 L320 470 L740 780"
+        }
+      ]
+    },
+    "S": {
+      "strokes": [
+        {
+          "path": "M710 260 C600 130 300 140 300 340 C300 490 700 450 700 640 C700 820 390 825 280 690"
+        }
+      ]
+    },
+    "T": {
+      "strokes": [
+        {
+          "path": "M250 180 L750 180"
+        },
+        {
+          "path": "M500 180 L500 780"
+        }
+      ]
+    },
+    "U": {
+      "strokes": [
+        {
+          "path": "M280 180 L280 550 C280 855 720 855 720 550 L720 180"
+        }
+      ]
+    },
+    "V": {
+      "strokes": [
+        {
+          "path": "M250 180 L500 780 L750 180"
+        }
+      ]
+    },
+    "W": {
+      "strokes": [
+        {
+          "path": "M180 180 L340 780 L500 310 L660 780 L820 180"
+        }
+      ],
+      "notes": "Open, angular manuscript W; its middle vertex is optically lowered."
+    },
+    "X": {
+      "strokes": [
+        {
+          "path": "M280 180 L720 780"
+        },
+        {
+          "path": "M720 180 L280 780"
+        }
+      ]
+    },
+    "Y": {
+      "strokes": [
+        {
+          "path": "M270 180 L500 480"
+        },
+        {
+          "path": "M730 180 L500 480 L500 780"
+        }
+      ]
+    },
+    "Z": {
+      "strokes": [
+        {
+          "path": "M280 180 L720 180 L280 780 L720 780"
+        }
+      ]
+    },
+    "a": {
+      "strokes": [
+        {
+          "path": "M650 500 C570 410 350 410 350 610 C350 820 650 820 650 610 L650 440 L650 780"
+        }
+      ],
+      "notes": "Single-storey, counterclockwise bowl first; retrace the right side into a downstroke."
+    },
+    "b": {
+      "strokes": [
+        {
+          "path": "M350 180 L350 780 L350 570 C350 400 670 390 670 610 C670 810 350 840 350 680"
+        }
+      ],
+      "notes": "Continuous stem and bowl with deliberate stem retracing."
+    },
+    "c": {
+      "strokes": [
+        {
+          "path": "M650 490 C550 400 350 420 350 610 C350 800 550 820 650 730"
+        }
+      ]
+    },
+    "d": {
+      "strokes": [
+        {
+          "path": "M650 500 C570 410 350 410 350 610 C350 820 650 820 650 610 L650 180 L650 780"
+        }
+      ],
+      "notes": "Bowl first, then ascend and retrace the tall stem."
+    },
+    "e": {
+      "strokes": [
+        {
+          "path": "M350 610 L670 610 C670 385 350 385 350 610 C350 800 550 820 650 730"
+        }
+      ]
+    },
+    "f": {
+      "strokes": [
+        {
+          "path": "M650 220 C550 125 450 205 450 340 L450 780"
+        },
+        {
+          "path": "M330 440 L640 440"
+        }
+      ]
+    },
+    "g": {
+      "strokes": [
+        {
+          "path": "M650 500 C570 410 350 410 350 610 C350 820 650 820 650 610 C650 565 650 530 650 500"
+        },
+        {
+          "path": "M650 440 L650 820 C650 965 420 970 350 870"
+        }
+      ],
+      "notes": "Single-storey bowl and a separate descending hook; no typographic lower loop."
+    },
+    "h": {
+      "strokes": [
+        {
+          "path": "M350 180 L350 780 L350 565 C350 400 650 400 650 565 L650 780"
+        }
+      ]
+    },
+    "i": {
+      "strokes": [
+        {
+          "path": "M500 440 L500 780"
+        },
+        {
+          "dot": [
+            500,
+            320
+          ],
+          "radius": 16
+        }
+      ]
+    },
+    "j": {
+      "strokes": [
+        {
+          "path": "M570 440 L570 820 C570 955 390 975 350 880"
+        },
+        {
+          "dot": [
+            570,
+            320
+          ],
+          "radius": 16
+        }
+      ]
+    },
+    "k": {
+      "strokes": [
+        {
+          "path": "M350 180 L350 780"
+        },
+        {
+          "path": "M660 440 L350 620 L670 780"
+        }
+      ]
+    },
+    "l": {
+      "strokes": [
+        {
+          "path": "M500 180 L500 780"
+        }
+      ]
+    },
+    "m": {
+      "strokes": [
+        {
+          "path": "M230 440 L230 780 L230 555 C230 400 500 400 500 555 L500 780 L500 555 C500 400 770 400 770 555 L770 780"
+        }
+      ],
+      "notes": "One continuous motor stroke with two deliberate stem retraces."
+    },
+    "n": {
+      "strokes": [
+        {
+          "path": "M350 440 L350 780 L350 565 C350 400 650 400 650 565 L650 780"
+        }
+      ]
+    },
+    "o": {
+      "strokes": [
+        {
+          "path": "M500 440 C290 440 290 780 500 780 C710 780 710 440 500 440"
+        }
+      ]
+    },
+    "p": {
+      "strokes": [
+        {
+          "path": "M350 440 L350 940 L350 570 C350 400 670 390 670 610 C670 810 350 840 350 680"
+        }
+      ]
+    },
+    "q": {
+      "strokes": [
+        {
+          "path": "M650 500 C570 410 350 410 350 610 C350 820 650 820 650 610 C650 565 650 530 650 500"
+        },
+        {
+          "path": "M650 440 L650 940 L730 850"
+        }
+      ],
+      "notes": "Bowl followed by a descending stem with a short diagonal finish."
+    },
+    "r": {
+      "strokes": [
+        {
+          "path": "M390 440 L390 780 L390 565 C390 440 510 400 630 475"
+        }
+      ]
+    },
+    "s": {
+      "strokes": [
+        {
+          "path": "M640 490 C560 415 370 420 370 525 C370 630 650 585 650 690 C650 805 445 810 350 730"
+        }
+      ]
+    },
+    "t": {
+      "strokes": [
+        {
+          "path": "M500 300 L500 780"
+        },
+        {
+          "path": "M350 440 L650 440"
+        }
+      ]
+    },
+    "u": {
+      "strokes": [
+        {
+          "path": "M350 440 L350 650 C350 825 650 825 650 650 L650 440 L650 780"
+        }
+      ]
+    },
+    "v": {
+      "strokes": [
+        {
+          "path": "M330 440 L500 780 L670 440"
+        }
+      ]
+    },
+    "w": {
+      "strokes": [
+        {
+          "path": "M210 440 L355 780 L500 440 L645 780 L790 440"
+        }
+      ]
+    },
+    "x": {
+      "strokes": [
+        {
+          "path": "M340 440 L660 780"
+        },
+        {
+          "path": "M660 440 L340 780"
+        }
+      ]
+    },
+    "y": {
+      "strokes": [
+        {
+          "path": "M330 440 L500 780"
+        },
+        {
+          "path": "M670 440 L420 940"
+        }
+      ]
+    },
+    "z": {
+      "strokes": [
+        {
+          "path": "M340 440 L660 440 L340 780 L660 780"
+        }
+      ]
+    }
+  }
+}

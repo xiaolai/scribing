@@ -5,6 +5,7 @@ import { gzipSync as javascriptGzip } from "fflate";
 import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
+import { authoredUnit } from "./authored.mjs";
 import {
   parseJSON,
   parseSVG,
@@ -176,6 +177,7 @@ function observationUnit(id, text, sample) {
 }
 export async function build({
   sourceDir = path.join(defaultRoot, "packs/sources"),
+  authoredDir = path.join(defaultRoot, "packs/authored"),
   outDir = path.join(defaultRoot, "packs/generated"),
   raw = true,
 } = {}) {
@@ -214,11 +216,12 @@ export async function build({
       })
     ),
     mapping: lock.mapping,
+    authoredSources: [],
     packs: [],
     rawObservations: [],
     quarantine: [],
   };
-  async function emit(p, assets, notice) {
+  async function emit(p, assets, notice, presentation, transformation = catalog.transformation) {
     const file = p.id + ".json",
       bytes = encode(p);
     await writeFile(path.join(outDir, file), bytes);
@@ -235,7 +238,7 @@ export async function build({
       characterCount: new Set(Object.values(p.units).map((u) => u.text)).size,
       sha256: sha256(bytes),
       noticeSHA256: sha256(notice),
-      transformation: catalog.transformation,
+      transformation,
       assets,
     };
     await writeFile(
@@ -244,6 +247,14 @@ export async function build({
     );
     catalog.packs.push({
       id: p.id,
+      name: p.name,
+      presentation:
+        presentation ||
+        (p.provenance === 'recorded'
+          ? 'recorded'
+          : p.source.name === 'KanjiVG'
+          ? 'vector'
+          : 'source'),
       file,
       manifest: p.id + ".manifest.json",
       notice: noticeFile,
@@ -251,6 +262,54 @@ export async function build({
       characterCount: manifest.characterCount,
       sha256: manifest.sha256,
     });
+  }
+  const authoredLicense = await readFile(path.join(authoredDir, 'LICENSE'), 'utf8');
+  for (const id of ['english-textbook', 'korean-textbook']) {
+    const file = id + '.source.json';
+    const bytes = await readFile(path.join(authoredDir, file));
+    const model = parseJSON(bytes.toString());
+    if (model.id !== id || model.license !== 'MIT' || model.provenance !== 'authored')
+      throw Error('Invalid authored pack identity: ' + id);
+    const sourceHash = sha256(bytes);
+    catalog.authoredSources.push({
+      file,
+      sha256: sourceHash,
+      licenseFile: 'LICENSE',
+      licenseSHA256: sha256(authoredLicense),
+    });
+    const source = {
+      name: 'Scribing original textbook models',
+      url: 'https://github.com/xiaolai/scribing/tree/master/packs/authored',
+      revision: 'sha256:' + sourceHash,
+      license: 'MIT',
+    };
+    const units = {},
+      assets = {};
+    for (const [character, entry] of Object.entries(model.units)) {
+      units[character] = authoredUnit(model, character, entry);
+      assets[character] = {
+        sourcePath: 'packs/authored/' + file,
+        sourceSHA256: sourceHash,
+        modelSHA256: sha256(encode(entry)),
+        formationNotes:
+          entry.notes ||
+          'Defined print practice model; not a universal stroke convention.',
+        references: model.references,
+      };
+    }
+    const p = pack(id, source, units, 'authored', model.description);
+    p.name = model.name;
+    const notice =
+      model.name +
+      '\nOriginal Scribing geometry. Teaching references inform formation choices; no source artwork or font outlines are included.\n\n' +
+      model.references
+        .map(
+          (reference) => reference.title + '\n' + reference.url + '\n' + reference.note,
+        )
+        .join('\n\n') +
+      '\n\n' +
+      authoredLicense;
+    await emit(p, assets, notice, 'textbook', 'scribing-authored-centerline-v1');
   }
   for (const item of lock.sources) {
     const { source, files, notice } = await loadSource(sourceDir, item);
@@ -541,11 +600,12 @@ if (
   const options = {};
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--source-dir") options.sourceDir = path.resolve(args[++i]);
+    else if (args[i] === "--authored-dir") options.authoredDir = path.resolve(args[++i]);
     else if (args[i] === "--out") options.outDir = path.resolve(args[++i]);
     else if (args[i] === "--no-raw") options.raw = false;
     else
       throw Error(
-        "Usage: node scripts/data/build.mjs [--source-dir DIR] [--out DIR] [--no-raw]"
+        "Usage: node scripts/data/build.mjs [--source-dir DIR] [--authored-dir DIR] [--out DIR] [--no-raw]"
       );
   }
   const result = await build(options);

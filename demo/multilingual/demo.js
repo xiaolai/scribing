@@ -5,6 +5,7 @@
   const actions = ['animate', 'guided', 'practice', 'show', 'stop', 'find'];
   let catalog;
   let pack;
+  let presentation;
   let provider;
   let writer;
   let generation = 0;
@@ -59,7 +60,7 @@
       $('plan').value = unit.defaultPlanId;
       $('alternatives').disabled = unit.plans.length < 2;
       $('alternatives').checked = false;
-      $('details').textContent = `${unit.id}: ${unit.motorStrokes.length} motor strokes; ${unit.plans.length} supplied order plan(s). ${unit.style || 'Source-defined style'}. ${pack.provenance === 'recorded' ? 'This model comes from a recorded observation. Omniglot participants copied displayed symbols; the observed order is not a native teaching recommendation.' : 'Supplied geometry has been converted for replay and practice; it is not a new recording or a certified teaching model.'}`;
+      $('details').textContent = `${unit.id}: ${unit.motorStrokes.length} motor strokes; ${unit.plans.length} supplied order plan(s). ${unit.style || 'Source-defined style'}. ${presentation === 'textbook' ? 'Original clean print models with a defined stroke plan, authored for this project. These are not certified curriculum models.' : pack.provenance === 'recorded' ? 'This model comes from a recorded observation. Omniglot participants copied displayed symbols; the observed order is not a native teaching recommendation.' : 'Supplied geometry has been converted for replay and practice; it is not a new recording or a certified teaching model.'}`;
       busy(false);
       status(`Ready: ${unit.text} · ${unit.motorStrokes.length} strokes. ${pack.status}.`);
     } catch (error) {
@@ -74,6 +75,10 @@
     const token = ++generation;
     stop();
     busy(true);
+    if (writer) { writer.destroy(); writer = undefined; }
+    provider = undefined;
+    $('source').textContent = '';
+    $('details').textContent = '';
     if (pending) pending.abort();
     pending = new AbortController();
     status('Loading local source…');
@@ -83,6 +88,7 @@
       const loadedPack = await loadJSON(`../../packs/generated/${entry.file}`, pending.signal);
       if (token !== generation) return;
       pack = loadedPack;
+      presentation = entry.presentation;
       $('tolerance').value = pack.provenance === 'recorded' ? '1.5' : '1';
       provider = Scribing.createDataProvider(pack);
       $('source').textContent = `${pack.name} · ${pack.status} · ${pack.provenance} · ${pack.license} · ${pack.source.name} (${pack.source.revision || 'see source manifest'})`;
@@ -94,13 +100,21 @@
       status(error.message || String(error));
     }
   };
+  const selectView = () => {
+    const models = $('view').value === 'models';
+    $('view-help').textContent = models
+      ? 'Original clean English and Korean print models, plus KanjiVG ordered vector models. Each has a defined stroke plan; none is certified as a teaching curriculum.'
+      : 'Source samples preserve supplied geometry and real, sometimes rough recorded observations. Recorded order reflects that sample, not a teaching recommendation.';
+    const entries = catalog.packs.filter((entry) => models === ['textbook', 'vector'].includes(entry.presentation));
+    options($('pack'), entries.map((entry) => [entry.id, `${entry.name || entry.id} (${entry.unitCount} units)`]));
+    return loadPack();
+  };
   const initialize = async () => {
     try {
       catalog = await loadJSON('../../packs/generated/catalog.json');
-      const first = ['english-letterpaths-print', 'english-glyphed', 'japanese-kana', 'japanese-grade-1', 'korean-omniglot'];
+      const first = ['english-textbook', 'korean-textbook', 'japanese-kana', 'japanese-grade-1'];
       catalog.packs.sort((a, b) => (first.includes(a.id) ? first.indexOf(a.id) : 99) - (first.includes(b.id) ? first.indexOf(b.id) : 99));
-      options($('pack'), catalog.packs.map((entry) => [entry.id, `${entry.id} (${entry.unitCount} units)`]));
-      await loadPack();
+      await selectView();
     } catch (error) { status(error.message || String(error)); }
   };
   const run = async (operation) => {
@@ -108,6 +122,7 @@
     const token = action;
     try { await operation(token); } catch (error) { if (token === action) status(error.message || String(error)); }
   };
+  $('view').addEventListener('change', () => { if (catalog) selectView(); });
   $('pack').addEventListener('change', loadPack);
   $('unit').addEventListener('change', () => loadUnit($('unit').value));
   $('renderer').addEventListener('change', () => { if (provider) { createWriter(); loadUnit($('unit').value); } });

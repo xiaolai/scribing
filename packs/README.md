@@ -6,6 +6,8 @@ These data are **separate from the MIT Scribing engine and its core npm bundle**
 
 | Pack / collection | Units | Coverage |
 | --- | ---: | --- |
+| `english-textbook` | 52 | Original clean manuscript letters; three-stroke A and explicit i/j dots |
+| `korean-textbook` | 40 | Original geometric standalone jamo; defined EPS-referenced motor order |
 | `english-letterpaths-print` | 52 | Both cases; source-explicit i/j dots |
 | `english-glyphed` | 249 | 83 characters × 3 variants: 52 letters, 10 digits, 21 punctuation |
 | `japanese-kana` | 184 | 92 basic modern kana plus all 92 additional base kana-block files |
@@ -15,7 +17,9 @@ These data are **separate from the MIT Scribing engine and its core npm bundle**
 | `japanese-symbols` | 5 | 、。々〆！ from KanjiVG |
 | `korean-omniglot` | 40 | Standalone compatibility jamo, visually mapped from recordings |
 | Other `omniglot-*` | 1,583 | Unmapped source classes across the other 49 collections |
-| **Total** | **8,628** | 147 independently loadable pack files |
+| **Total** | **8,720** | 149 independently loadable pack files |
+
+The demo starts with clean English models. Its Textbook & vector models view also offers the 40 clean Korean jamo and existing KanjiVG geometry; Source samples keeps the older template/traced/recorded sources available without presenting rough observations as the default practice models. No original imported pack or recording was modified.
 
 `generated/catalog.json` lists exact files, counts, manifests and SHA256s. The Omniglot collections together contain 1,623 selected examples. Their optional `.observations.json.gz` files preserve **32,460** complete original recordings: pen-separated XYT arrays, time in milliseconds and Y increasing upward. No timestamps are fabricated for SVG/Bezier data.
 
@@ -32,10 +36,11 @@ node scripts/data/check.mjs
 node scripts/data/reproduce.mjs
 ```
 
-`build.mjs` accepts `--source-dir DIR`, `--out DIR`, and `--no-raw`. It performs no network access and never executes upstream source files. `check.mjs` verifies source/notice hashes, output coverage, raw counts, and **every emitted unit against the real runtime validator and compiler**. `reproduce.mjs` rebuilds into a temporary directory, compares every generated file byte for byte, and removes the temporary directory afterward. Runtime TypeScript is transpiled only by the local check tool; it is not a data dependency. Raw observations are compressed with pinned pure-JavaScript `fflate@0.8.2` at level 9 with `mtime: 0`, so emitted gzip bytes do not depend on the host Node/zlib version. Locked source snapshots are retained unchanged; native zlib is used only for decompression.
+`build.mjs` accepts `--source-dir DIR`, `--authored-dir DIR`, `--out DIR`, and `--no-raw`. It performs no network access and never executes upstream source files. `check.mjs` verifies source/notice hashes, output coverage, raw counts, and **every emitted unit against the real runtime validator and compiler**. `reproduce.mjs` rebuilds into a temporary directory, compares every generated file byte for byte, and removes the temporary directory afterward. Runtime TypeScript is transpiled only by the local check tool; it is not a data dependency. Raw observations are compressed with pinned pure-JavaScript `fflate@0.8.2` at level 9 with `mtime: 0`, so emitted gzip bytes do not depend on the host Node/zlib version. Locked source snapshots are retained unchanged; native zlib is used only for decompression.
 
 ## Input, output and observation boundaries
 
+- `authored/*.source.json` contains original textbook-style geometry, explicit motor strokes, shared writing metrics, and formation references. The authored source and license hashes are recorded in the catalog; per-glyph model hashes and notes are retained in manifests. Original geometry is MIT licensed; cited teaching references retain their own terms.
 - `sources/*.json.gz` are minimal pinned source snapshots: original UTF-8 SVG, JSON, literal TypeScript glyph declarations, or raw Omniglot text. They do not include upstream applications, dependencies, binaries or generated font resources. `sources/lock.json` fixes each compressed snapshot hash, license hash, source revision or original ZIP hash, and input count. Individual original-file hashes are retained in generated asset manifests.
 - `generated/*.json` are source-adapted WritingDataPack objects. They contain only bounded motor polylines or explicit dots plus complete source-order plans. Coordinates use the frozen `[minX,minY,width,height]` bounds convention.
 - `generated/*.manifest.json` retains individual provenance, source hashes, dot overrides, selection/mapping rules and transformation version.
@@ -56,6 +61,7 @@ Omniglot transformation v2 selects a representative observed model using a deter
 
 ## License boundaries
 
+- Scribing textbook print: MIT original geometry, with independently authored shapes and reference-informed formation choices. These are clean manuscript practice models, not exact replicas of a typeset font.
 - letterpaths: MIT; lowercase source names say traced, uppercase template. Pack provenance is mixed.
 - glyphed.js: ISC, retained in full. Explicit importer dot adaptations are recorded separately.
 - KanjiVG: CC-BY-SA-3.0. The adapted centerline data retain this license and attribution; they are not relicensed as MIT by sharing a repository with the engine.

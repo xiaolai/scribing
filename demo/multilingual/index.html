@@ -12,12 +12,14 @@
   <h1>Multilingual practice</h1>
   <p>Explore supplied writing models and recorded observations. These packs are technical previews; their stroke order has not been certified as a native teaching curriculum.</p>
   <div class="controls">
-    <label>Source collection<select id="pack"></select></label>
+    <label>View<select id="view" aria-describedby="view-help"><option value="models">Textbook &amp; vector models</option><option value="sources">Source samples</option></select></label>
+    <label>Collection<select id="pack"></select></label>
     <label>Writing unit<select id="unit" disabled></select></label>
     <label>Stroke-order plan<select id="plan" disabled></select></label>
     <label>Matching tolerance<select id="tolerance" aria-describedby="tolerance-help"><option value="1">Precise (1)</option><option value="1.5">Forgiving (1.5)</option><option value="2">Relaxed (2)</option></select></label>
     <label>Renderer<select id="renderer"><option value="svg">SVG</option><option value="canvas">Canvas</option></select></label>
   </div>
+  <p id="view-help"></p>
   <form id="lookup"><label>Find text or source ID<input id="text" autocomplete="off" aria-describedby="lookup-help"></label><button id="find" disabled>Find</button></form>
   <p id="lookup-help">Uses this pack’s explicit IDs and aliases. Unmapped recordings retain source-class IDs.</p>
   <p id="tolerance-help">Practice compares your strokes with this source model, not general handwriting recognition. A more forgiving setting allows more shape variation. Recorded models start at Forgiving.</p>

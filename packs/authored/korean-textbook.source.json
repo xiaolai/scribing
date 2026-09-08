@@ -1,0 +1,583 @@
+{
+  "id": "korean-textbook",
+  "name": "Korean · textbook print",
+  "license": "MIT",
+  "provenance": "authored",
+  "description": "Forty modern standalone Hangul jamo drawn as original, clean monoline print forms. Motor segmentation follows the EPS Korean standard textbook diagrams; technical preview, not pedagogically certified. No syllable-block composition or recording-derived geometry.",
+  "style": "Scribing textbook print",
+  "script": "Hang",
+  "coordinates": {
+    "em": 1000,
+    "yAxis": "down",
+    "bounds": [
+      0,
+      0,
+      1000,
+      1000
+    ]
+  },
+  "width": 36,
+  "references": [
+    {
+      "url": "https://www.eps.go.kr/exam/Hanguel.pdf",
+      "title": "EPS Korean standard textbook: Hangeul introduction",
+      "note": "Visually inspected PDF pages 2-6 (printed pages 13-17): basic vowels, compound vowels, basic and aspirated consonants, double consonants. Consulted numbered arrows for motor order and direction only; source artwork is not embedded or traced. Geometry is original. The MIT license covers this authored geometry, not the reference PDF."
+    }
+  ],
+  "units": {
+    "ㅏ": {
+      "strokes": [
+        {
+          "path": "M430 180 L430 820"
+        },
+        {
+          "path": "M430 500 L720 500"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Long vertical down, then short horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅐ": {
+      "strokes": [
+        {
+          "path": "M340 180 L340 820"
+        },
+        {
+          "path": "M340 500 L660 500"
+        },
+        {
+          "path": "M660 180 L660 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Left vertical down, crossbar right, right vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅑ": {
+      "strokes": [
+        {
+          "path": "M430 180 L430 820"
+        },
+        {
+          "path": "M430 380 L720 380"
+        },
+        {
+          "path": "M430 620 L720 620"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Long vertical down, then upper and lower horizontals right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅒ": {
+      "strokes": [
+        {
+          "path": "M340 180 L340 820"
+        },
+        {
+          "path": "M340 380 L660 380"
+        },
+        {
+          "path": "M340 620 L660 620"
+        },
+        {
+          "path": "M660 180 L660 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Left vertical down, upper and lower crossbars right, right vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅓ": {
+      "strokes": [
+        {
+          "path": "M280 500 L570 500"
+        },
+        {
+          "path": "M570 180 L570 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Short horizontal right, then long vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅔ": {
+      "strokes": [
+        {
+          "path": "M220 500 L470 500"
+        },
+        {
+          "path": "M470 180 L470 820"
+        },
+        {
+          "path": "M750 180 L750 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Short horizontal right, middle vertical down, right vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅕ": {
+      "strokes": [
+        {
+          "path": "M280 380 L570 380"
+        },
+        {
+          "path": "M280 620 L570 620"
+        },
+        {
+          "path": "M570 180 L570 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Upper and lower horizontals right, then long vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅖ": {
+      "strokes": [
+        {
+          "path": "M220 380 L470 380"
+        },
+        {
+          "path": "M220 620 L470 620"
+        },
+        {
+          "path": "M470 180 L470 820"
+        },
+        {
+          "path": "M750 180 L750 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Upper and lower short horizontals right, middle and right verticals down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅗ": {
+      "strokes": [
+        {
+          "path": "M500 320 L500 620"
+        },
+        {
+          "path": "M180 620 L820 620"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Short vertical down, then horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅘ": {
+      "strokes": [
+        {
+          "path": "M350 400 L350 670"
+        },
+        {
+          "path": "M180 670 L620 670"
+        },
+        {
+          "path": "M620 180 L620 820"
+        },
+        {
+          "path": "M620 450 L820 450"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Complete ㅗ first (down, right), then ㅏ (down, right). Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅙ": {
+      "strokes": [
+        {
+          "path": "M330 400 L330 670"
+        },
+        {
+          "path": "M180 670 L580 670"
+        },
+        {
+          "path": "M580 180 L580 820"
+        },
+        {
+          "path": "M580 450 L820 450"
+        },
+        {
+          "path": "M820 180 L820 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Complete ㅗ first, then ㅐ (down, right, down). Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅚ": {
+      "strokes": [
+        {
+          "path": "M350 400 L350 670"
+        },
+        {
+          "path": "M180 670 L700 670"
+        },
+        {
+          "path": "M700 180 L700 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Complete ㅗ first (down, right), then right vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅛ": {
+      "strokes": [
+        {
+          "path": "M370 320 L370 620"
+        },
+        {
+          "path": "M630 320 L630 620"
+        },
+        {
+          "path": "M180 620 L820 620"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Left and right short verticals down, then horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅜ": {
+      "strokes": [
+        {
+          "path": "M180 380 L820 380"
+        },
+        {
+          "path": "M500 380 L500 680"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Horizontal right, then vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅝ": {
+      "strokes": [
+        {
+          "path": "M180 400 L620 400"
+        },
+        {
+          "path": "M350 400 L350 730"
+        },
+        {
+          "path": "M450 610 L620 610"
+        },
+        {
+          "path": "M620 180 L620 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Complete ㅜ first (right, down), then ㅓ (right, down). Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅞ": {
+      "strokes": [
+        {
+          "path": "M180 400 L580 400"
+        },
+        {
+          "path": "M330 400 L330 730"
+        },
+        {
+          "path": "M440 610 L580 610"
+        },
+        {
+          "path": "M580 180 L580 820"
+        },
+        {
+          "path": "M820 180 L820 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Complete ㅜ first, then ㅔ (right, down, down). Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅟ": {
+      "strokes": [
+        {
+          "path": "M180 400 L700 400"
+        },
+        {
+          "path": "M350 400 L350 730"
+        },
+        {
+          "path": "M700 180 L700 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Complete ㅜ first (right, down), then right vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅠ": {
+      "strokes": [
+        {
+          "path": "M180 380 L820 380"
+        },
+        {
+          "path": "M370 380 L370 680"
+        },
+        {
+          "path": "M630 380 L630 680"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Horizontal right, then left and right verticals down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅡ": {
+      "strokes": [
+        {
+          "path": "M180 500 L820 500"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅢ": {
+      "strokes": [
+        {
+          "path": "M180 650 L700 650"
+        },
+        {
+          "path": "M700 180 L700 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 3 (printed page 14): Horizontal right, then right vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅣ": {
+      "strokes": [
+        {
+          "path": "M500 180 L500 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 2 (printed page 13): Vertical down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㄱ": {
+      "strokes": [
+        {
+          "path": "M220 220 L780 220 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): One continuous stroke right then down. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㄲ": {
+      "strokes": [
+        {
+          "path": "M196.25 220 L423.75 220 L423.75 780"
+        },
+        {
+          "path": "M576.25 220 L803.75 220 L803.75 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 6 (printed page 17): Complete left ㄱ, then right ㄱ, retaining each component's source stroke order and pen lifts. Independently authored compressed geometric components. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㄴ": {
+      "strokes": [
+        {
+          "path": "M220 220 L220 780 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): One continuous stroke down then right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㄷ": {
+      "strokes": [
+        {
+          "path": "M220 220 L780 220"
+        },
+        {
+          "path": "M220 220 L220 780 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): Top horizontal right, then continuous left vertical down and bottom right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㄸ": {
+      "strokes": [
+        {
+          "path": "M196.25 220 L423.75 220"
+        },
+        {
+          "path": "M196.25 220 L196.25 780 L423.75 780"
+        },
+        {
+          "path": "M576.25 220 L803.75 220"
+        },
+        {
+          "path": "M576.25 220 L576.25 780 L803.75 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 6 (printed page 17): Complete left ㄷ, then right ㄷ, retaining each component's source stroke order and pen lifts. Independently authored compressed geometric components. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㄹ": {
+      "strokes": [
+        {
+          "path": "M240 220 L760 220 L760 500"
+        },
+        {
+          "path": "M240 500 L760 500"
+        },
+        {
+          "path": "M240 500 L240 780 L760 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): Top horizontal and right vertical are one stroke; middle horizontal right; left vertical and bottom are one stroke. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅁ": {
+      "strokes": [
+        {
+          "path": "M220 220 L780 220 L780 780"
+        },
+        {
+          "path": "M220 220 L220 780"
+        },
+        {
+          "path": "M220 780 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): This source numbers top-plus-right first, left vertical second, bottom horizontal third. Other teaching conventions can differ. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅂ": {
+      "strokes": [
+        {
+          "path": "M220 220 L220 780"
+        },
+        {
+          "path": "M780 220 L780 780"
+        },
+        {
+          "path": "M220 480 L780 480"
+        },
+        {
+          "path": "M220 780 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): Left vertical down, right vertical down, middle horizontal right, bottom horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅃ": {
+      "strokes": [
+        {
+          "path": "M196.25 220 L196.25 780"
+        },
+        {
+          "path": "M423.75 220 L423.75 780"
+        },
+        {
+          "path": "M196.25 480 L423.75 480"
+        },
+        {
+          "path": "M196.25 780 L423.75 780"
+        },
+        {
+          "path": "M576.25 220 L576.25 780"
+        },
+        {
+          "path": "M803.75 220 L803.75 780"
+        },
+        {
+          "path": "M576.25 480 L803.75 480"
+        },
+        {
+          "path": "M576.25 780 L803.75 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 6 (printed page 17): Complete left ㅂ, then right ㅂ, retaining each component's source stroke order and pen lifts. Independently authored compressed geometric components. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅅ": {
+      "strokes": [
+        {
+          "path": "M500 220 L220 780"
+        },
+        {
+          "path": "M500 220 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): Left falling stroke from top, then right falling stroke from top. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅆ": {
+      "strokes": [
+        {
+          "path": "M310 220 L196.25 780"
+        },
+        {
+          "path": "M310 220 L423.75 780"
+        },
+        {
+          "path": "M690 220 L576.25 780"
+        },
+        {
+          "path": "M690 220 L803.75 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 6 (printed page 17): Complete left ㅅ, then right ㅅ, retaining each component's source stroke order and pen lifts. Independently authored compressed geometric components. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅇ": {
+      "strokes": [
+        {
+          "path": "M500 215 C342.6 215 215 342.6 215 500 C215 657.4 342.6 785 500 785 C657.4 785 785 657.4 785 500 C785 342.6 657.4 215 500 215"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 4 (printed page 15): One counterclockwise circle starting at the top. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅈ": {
+      "strokes": [
+        {
+          "path": "M220 220 L780 220 L220 780"
+        },
+        {
+          "path": "M500 500 L780 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 5 (printed page 16): One continuous top horizontal right then diagonal down-left; second stroke from the junction down-right. This is the source's two-stroke variant. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅉ": {
+      "strokes": [
+        {
+          "path": "M196.25 220 L423.75 220 L196.25 780"
+        },
+        {
+          "path": "M310 500 L423.75 780"
+        },
+        {
+          "path": "M576.25 220 L803.75 220 L576.25 780"
+        },
+        {
+          "path": "M690 500 L803.75 780"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 6 (printed page 17): Complete left ㅈ, then right ㅈ, retaining each component's source stroke order and pen lifts. Independently authored compressed geometric components. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅊ": {
+      "strokes": [
+        {
+          "path": "M410 180 L590 180"
+        },
+        {
+          "path": "M220 340 L780 340 L220 820"
+        },
+        {
+          "path": "M500 580 L780 820"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 5 (printed page 16): Short top horizontal right, then the two strokes of ㅈ. Three-stroke source variant. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅋ": {
+      "strokes": [
+        {
+          "path": "M220 220 L780 220 L780 780"
+        },
+        {
+          "path": "M220 480 L780 480"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 5 (printed page 16): Top horizontal right and right vertical down without lifting, then middle horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅌ": {
+      "strokes": [
+        {
+          "path": "M220 220 L780 220"
+        },
+        {
+          "path": "M220 220 L220 780 L780 780"
+        },
+        {
+          "path": "M220 500 L780 500"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 5 (printed page 16): Top horizontal right; continuous left vertical and bottom; middle horizontal right last, as numbered by this source. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅍ": {
+      "strokes": [
+        {
+          "path": "M180 250 L820 250"
+        },
+        {
+          "path": "M340 250 L340 750"
+        },
+        {
+          "path": "M660 250 L660 750"
+        },
+        {
+          "path": "M180 750 L820 750"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 5 (printed page 16): Top horizontal right, left vertical down, right vertical down, bottom horizontal right. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    },
+    "ㅎ": {
+      "strokes": [
+        {
+          "path": "M410 180 L590 180"
+        },
+        {
+          "path": "M220 340 L780 340"
+        },
+        {
+          "path": "M500 440 C395.1 440 310 525.1 310 630 C310 734.9 395.1 820 500 820 C604.9 820 690 734.9 690 630 C690 525.1 604.9 440 500 440"
+        }
+      ],
+      "notes": "EPS Hanguel.pdf, PDF page 5 (printed page 16): Short top horizontal right, longer horizontal right, counterclockwise circle starting at its top. Original Scribing geometric construction; technical preview, not pedagogically certified."
+    }
+  }
+}
