@@ -46,14 +46,7 @@ export default class ScribingRenderer implements ScribingRendererBase<
 
   render(props: RenderStateObject) {
     const { main, outline, highlight } = props.character;
-    const {
-      outlineColor,
-      radicalColor,
-      highlightColor,
-      strokeColor,
-      drawingWidth,
-      drawingColor,
-    } = props.options;
+    const { outlineColor, radicalColor, highlightColor, strokeColor } = props.options;
 
     this._outlineCharRenderer.render({
       opacity: outline.opacity,
@@ -65,7 +58,7 @@ export default class ScribingRenderer implements ScribingRendererBase<
       opacity: main.opacity,
       strokes: main.strokes,
       strokeColor,
-      radicalColor: radicalColor,
+      radicalColor,
     });
 
     this._highlightCharRenderer.render({
@@ -74,6 +67,11 @@ export default class ScribingRenderer implements ScribingRendererBase<
       strokeColor: highlightColor,
     });
 
+    this._renderUserStrokes(props);
+  }
+
+  private _renderUserStrokes(props: RenderStateObject) {
+    const { drawingWidth, drawingColor } = props.options;
     const userStrokes = props.userStrokes || {};
 
     for (const userStrokeId in this._userStrokeRenderers) {
@@ -93,23 +91,31 @@ export default class ScribingRenderer implements ScribingRendererBase<
         strokeColor: drawingColor,
         ...stroke,
       };
-
-      const strokeRenderer = (() => {
-        if (this._userStrokeRenderers[userStrokeId]) {
-          return this._userStrokeRenderers[userStrokeId]!;
-        }
-        const newStrokeRenderer = new UserStrokeRenderer();
-        newStrokeRenderer.mount(this._positionedTarget!);
-        this._userStrokeRenderers[userStrokeId] = newStrokeRenderer;
-        return newStrokeRenderer;
-      })();
-
-      strokeRenderer.render(userStrokeProps);
+      this._userStrokeRenderer(userStrokeId).render(userStrokeProps);
     }
   }
 
+  private _userStrokeRenderer(userStrokeId: string) {
+    const existing = this._userStrokeRenderers[userStrokeId];
+    if (existing) return existing;
+    const created = new UserStrokeRenderer();
+    created.mount(this._positionedTarget!);
+    this._userStrokeRenderers[userStrokeId] = created;
+    return created;
+  }
+
   destroy() {
-    svg.removeElm(this._positionedTarget!.svg);
-    this._positionedTarget!.defs.innerHTML = '';
+    // Remove only what this renderer created. Emptying the target's <defs> also deleted
+    // the clip paths of every other renderer mounted on the same svg, because
+    // sub-targets share the root target's <defs>; their strokes were then clipped away.
+    this._outlineCharRenderer.destroy();
+    this._mainCharRenderer.destroy();
+    this._highlightCharRenderer.destroy();
+    Object.keys(this._userStrokeRenderers).forEach((userStrokeId) => {
+      this._userStrokeRenderers[userStrokeId]?.destroy();
+      delete this._userStrokeRenderers[userStrokeId];
+    });
+    this._positionedTarget?.destroy();
+    this._positionedTarget = undefined;
   }
 }

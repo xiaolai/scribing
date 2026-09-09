@@ -123,3 +123,54 @@ describe('CharacterRenderer', () => {
     expect(subCanvas.style.display).toBe('');
   });
 });
+
+describe('redundant repainting', () => {
+  // The destructuring default `radicalColor = null` applied only to the incoming props,
+  // so an omitted radicalColor read as null here and as undefined on the stored props.
+  // They never matched, and the outline and highlight layers repainted every stroke on
+  // every frame for the life of the writer.
+  it('skips strokes whose state has not changed when radicalColor is absent', () => {
+    document.body.innerHTML = '<div id="target"></div>';
+    const target = RenderTarget.init('target');
+    const renderer = new CharacterRenderer(char);
+    renderer.mount(target);
+
+    const strokeColor = { r: 1, g: 2, b: 3, a: 1 };
+    const strokes = {
+      0: { opacity: 1, displayPortion: 1 },
+      1: { opacity: 1, displayPortion: 1 },
+    };
+    renderer.render({ opacity: 1, strokes, strokeColor });
+
+    const spies = renderer._strokeRenderers.map((strokeRenderer) =>
+      jest.spyOn(strokeRenderer, 'render'),
+    );
+    renderer.render({ opacity: 1, strokes, strokeColor });
+    spies.forEach((spy) => expect(spy).not.toHaveBeenCalled());
+  });
+
+  it('still repaints when the radical colour actually changes', () => {
+    document.body.innerHTML = '<div id="target"></div>';
+    const target = RenderTarget.init('target');
+    const renderer = new CharacterRenderer(char);
+    renderer.mount(target);
+
+    const strokeColor = { r: 1, g: 2, b: 3, a: 1 };
+    const strokes = {
+      0: { opacity: 1, displayPortion: 1 },
+      1: { opacity: 1, displayPortion: 1 },
+    };
+    renderer.render({ opacity: 1, strokes, strokeColor });
+
+    const spies = renderer._strokeRenderers.map((strokeRenderer) =>
+      jest.spyOn(strokeRenderer, 'render'),
+    );
+    renderer.render({
+      opacity: 1,
+      strokes,
+      strokeColor,
+      radicalColor: { r: 9, g: 9, b: 9, a: 1 },
+    });
+    spies.forEach((spy) => expect(spy).toHaveBeenCalledTimes(1));
+  });
+});

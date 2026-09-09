@@ -81,3 +81,65 @@ describe('ScribingRenderer', () => {
     expect(document.querySelectorAll('svg > g > path').length).toBe(0);
   });
 });
+
+describe('destroy', () => {
+  const strokeStates = (opacity: number) =>
+    Object.fromEntries(
+      char.strokes.map((_stroke, i) => [i, { opacity, displayPortion: 1 }]),
+    );
+
+  // Sub-targets share the root target's <defs>, so emptying it removed the clip paths
+  // of every other renderer mounted on the same svg and clipped their strokes away.
+  it('leaves another renderer on the same svg intact', () => {
+    document.body.innerHTML = '<div id="target"></div>';
+    const shared = RenderTarget.init('target');
+
+    const first = new ScribingRenderer(char, positioner);
+    const second = new ScribingRenderer(char, positioner);
+    first.mount(shared);
+    second.mount(shared);
+
+    const clipsAfterMount = shared.defs.querySelectorAll('clipPath').length;
+    expect(clipsAfterMount).toBe(char.strokes.length * 6);
+
+    first.destroy();
+
+    // Exactly the first renderer's three character layers are gone.
+    expect(shared.defs.querySelectorAll('clipPath').length).toBe(clipsAfterMount / 2);
+    expect(shared.svg.querySelectorAll(':scope > g').length).toBe(1);
+  });
+
+  it('removes its own group and user strokes', () => {
+    document.body.innerHTML = '<div id="target"></div>';
+    const shared = RenderTarget.init('target');
+    const renderer = new ScribingRenderer(char, positioner);
+    renderer.mount(shared);
+
+    renderer.render({
+      options: {
+        drawingWidth: 4,
+        drawingFadeDuration: 300,
+        drawingColor: { r: 0, g: 0, b: 0, a: 1 },
+        strokeColor: { r: 0, g: 0, b: 0, a: 1 },
+        outlineColor: { r: 0, g: 0, b: 0, a: 1 },
+        radicalColor: null,
+        highlightColor: { r: 0, g: 0, b: 0, a: 1 },
+      },
+      character: {
+        main: { opacity: 1, strokes: strokeStates(1) },
+        outline: { opacity: 0, strokes: strokeStates(1) },
+        highlight: { opacity: 0, strokes: strokeStates(0) },
+      },
+      userStrokes: { 17: { points: [{ x: 0, y: 0 }], opacity: 1 } },
+    } as unknown as RenderStateObject);
+
+    renderer.destroy();
+    expect(renderer._userStrokeRenderers).toEqual({});
+    expect(shared.svg.querySelectorAll(':scope > g').length).toBe(0);
+    expect(shared.defs.querySelectorAll('clipPath').length).toBe(0);
+  });
+
+  it('is safe on a renderer that was never mounted', () => {
+    expect(() => new ScribingRenderer(char, positioner).destroy()).not.toThrow();
+  });
+});

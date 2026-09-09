@@ -22,7 +22,8 @@ import LoadingManager from './LoadingManager';
 import * as characterActions from './characterActions';
 import { trim, colorStringToVals, selectIndex, fixIndex } from './utils';
 import Character from './models/Character';
-import ScribingRendererBase, {
+import {
+  AnyScribingRenderer,
   ScribingRendererConstructor,
 } from './renderers/ScribingRendererBase';
 import RenderTargetBase from './renderers/RenderTargetBase';
@@ -66,7 +67,7 @@ export default class Scribing {
   /** Only set when calling .setCharacter() */
   _positioner: Positioner | undefined;
   /** Only set when calling .setCharacter() */
-  _scribingRenderer: ScribingRendererBase<HTMLElement, any> | null | undefined;
+  _scribingRenderer: AnyScribingRenderer | null | undefined;
   /** Only set when calling .setCharacter() */
   _withDataPromise: Promise<void> | undefined;
 

@@ -45,8 +45,13 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
     this.svg = svg;
     this.defs = defs;
 
-    if ('createSVGPoint' in svg) {
-      this._pt = svg.createSVGPoint();
+    // `createSVGPoint` lives on the <svg> element, and init() accepts a <g> too. Taking
+    // the factory from the owner rather than the node itself is what lets a <g> target
+    // use the CTM path; without it every <g> fell back to subtracting the painted
+    // bounding box, whose origin is wherever the ink happens to start.
+    const owner = (svg as SVGElement).ownerSVGElement ?? (svg as SVGSVGElement);
+    if (typeof owner?.createSVGPoint === 'function') {
+      this._pt = owner.createSVGPoint();
     }
   }
 
@@ -92,7 +97,9 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
   }
 
   override _getTouchPoint(evt: TouchEvent) {
-    const touch = evt.touches[0] ?? evt.changedTouches[0];
+    // Same ordering as the base class: the touch that started the stroke first, so a
+    // second finger elsewhere on the screen cannot redirect the coordinates.
+    const touch = this._resolveTouch(evt) ?? evt.touches[0] ?? evt.changedTouches[0];
     if (!touch) return super._getTouchPoint(evt);
     return this._toUserSpace(touch.clientX, touch.clientY) ?? super._getTouchPoint(evt);
   }

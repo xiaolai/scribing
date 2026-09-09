@@ -5,7 +5,6 @@ import CanvasRenderTarget from '../canvas/RenderTarget';
 import CharacterRenderer from './CharacterRenderer';
 import renderUserStroke from './renderUserStroke';
 import { RenderStateObject } from '../../RenderState';
-import { noop } from '../../utils';
 
 export default class ScribingRenderer implements ScribingRendererBase<
   HTMLCanvasElement,
@@ -28,20 +27,42 @@ export default class ScribingRenderer implements ScribingRendererBase<
 
   mount(target: CanvasRenderTarget) {
     this._target = target;
+    // The bitmap has to cover the region this renderer paints. Sizing it from the CSS
+    // attributes could not do that: they take a pixel count, so a percentage was
+    // truncated to its leading digits and the character was clipped to the remainder.
+    target.resizeBitmap(this._positioner.width, this._positioner.height);
   }
 
-  destroy = noop;
+  /**
+   * Canvas has no scene graph: the last frame stays on the bitmap until something
+   * overwrites it. Destruction was a no-op, so the previous character stayed on screen
+   * for the whole of its replacement's load, and forever if that load failed.
+   */
+  destroy() {
+    const { width, height } = this._positioner;
+    this._target?.getContext()?.clearRect(0, 0, width, height);
+    this._target = undefined;
+  }
 
   _animationFrame(cb: (ctx: CanvasRenderingContext2D) => void) {
     const { width, height, scale, xOffset, yOffset } = this._positioner;
-    const ctx = this._target!.getContext()!;
+    // getContext returns null when the canvas already holds a context of another type,
+    // or when the browser refuses one. The non-null assertions turned that into a null
+    // dereference on the first frame instead of a frame that simply does not paint.
+    const ctx = this._target?.getContext();
+    if (!ctx) return;
     ctx.clearRect(0, 0, width, height);
     ctx.save();
     ctx.translate(xOffset, height - yOffset);
     ctx.transform(1, 0, 0, -1, 0, 0);
     ctx.scale(scale, scale);
-    cb(ctx);
-    ctx.restore();
+    try {
+      cb(ctx);
+    } finally {
+      // Restore even when a stroke renderer throws. The saved transform would otherwise
+      // stay on the stack and every later frame would paint through it a second time.
+      ctx.restore();
+    }
     // @ts-expect-error Verify if this is still needed for the "wechat miniprogram".
     if (ctx.draw) {
       // @ts-expect-error

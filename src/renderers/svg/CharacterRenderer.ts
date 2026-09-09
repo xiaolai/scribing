@@ -17,6 +17,7 @@ export default class CharacterRenderer {
 
   // set on mount()
   _group: SVGElement | SVGSVGElement | undefined;
+  _target: SVGRenderTarget | undefined;
 
   constructor(character: Character) {
     this._strokeRenderers = character.strokes.map((stroke) => new StrokeRenderer(stroke));
@@ -24,17 +25,32 @@ export default class CharacterRenderer {
 
   mount(target: SVGRenderTarget) {
     const subTarget = target.createSubRenderTarget();
+    this._target = subTarget;
     this._group = subTarget.svg;
     this._strokeRenderers.forEach((strokeRenderer) => {
       strokeRenderer.mount(subTarget);
     });
   }
 
+  /** Removes this character's group and the clip paths its strokes put in <defs>. */
+  destroy() {
+    this._strokeRenderers.forEach((strokeRenderer) => strokeRenderer.destroy());
+    this._target?.destroy();
+    this._target = undefined;
+    this._group = undefined;
+    this._oldProps = undefined;
+  }
+
   render(props: SvgCharacterRenderProps) {
     if (props === this._oldProps || !this._group) {
       return;
     }
-    const { opacity, strokes, strokeColor, radicalColor = null } = props;
+    const { opacity, strokes, strokeColor } = props;
+    // Normalise both sides before comparing. The destructuring default applied only to
+    // the incoming props, so an omitted radicalColor read as null here and as undefined
+    // on the stored props. They never matched, and the outline and highlight layers
+    // re-rendered every stroke on every frame.
+    const radicalColor = props.radicalColor ?? null;
     if (opacity !== this._oldProps?.opacity) {
       this._group.style.opacity = opacity.toString();
       // Skip painting a fully transparent group. This was previously disabled for
@@ -49,7 +65,7 @@ export default class CharacterRenderer {
     const colorsChanged =
       !this._oldProps ||
       strokeColor !== this._oldProps.strokeColor ||
-      radicalColor !== this._oldProps.radicalColor;
+      radicalColor !== (this._oldProps.radicalColor ?? null);
 
     if (colorsChanged || strokes !== this._oldProps?.strokes) {
       for (let i = 0; i < this._strokeRenderers.length; i++) {

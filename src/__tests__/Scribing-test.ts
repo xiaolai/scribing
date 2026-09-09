@@ -1398,6 +1398,28 @@ describe('Scribing', () => {
   });
 
   describe('mouse and touch events', () => {
+    type TouchInit = { identifier: number; clientX?: number; clientY?: number };
+
+    /**
+     * A faithful touch event. `changedTouches` carries the touches this event is about
+     * and `touches` every finger currently down, which is what lets the target tell its
+     * own gesture apart from an unrelated one.
+     */
+    const touchEvent = (type: string, changed: TouchInit[], active = changed) =>
+      new TouchEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        touches: active,
+        changedTouches: changed,
+      } as any);
+
+    const startTouch = () => {
+      const svg = document.querySelector('#target svg')!;
+      svg.dispatchEvent(
+        touchEvent('touchstart', [{ identifier: 1, clientX: 170, clientY: 127 }]),
+      );
+    };
+
     let writer: Scribing;
     beforeEach(async () => {
       document.body.innerHTML = '<div id="target"></div>';
@@ -1423,16 +1445,9 @@ describe('Scribing', () => {
     });
 
     it('starts a user stroke on touchstart', () => {
-      const evt = new TouchEvent('touchstart', {
-        bubbles: true,
-        cancelable: true,
-        touches: [
-          {
-            clientX: 170,
-            clientY: 127,
-          },
-        ],
-      } as any);
+      const evt = touchEvent('touchstart', [
+        { identifier: 1, clientX: 170, clientY: 127 },
+      ]);
       const svg = document.querySelector('#target svg')!;
       svg!.getBoundingClientRect = () => ({ left: 50, top: 60 }) as any;
       const canceled = !svg!.dispatchEvent(evt);
@@ -1483,16 +1498,90 @@ describe('Scribing', () => {
     });
 
     it('discards a user stroke on touchcancel without submitting it', () => {
-      document.dispatchEvent(new TouchEvent('touchcancel'));
+      startTouch();
+      document.dispatchEvent(touchEvent('touchcancel', [{ identifier: 1 }], []));
       expect(writer._quiz!.cancelUserStroke).toHaveBeenCalledTimes(1);
       expect(writer._quiz!.endUserStroke).not.toHaveBeenCalled();
     });
 
     it('ends a user stroke on touchend', () => {
-      const evt = new TouchEvent('touchend', { bubbles: true, cancelable: true });
+      startTouch();
       const svg = document.querySelector('#target svg')!;
-      svg!.dispatchEvent(evt);
+      svg!.dispatchEvent(touchEvent('touchend', [{ identifier: 1 }], []));
       expect(writer._quiz!.endUserStroke).toHaveBeenCalledTimes(1);
+    });
+
+    // The end listeners are bound to the document so a stroke that leaves the target
+    // still finishes. That also delivered every unrelated touch on the page.
+    it('ignores a touchend belonging to another finger', () => {
+      startTouch();
+      document.dispatchEvent(
+        touchEvent('touchend', [{ identifier: 9 }], [{ identifier: 1 }]),
+      );
+      expect(writer._quiz!.endUserStroke).not.toHaveBeenCalled();
+    });
+
+    it('ignores a touchcancel belonging to another finger', () => {
+      startTouch();
+      document.dispatchEvent(
+        touchEvent('touchcancel', [{ identifier: 9 }], [{ identifier: 1 }]),
+      );
+      expect(writer._quiz!.cancelUserStroke).not.toHaveBeenCalled();
+    });
+
+    it('does not start a second stroke for a second finger', () => {
+      startTouch();
+      const svg = document.querySelector('#target svg')!;
+      svg.dispatchEvent(
+        touchEvent(
+          'touchstart',
+          [{ identifier: 2, clientX: 400, clientY: 400 }],
+          [
+            { identifier: 1, clientX: 170, clientY: 127 },
+            { identifier: 2, clientX: 400, clientY: 400 },
+          ],
+        ),
+      );
+      expect(writer._quiz!.startUserStroke).toHaveBeenCalledTimes(1);
+    });
+
+    it('adopts a new finger once the previous touch is gone', () => {
+      startTouch();
+      // A touchend that never reached the listener must not lock the target out.
+      const svg = document.querySelector('#target svg')!;
+      svg.dispatchEvent(
+        touchEvent('touchstart', [{ identifier: 2, clientX: 170, clientY: 127 }]),
+      );
+      expect(writer._quiz!.startUserStroke).toHaveBeenCalledTimes(2);
+    });
+
+    it("follows the stroke's own finger rather than the first on screen", () => {
+      const svg = document.querySelector('#target svg')!;
+      svg.getBoundingClientRect = () => ({ left: 50, top: 60 }) as any;
+      // Finger 9 is already down elsewhere, so it heads `touches`.
+      svg.dispatchEvent(
+        touchEvent(
+          'touchstart',
+          [{ identifier: 1, clientX: 170, clientY: 127 }],
+          [
+            { identifier: 9, clientX: 900, clientY: 900 },
+            { identifier: 1, clientX: 170, clientY: 127 },
+          ],
+        ),
+      );
+      expect(writer._quiz!.startUserStroke).toHaveBeenCalledWith({ x: 120, y: 67 });
+
+      svg.dispatchEvent(
+        touchEvent(
+          'touchmove',
+          [{ identifier: 1, clientX: 180, clientY: 137 }],
+          [
+            { identifier: 9, clientX: 900, clientY: 900 },
+            { identifier: 1, clientX: 180, clientY: 137 },
+          ],
+        ),
+      );
+      expect(writer._quiz!.continueUserStroke).toHaveBeenCalledWith({ x: 130, y: 77 });
     });
   });
 

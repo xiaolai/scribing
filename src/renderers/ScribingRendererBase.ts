@@ -17,6 +17,21 @@ export default interface ScribingRendererBase<
   destroy(): void;
 }
 
+/** Any element a render target can be built on. */
+export type RenderTargetElement =
+  HTMLElement | HTMLCanvasElement | SVGElement | SVGSVGElement;
+
+/**
+ * A renderer for any supported element type.
+ *
+ * The two parameters used to be `any`, which accepted anything at all — including a
+ * `mount` that wanted a number — and pushed the mismatch to the first frame.
+ */
+export type AnyScribingRenderer = ScribingRendererBase<
+  RenderTargetElement,
+  RenderTargetBase<RenderTargetElement>
+>;
+
 export interface ScribingRendererConstructor {
-  new (character: Character, positioner: Positioner): ScribingRendererBase<any, any>;
+  new (character: Character, positioner: Positioner): AnyScribingRenderer;
 }

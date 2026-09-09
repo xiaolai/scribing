@@ -72,6 +72,16 @@ export default class StrokeRenderer extends StrokeRendererBase {
     return this;
   }
 
+  /**
+   * The clip path is the one node this stroke puts outside its own group: it lives in
+   * the target's <defs>, which sub-targets share with the root. Removing it here is
+   * what lets the renderer stop emptying that shared element wholesale.
+   */
+  destroy() {
+    svg.removeElm(this._clip);
+    this._clip = undefined;
+  }
+
   render(props: StrokeRenderProps) {
     if (this.stroke.unit) {
       if (props === this._oldProps) return;
