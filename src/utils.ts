@@ -148,3 +148,31 @@ export function objRepeatCb<T>(times: number, cb: (i: number) => T) {
 }
 
 export const noop = () => {};
+
+/**
+ * `Math.min`/`Math.max` over an array without spreading it into the argument list.
+ *
+ * `Math.min(...points)` throws RangeError once the array passes roughly 125,000
+ * entries, and several callers here take point counts straight from validated input
+ * whose ceiling is 1,000,000. NaN propagates exactly as the spread form does, because
+ * callers rely on it to detect invalid geometry.
+ */
+export const minOf = (values: ArrayLike<number>) => {
+  let best = Infinity;
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (Number.isNaN(value)) return NaN;
+    if (value < best) best = value;
+  }
+  return best;
+};
+
+export const maxOf = (values: ArrayLike<number>) => {
+  let best = -Infinity;
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (Number.isNaN(value)) return NaN;
+    if (value > best) best = value;
+  }
+  return best;
+};

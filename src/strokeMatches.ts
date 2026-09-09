@@ -1,4 +1,4 @@
-import { average } from './utils';
+import { average, maxOf } from './utils';
 import {
   cosineSimilarity,
   equals,
@@ -106,7 +106,7 @@ const directionMatches = (points: Point[], stroke: Stroke) => {
     const strokeSimilarities = strokeVectors.map((strokeVector) =>
       cosineSimilarity(strokeVector, edgeVector),
     );
-    return Math.max(...strokeSimilarities);
+    return maxOf(strokeSimilarities);
   });
   const avgSimilarity = average(similarities);
   return avgSimilarity > COSINE_SIMILARITY_THRESHOLD;

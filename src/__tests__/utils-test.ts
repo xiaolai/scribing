@@ -103,4 +103,35 @@ describe('utils', () => {
       });
     });
   });
+
+  describe('minOf / maxOf', () => {
+    // Math.min(...array) throws RangeError past roughly 125,000 arguments, and point
+    // arrays here are validated up to 1,000,000 entries. These must agree with the
+    // spread form on everything it can actually handle, and survive what it cannot.
+    it('matches Math.min and Math.max on ordinary input', () => {
+      const values = [3, -1, 7, 0, 2.5];
+      expect(utils.minOf(values)).toBe(Math.min(...values));
+      expect(utils.maxOf(values)).toBe(Math.max(...values));
+    });
+
+    it('propagates NaN the way the spread form does', () => {
+      const values = [1, NaN, 3];
+      expect(utils.minOf(values)).toBeNaN();
+      expect(utils.maxOf(values)).toBeNaN();
+      expect(Math.min(...values)).toBeNaN();
+    });
+
+    it('returns the identity element for an empty array, as Math does', () => {
+      expect(utils.minOf([])).toBe(Infinity);
+      expect(utils.maxOf([])).toBe(-Infinity);
+    });
+
+    it('handles an array size that makes the spread form throw', () => {
+      const big = new Array(200_000).fill(5);
+      big[123_456] = -2;
+      expect(() => Math.min(...big)).toThrow(RangeError);
+      expect(utils.minOf(big)).toBe(-2);
+      expect(utils.maxOf(big)).toBe(5);
+    });
+  });
 });

@@ -1,6 +1,7 @@
 import { subtract, distance, length } from '../geometry';
 import { Point } from '../typings/types';
 import { CompiledMotorStroke } from '../units/types';
+import { minOf } from '../utils';
 
 export default class Stroke {
   unit?: CompiledMotorStroke;
@@ -42,7 +43,7 @@ export default class Stroke {
 
   getDistance(point: Point) {
     const distances = this.points.map((strokePoint) => distance(strokePoint, point));
-    return Math.min(...distances);
+    return minOf(distances);
   }
 
   getAverageDistance(points: Point[]) {

@@ -4,6 +4,31 @@ const stop = (signal) => {
     throw new DOMException('Animation preparation canceled', 'AbortError');
 };
 import yieldWork from './yield-work.mjs';
+
+/**
+ * Math.min/max over an array without spreading it into the argument list. The spread
+ * form throws RangeError past roughly 125,000 entries, and source records reach the
+ * validator's 1,000,000-point ceiling. NaN propagates as the spread form does.
+ */
+const minOf = (values) => {
+  let best = Infinity;
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (Number.isNaN(value)) return NaN;
+    if (value < best) best = value;
+  }
+  return best;
+};
+const maxOf = (values) => {
+  let best = -Infinity;
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (Number.isNaN(value)) return NaN;
+    if (value > best) best = value;
+  }
+  return best;
+};
+
 export async function thinInk(input, width, height, signal) {
   const ink = input.slice(),
     remove = [];
@@ -258,8 +283,8 @@ export function graphTrails(ink, width, height) {
   }
   return merged.sort(
     (a, b) =>
-      Math.min(...a.map((p) => p[1])) - Math.min(...b.map((p) => p[1])) ||
-      Math.min(...a.map((p) => p[0])) - Math.min(...b.map((p) => p[0])),
+      minOf(a.map((p) => p[1])) - minOf(b.map((p) => p[1])) ||
+      minOf(a.map((p) => p[0])) - minOf(b.map((p) => p[0])),
   );
 }
 export async function nearestSkeletonMap(skeleton, width, height, signal) {
@@ -1004,10 +1029,10 @@ export async function repairSourceJunctions(
           }
           if (!profile.length) continue;
           const radius = Math.max(...profile.flatMap((s) => s.radii)),
-            x1 = Math.min(...run.map((p) => p[0])) - radius,
-            x2 = Math.max(...run.map((p) => p[0])) + radius,
-            y1 = Math.min(...run.map((p) => p[1])) - radius,
-            y2 = Math.max(...run.map((p) => p[1])) + radius;
+            x1 = minOf(run.map((p) => p[0])) - radius,
+            x2 = maxOf(run.map((p) => p[0])) + radius,
+            y1 = minOf(run.map((p) => p[1])) - radius,
+            y2 = maxOf(run.map((p) => p[1])) + radius;
           for (
             let y = Math.max(0, Math.floor(y1));
             y <= Math.min(height - 1, Math.ceil(y2));

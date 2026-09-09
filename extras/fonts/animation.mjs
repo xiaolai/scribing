@@ -19,6 +19,31 @@ const stop = (signal) => {
     throw new DOMException('Animation preparation canceled', 'AbortError');
 };
 import pause from './yield-work.mjs';
+
+/**
+ * Math.min/max over an array without spreading it into the argument list. The spread
+ * form throws RangeError past roughly 125,000 entries, and source records reach the
+ * validator's 1,000,000-point ceiling. NaN propagates as the spread form does.
+ */
+const minOf = (values) => {
+  let best = Infinity;
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (Number.isNaN(value)) return NaN;
+    if (value < best) best = value;
+  }
+  return best;
+};
+const maxOf = (values) => {
+  let best = -Infinity;
+  for (let i = 0; i < values.length; i += 1) {
+    const value = values[i];
+    if (Number.isNaN(value)) return NaN;
+    if (value > best) best = value;
+  }
+  return best;
+};
+
 export function fontShapeKey(shape) {
   let hash = 2166136261;
   const text = JSON.stringify(shape);
@@ -378,10 +403,10 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
     active = [];
   for (let i = 0; i < skeleton.length; i++) if (skeleton[i]) active.push(i);
   if (!active.length) return null;
-  const sx = Math.min(...src.map((p) => p[0])),
-    sy = Math.min(...src.map((p) => p[1])),
-    sw = Math.max(...src.map((p) => p[0])) - sx,
-    sh = Math.max(...src.map((p) => p[1])) - sy;
+  const sx = minOf(src.map((p) => p[0])),
+    sy = minOf(src.map((p) => p[1])),
+    sw = maxOf(src.map((p) => p[0])) - sx,
+    sh = maxOf(src.map((p) => p[1])) - sy;
   let tx = width,
     ty = height,
     tr = 0,
