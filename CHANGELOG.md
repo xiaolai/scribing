@@ -9,6 +9,68 @@ coverage and the check gates. No public API was removed or renamed.
 
 ### Fixed
 
+A second audit pass closed every remaining behavioural finding. The entries below group
+them by what was wrong rather than by file; the per-finding record is in
+`.cc-suite/audits/`.
+
+**Animation chains could hang, drift or fall back to the wrong colour.** A duration that
+cannot be run — `strokeAnimationSpeed: 0` arrives as `Infinity`, a negative speed arrives
+negative — produced a tween whose progress never reached 1, so the animation stalled and
+its promise never settled; it is now instant. A `Delay` rewrote its own configured
+duration when paused, so every later iteration of a looping animation was short by
+however long it had been paused. Pause bookkeeping carried into the next run of the same
+mutation, starting its progress below zero. A renderer exception during a frame escaped
+into the animation-frame callback with nothing to settle the mutation, leaving its chain
+active forever; it now fails the chain. A chain paused between mutations kept going,
+because the index advances in a microtask and the pause landed on a mutation that had
+already finished. `radicalColor` resolved to a copy of the initial `strokeColor` instead
+of staying null, so radicals never followed a later `strokeColor` change; and animating
+it back from null wrote objects into every colour channel.
+
+**The renderers had no real lifecycle.** The canvas renderer's `destroy` was a no-op, so
+the previous character stayed on screen for the whole of its replacement's load and
+forever if that load failed. The SVG renderer emptied the target's shared `<defs>`, which
+clipped away the strokes of every other writer on the same element. A missing 2d context
+was dereferenced; a throwing stroke renderer left a transform on the stack. Pointer input
+now belongs to one touch, so releasing an unrelated finger anywhere on the page no longer
+ends the stroke being drawn, and a `<g>` target uses the inverse screen matrix rather than
+subtracting a painted bounding box.
+
+**Quiz state could be left inconsistent by ordinary input.** An exception from a feedback
+callback abandoned the rest of `endUserStroke`, leaving the gesture open and the quiz on
+the stroke just completed, so the same stroke could be submitted again and again.
+Skipping kept the gesture that belonged to the stroke being left behind and graded it
+against the next one. A gesture spanning a resize mixed points from two coordinate
+spaces. A backwards match skipped stroke-order disambiguation entirely, so with
+`acceptBackwardsStrokes` a later stroke drawn backwards was accepted as the current one.
+
+**Several boundaries accepted data they should not have.** A writing-data-pack manifest
+passed with an empty-object license and no name, version, provenance or source name. A
+font catalog entry without a pinned digest turned the integrity check into a no-op that
+still looked like it had run. Font and stroke-source downloads buffered whatever arrived
+before any size limit applied, because `content-length` is advisory and `Number(null)` is
+zero. `holeCount` looped forever on a mask shorter than its declared dimensions, because
+a write past the end of a typed array is dropped silently. Owner ids past 65535 wrapped
+to zero in a `Uint16Array` and read back as unowned. Colour components with enough digits
+reached the renderer as `Infinity`. Path validation accepted whitespace outside the SVG
+grammar, and text validation accepted the C1 control block.
+
+**Hot paths did work proportional to the wrong thing.** Every SVG frame emptied the
+surface and rebuilt one element per glyph plus one per learner stroke; every canvas frame
+threw away a drawing buffer of exactly the same size. Playback scanned a whole tile per
+frame for a stroke covering a fraction of it. Every probe row tested every contour
+segment, about 64 million comparisons for one fixture. Trail joining restarted its whole
+double loop after each join. Curve normalisation was recomputed for the same curves.
+A pointer gesture copied all of its points on every move and recorded points a fraction
+of a pixel apart, so a stroke cost quadratic in how long it took to draw rather than in
+the length of the path.
+
+**Two reveal defects in the animation mask.** A fixed neighbour cutoff rejected every
+neighbour of a stroke shorter than eight cells, so the gradient collapsed and the stroke
+revealed in whole-cell jumps. A stroke split across tiles has no coherent timing, because
+each tile rescales its strokes to the full clock range on its own; it is now rejected,
+along with a stroke that lies entirely outside the glyphs it claims.
+
 - **SVG pointer coordinates were silently unconverted when the transform matrix was
   unavailable.** `getScreenCTM()` returns null for an element that is not rendered, and
   `DOMPoint.matrixTransform(undefined)` defaults to the identity matrix, so every stroke
@@ -87,6 +149,25 @@ coverage and the check gates. No public API was removed or renamed.
   every stroke on each pointer event.
 
 ### Changed
+
+The public type surface tightened in four places. Nothing was removed or renamed, but a
+consumer who was relying on one of these will now see a compile error rather than
+behaviour that never worked.
+
+- `FontWriter.getShape()` is typed `ReadonlyFontShape`, which is what it has always
+  returned: a deeply frozen object. Writing to it threw in strict mode and was dropped
+  silently everywhere else.
+- `ScribingOptions` no longer offers `bounds`. The writer takes it from the writing unit
+  it has loaded, so a caller-supplied value was accepted by the type and then ignored.
+- `strokeWidth` and `outlineWidth` are marked deprecated with the reason. Neither
+  built-in renderer reads either, because a character stroke is a filled outline with no
+  line width; the width of the lines a learner draws is `drawingWidth`.
+- `updateColor` throws a named error for a null on a colour that has no fallback, where
+  it used to fail with "Cannot read properties of null". `highlightCompleteColor` accepts
+  null, which its own documentation has always promised.
+- A char data loader is passed an `AbortSignal` as a fourth argument, and the promise
+  from `animateCharacter` and its siblings can now reject when a renderer throws instead
+  of never settling. A loader that ignores the new argument still works.
 
 - **Toolchain upgraded**: Jest 26 to 30, ESLint 7 to 10 with flat config, TypeScript 4.1
   to 5.9, Rollup 2 to 4, Prettier 2 to 3. The deprecated `@wessberg/rollup-plugin-ts`

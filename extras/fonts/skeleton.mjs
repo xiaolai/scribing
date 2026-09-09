@@ -170,6 +170,15 @@ export async function thinInk(input, width, height, signal) {
   stop(signal);
   return ink;
 }
+/**
+ * Indices of the eight-connected set cells around `index`.
+ *
+ * @param {number} index flat cell index
+ * @param {Uint8Array} ink binary mask, exactly `width * height` cells
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @returns {number[]} neighbouring indices that are set, in raster order
+ */
 export function neighbors(index, ink, width, height) {
   const x = index % width,
     y = Math.floor(index / width),
@@ -200,7 +209,18 @@ function smooth(points) {
   out.push(points[points.length - 1]);
   return out;
 }
+/**
+ * Ordered cell-space trails through a thinned skeleton.
+ *
+ * Trails that meet end to end and continue smoothly are joined; branches stay separate.
+ *
+ * @param {Uint8Array} ink one-cell-wide skeleton, exactly `width * height` cells
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @returns {Array<Array<[number, number]>>} trails, sorted top-left first
+ */
 export function graphTrails(ink, width, height) {
+  assertGrid(ink, width, height, 'graphTrails');
   const active = [];
   for (let i = 0; i < ink.length; i++) if (ink[i]) active.push(i);
   const adjacent = new Map(active.map((i) => [i, neighbors(i, ink, width, height)]));
@@ -540,7 +560,18 @@ export async function assignOwnership(
   }
   return { owners, progress };
 }
+/**
+ * Regroup trails by the connected ink component they belong to.
+ *
+ * @param {Uint8Array} ink binary mask, exactly `width * height` cells
+ * @param {Array<Array<[number, number]>>} trails ordered cell-space points per stroke
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @param {AbortSignal} [signal] aborting it throws AbortError
+ * @returns {Promise<{trails: Array<Array<[number, number]>>, kinds: string[]}>}
+ */
 export async function componentTrails(ink, trails, width, height, signal) {
+  assertGrid(ink, width, height, 'componentTrails');
   const labels = new Int32Array(ink.length);
   labels.fill(-1);
   const components = [],
@@ -643,6 +674,16 @@ export async function componentTrails(ink, trails, width, height, signal) {
   }
   return { trails: out, kinds };
 }
+/**
+ * Rescale each stroke's progress to the full 0..65535 clock and drop empty strokes.
+ *
+ * @param {{owners: Uint16Array, progress: Uint16Array}} assignment mutated in place
+ * @param {Array<Array<[number, number]>>} trails ordered cell-space points per stroke
+ * @param {string[]} kinds one entry per trail
+ * @param {number} startIndex global index of the first trail
+ * @param {number} width positive integer
+ * @param {AbortSignal} [signal] aborting it throws AbortError
+ */
 export async function normalizeOwnership(
   assignment,
   trails,
