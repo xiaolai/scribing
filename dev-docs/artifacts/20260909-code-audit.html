@@ -1,0 +1,2394 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Scribing — Code Audit Report — 2026-09-09</title>
+    <style>
+      :root {
+        --bg: #fbfbfa;
+        --bg-elev: #ffffff;
+        --bg-sunk: #f4f4f2;
+        --fg: #1c1c1a;
+        --fg-muted: #5f5f5a;
+        --fg-faint: #8a8a83;
+        --line: #e2e2dd;
+        --line-strong: #cfcfc8;
+        --accent: #2f5fa8;
+        --accent-soft: #eaf0f9;
+        --crit: #a8232b;
+        --crit-bg: #fbeaeb;
+        --high: #b45a09;
+        --high-bg: #fcf1e4;
+        --med: #8a6a12;
+        --med-bg: #fbf5e2;
+        --low: #4a6b52;
+        --low-bg: #eef4ef;
+        --ok: #2f6b46;
+        --ok-bg: #eaf3ed;
+        --mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+        --sans:
+          -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, Roboto, Helvetica, Arial,
+          sans-serif;
+        --radius: 10px;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.05);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #131315;
+          --bg-elev: #1b1b1e;
+          --bg-sunk: #0e0e10;
+          --fg: #e8e8e4;
+          --fg-muted: #a5a5a0;
+          --fg-faint: #77776f;
+          --line: #2b2b2f;
+          --line-strong: #3a3a40;
+          --accent: #7ba7e8;
+          --accent-soft: #1a2434;
+          --crit: #f08a90;
+          --crit-bg: #2c1618;
+          --high: #e8a765;
+          --high-bg: #2c2015;
+          --med: #dcc272;
+          --med-bg: #2a2517;
+          --low: #8fbfa0;
+          --low-bg: #17231b;
+          --ok: #7fc79b;
+          --ok-bg: #16241b;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 16px rgba(0, 0, 0, 0.35);
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        -webkit-text-size-adjust: 100%;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--sans);
+        font-size: 16px;
+        line-height: 1.65;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 0 24px 96px;
+      }
+      header.masthead {
+        padding: 56px 0 28px;
+        border-bottom: 1px solid var(--line);
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--fg-faint);
+        font-weight: 600;
+        margin: 0 0 10px;
+      }
+      h1 {
+        font-size: clamp(28px, 5vw, 40px);
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+        font-weight: 680;
+      }
+      .sub {
+        color: var(--fg-muted);
+        margin: 0;
+        font-size: 16px;
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px 20px;
+        margin-top: 20px;
+        font-size: 13.5px;
+        color: var(--fg-muted);
+      }
+      .meta b {
+        color: var(--fg);
+        font-weight: 600;
+      }
+
+      h2 {
+        font-size: 22px;
+        letter-spacing: -0.01em;
+        margin: 52px 0 6px;
+        font-weight: 660;
+        scroll-margin-top: 20px;
+      }
+      h2 .num {
+        color: var(--fg-faint);
+        font-variant-numeric: tabular-nums;
+        font-weight: 600;
+        margin-right: 10px;
+      }
+      h3 {
+        font-size: 16.5px;
+        margin: 30px 0 8px;
+        font-weight: 640;
+      }
+      h4 {
+        font-size: 15px;
+        margin: 22px 0 6px;
+        font-weight: 640;
+        color: var(--fg-muted);
+      }
+      p {
+        margin: 10px 0;
+      }
+      ul,
+      ol {
+        margin: 10px 0;
+        padding-left: 22px;
+      }
+      li {
+        margin: 5px 0;
+      }
+      a {
+        color: var(--accent);
+      }
+      code {
+        font-family: var(--mono);
+        font-size: 0.87em;
+        background: var(--bg-sunk);
+        border: 1px solid var(--line);
+        border-radius: 5px;
+        padding: 0.1em 0.38em;
+        white-space: nowrap;
+      }
+      pre {
+        background: var(--bg-sunk);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        overflow-x: auto;
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.6;
+        margin: 12px 0;
+      }
+      pre code {
+        background: none;
+        border: 0;
+        padding: 0;
+        white-space: pre;
+      }
+
+      .rule {
+        height: 1px;
+        background: var(--line);
+        border: 0;
+        margin: 44px 0;
+      }
+
+      /* verdict banner */
+      .verdict {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px;
+        background: var(--bg-elev);
+        border: 1px solid var(--line-strong);
+        border-radius: var(--radius);
+        padding: 20px 22px;
+        margin: 28px 0;
+        box-shadow: var(--shadow);
+      }
+      .verdict .score {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        color: var(--high);
+      }
+      .verdict .score small {
+        display: block;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--fg-faint);
+        font-weight: 600;
+        margin-bottom: 2px;
+      }
+      .verdict p {
+        margin: 0;
+        flex: 1 1 300px;
+        color: var(--fg-muted);
+        font-size: 14.5px;
+      }
+
+      /* severity chips */
+      .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 22px 0;
+      }
+      .chip {
+        flex: 1 1 128px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 16px;
+        background: var(--bg-elev);
+        box-shadow: var(--shadow);
+      }
+      .chip .n {
+        font-size: 30px;
+        font-weight: 700;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+      }
+      .chip .l {
+        font-size: 11.5px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        font-weight: 650;
+        margin-top: 7px;
+      }
+      .chip.c {
+        background: var(--crit-bg);
+      }
+      .chip.c .n,
+      .chip.c .l {
+        color: var(--crit);
+      }
+      .chip.h {
+        background: var(--high-bg);
+      }
+      .chip.h .n,
+      .chip.h .l {
+        color: var(--high);
+      }
+      .chip.m {
+        background: var(--med-bg);
+      }
+      .chip.m .n,
+      .chip.m .l {
+        color: var(--med);
+      }
+      .chip.l {
+        background: var(--low-bg);
+      }
+      .chip.l .n,
+      .chip.l .l {
+        color: var(--low);
+      }
+
+      /* tables */
+      .tw {
+        overflow-x: auto;
+        margin: 16px 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--bg-elev);
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }
+      thead th {
+        background: var(--bg-sunk);
+        font-weight: 640;
+        font-size: 12.5px;
+        letter-spacing: 0.03em;
+        color: var(--fg-muted);
+        white-space: nowrap;
+      }
+      tbody tr:last-child td {
+        border-bottom: 0;
+      }
+      tbody tr.total td {
+        font-weight: 680;
+        background: var(--bg-sunk);
+      }
+      td.n,
+      th.n {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      td code {
+        white-space: nowrap;
+      }
+
+      /* severity pill */
+      .sev {
+        display: inline-block;
+        font-size: 10.5px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        vertical-align: 2px;
+      }
+      .sev.c {
+        background: var(--crit-bg);
+        color: var(--crit);
+      }
+      .sev.h {
+        background: var(--high-bg);
+        color: var(--high);
+      }
+      .sev.m {
+        background: var(--med-bg);
+        color: var(--med);
+      }
+      .sev.l {
+        background: var(--low-bg);
+        color: var(--low);
+      }
+      .sev.ok {
+        background: var(--ok-bg);
+        color: var(--ok);
+      }
+
+      /* finding blocks */
+      .f {
+        border: 1px solid var(--line);
+        border-left: 3px solid var(--line-strong);
+        border-radius: var(--radius);
+        background: var(--bg-elev);
+        padding: 16px 18px;
+        margin: 14px 0;
+        box-shadow: var(--shadow);
+      }
+      .f.c {
+        border-left-color: var(--crit);
+      }
+      .f.h {
+        border-left-color: var(--high);
+      }
+      .f.m {
+        border-left-color: var(--med);
+      }
+      .f.l {
+        border-left-color: var(--low);
+      }
+      .f .hd {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 6px;
+      }
+      .f .ti {
+        font-weight: 650;
+        font-size: 15.5px;
+        flex: 1 1 auto;
+      }
+      .f .loc {
+        font-family: var(--mono);
+        font-size: 12.5px;
+        color: var(--fg-faint);
+        word-break: break-all;
+      }
+      .f p {
+        margin: 8px 0;
+        font-size: 14.5px;
+      }
+      .f p:last-child {
+        margin-bottom: 0;
+      }
+      .f .lab {
+        font-weight: 650;
+        color: var(--fg-muted);
+      }
+
+      /* positives */
+      .pos {
+        background: var(--ok-bg);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin: 14px 0;
+      }
+      .pos h4 {
+        margin-top: 0;
+        color: var(--ok);
+      }
+      .pos ul {
+        margin-bottom: 0;
+      }
+
+      /* callout */
+      .note {
+        background: var(--accent-soft);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 14px 18px;
+        margin: 18px 0;
+        font-size: 14.5px;
+      }
+      .note strong {
+        color: var(--accent);
+      }
+
+      /* nav */
+      nav.toc {
+        background: var(--bg-elev);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 16px 20px;
+        margin: 28px 0;
+        box-shadow: var(--shadow);
+      }
+      nav.toc h4 {
+        margin: 0 0 8px;
+        font-size: 11.5px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--fg-faint);
+      }
+      nav.toc ol {
+        margin: 0;
+        padding-left: 20px;
+        columns: 2;
+        column-gap: 32px;
+        font-size: 14px;
+      }
+      nav.toc li {
+        margin: 3px 0;
+        break-inside: avoid;
+      }
+      nav.toc a {
+        text-decoration: none;
+      }
+      nav.toc a:hover {
+        text-decoration: underline;
+      }
+      @media (max-width: 640px) {
+        nav.toc ol {
+          columns: 1;
+        }
+      }
+
+      footer {
+        margin-top: 64px;
+        padding-top: 24px;
+        border-top: 1px solid var(--line);
+        color: var(--fg-faint);
+        font-size: 13px;
+      }
+      @media print {
+        body {
+          background: #fff;
+          color: #000;
+          font-size: 11pt;
+        }
+        .chip,
+        .f,
+        .tw,
+        nav.toc,
+        .verdict {
+          box-shadow: none;
+        }
+        nav.toc {
+          display: none;
+        }
+        h2 {
+          page-break-after: avoid;
+        }
+        .f {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="masthead">
+        <p class="eyebrow">Nine-dimension full audit</p>
+        <h1>Scribing — Code Audit Report</h1>
+        <p class="sub">
+          Multilingual stroke models, real-font animation, tracing and copying. A fork of
+          Hanzi Writer.
+        </p>
+        <div class="meta">
+          <span><b>Date</b> 2026-09-09</span>
+          <span><b>Auditor</b> Claude Code</span>
+          <span><b>Languages</b> TypeScript, JavaScript, Python</span>
+          <span><b>Production code</b> 6,841 lines across 52 files</span>
+          <span><b>Tests</b> 7,386 lines across 30 files</span>
+          <span><b>Tracked files</b> 755</span>
+        </div>
+      </header>
+
+      <div class="note" style="border-left: 3px solid var(--ok)">
+        <strong>Status: acted on.</strong> Every finding in this report was addressed in
+        the same session it was written. Advisories went from 846 to 1, coverage from
+        72.9% to 94.3% of statements, and all six browser gates pass. Two items resolved
+        differently from the recommendation here: <code>@types/nise</code> is not dead (it
+        supplies ambient types a text search missed), and the mask memo quantization
+        proposed under Performance was implemented, caught by the contour gate as a
+        sub-pixel regression at device pixel ratio 3, and reverted. This page is preserved
+        as the pre-fix record; see <code>CHANGELOG.md</code> for what changed.
+      </div>
+
+      <div class="verdict">
+        <div class="score"><small>Overall risk</small>Medium-High</div>
+        <p>
+          No critical defect exists in first-party code, and every verification gate
+          passes today. The risk is concentrated in the perimeter: an unmaintained
+          dependency tree, a coverage gate wired to nothing, and roughly 1,500 lines of
+          shipped source compressed past the point of review.
+        </p>
+      </div>
+
+      <div class="chips">
+        <div class="chip c">
+          <div class="n">1</div>
+          <div class="l">Critical</div>
+        </div>
+        <div class="chip h">
+          <div class="n">9</div>
+          <div class="l">High</div>
+        </div>
+        <div class="chip m">
+          <div class="n">17</div>
+          <div class="l">Medium</div>
+        </div>
+        <div class="chip l">
+          <div class="n">24</div>
+          <div class="l">Low</div>
+        </div>
+      </div>
+
+      <nav class="toc">
+        <h4>Contents</h4>
+        <ol>
+          <li><a href="#d1">Redundant &amp; low-value code</a></li>
+          <li><a href="#d2">Security &amp; risk management</a></li>
+          <li><a href="#d3">Correctness &amp; reliability</a></li>
+          <li><a href="#d4">Compliance &amp; standards</a></li>
+          <li><a href="#d5">Maintainability &amp; readability</a></li>
+          <li><a href="#d6">Performance &amp; efficiency</a></li>
+          <li><a href="#d7">Testing &amp; validation</a></li>
+          <li><a href="#d8">Dependency &amp; environment safety</a></li>
+          <li><a href="#d9">Documentation &amp; knowledge transfer</a></li>
+          <li><a href="#actions">Prioritised actions</a></li>
+          <li><a href="#positives">What this codebase does well</a></li>
+          <li><a href="#stats">Summary statistics</a></li>
+        </ol>
+      </nav>
+
+      <h2>The three that matter</h2>
+      <div class="f c">
+        <div class="hd">
+          <span class="ti"
+            >1 &nbsp;Remove <code>semantic-release</code> and <code>codecov</code>, then
+            upgrade the toolchain</span
+          ><span class="sev c">Critical</span>
+        </div>
+        <div class="loc">package.json</div>
+        <p>
+          Both are declared, invoked by nothing, and between them account for four
+          critical and twenty-six high advisories. <code>semantic-release</code> exists to
+          publish automatically, which the CI configuration explicitly forbids:
+          <em>&ldquo;CI must never publish automatically from master.&rdquo;</em>
+        </p>
+        <p>
+          <span class="lab">Effort</span> ~15 agent-minutes to remove. 2&ndash;4
+          agent-hours plus one CI cycle for the jest, eslint and TypeScript upgrade that
+          follows.
+        </p>
+      </div>
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >2 &nbsp;Declare <code>jsdom</code> and
+            <code>jest-environment-jsdom</code></span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">scripts/check-demo.cjs:4 &nbsp;·&nbsp; jest-jsdom-env.js:6</div>
+        <p>
+          Both are imported directly by first-party code and appear in no dependency list.
+          They resolve today only because jest 26 hoists them. jest 28 unbundled the jsdom
+          environment, so the upgrade above breaks both <code>yarn test</code> and
+          <code>yarn check-demo</code> the moment it lands, with an error that reads as
+          unrelated.
+        </p>
+        <p>
+          <span class="lab">Effort</span> ~10 agent-minutes. Must land <em>before</em> any
+          jest change.
+        </p>
+      </div>
+      <div class="f h">
+        <div class="hd">
+          <span class="ti">3 &nbsp;Reconcile the coverage gate with reality</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">.codecov.yml &nbsp;·&nbsp; src/fonts/animationMask.ts</div>
+        <p>
+          <code>.codecov.yml</code> demands 96% project coverage. Measured coverage is
+          72.94%, nothing uploads to Codecov, and <code>animationMask.ts</code> — 358
+          lines of mask geometry — sits at 0.71%. Anyone reading the repository concludes
+          coverage is enforced at 96%. It is enforced at zero.
+        </p>
+        <p>
+          <span class="lab">Effort</span> ~30 agent-minutes to reconcile the config.
+          3&ndash;5 agent-hours to build a fast regression net for the geometry.
+        </p>
+      </div>
+
+      <div class="note">
+        <strong>One decision cannot be deferred.</strong> 194.3&nbsp;MB of untracked font
+        and motor assets are required by five CI steps and by <code>prepublishOnly</code>.
+        No single file breaches GitHub's 100&nbsp;MB hard limit, so committing them will
+        succeed — and the cost will only become visible later, in every clone,
+        permanently. The current git pack is 56.0&nbsp;MiB. Decide on Git LFS, a verified
+        download step, or a separate assets repository <em>before</em> the commit, not
+        after.
+      </div>
+
+      <hr class="rule" />
+
+      <h2 id="d1">
+        <span class="num">01</span>Redundant &amp; low-value code
+        <span class="sev m">Medium</span>
+      </h2>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti">Four near-identical hardened structural validators</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">
+          src/fonts/validateShape.ts:16 · src/fonts/validateAnimation.ts:11 ·
+          src/units/validateUnit.ts:16 · src/units/provider.ts:16
+        </div>
+        <p>
+          <code>copyObject</code>/<code>copyArray</code> and <code>object</code>/<code
+            >array</code
+          >
+          differ only in identifier names, one loop-increment style, and an optional-keys
+          parameter. A diff produces four cosmetic hunks and no semantic difference.
+          <code>validateUnit.ts</code> carries a third variant, <code>provider.ts</code> a
+          fourth.
+        </p>
+        <p>
+          <span class="lab">Why it matters</span> These are the project's primary defence
+          against prototype pollution and accessor-property substitution. Fix a bypass in
+          one copy and three keep the hole, with nothing in CI to notice.
+        </p>
+        <p>
+          <span class="lab">Fix</span> Extract one <code>plainStructure</code> module and
+          route all four call sites through it, leaving the domain-specific field checks
+          in place.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Dead <code>Object.assign</code> polyfill kept alive by its own tests</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">
+          src/utils.ts:15, :29 &nbsp;·&nbsp; src/__tests__/utils-test.ts
+        </div>
+        <p>
+          Zero production references. The only thirty references exist in the test file
+          written to cover them. The comment reads &ldquo;because IE&rdquo;, while the
+          documented runtime floor requires WebAssembly, top-level await and
+          FinalizationRegistry.
+        </p>
+      </div>
+
+      <h4>Also found</h4>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Location</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                Write-only statics retain the last <code>LoadingManager</code> and options
+                forever
+              </td>
+              <td><code>src/Scribing.ts:101,103</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>validateFontPath</code> exported, discards its result, zero callers
+              </td>
+              <td><code>src/fonts/validateShape.ts:13</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td><code>demo/test_data.js</code> loaded by nothing</td>
+              <td><code>demo/index.html:34</code> loads only <code>test.js</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>.npmignore</code> lists three files that no longer exist, and is
+                superseded by <code>files</code>
+              </td>
+              <td><code>.npmignore</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td><code>isMsBrowser</code> gates two unreachable branches</td>
+              <td><code>src/utils.ts:161</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="d2">
+        <span class="num">02</span>Security &amp; risk management
+        <span class="sev h">High</span>
+      </h2>
+
+      <div class="pos">
+        <h4>Clean on every sink checked</h4>
+        <ul>
+          <li>
+            No hardcoded secrets, credentials, tokens or private keys anywhere in the
+            repository.
+          </li>
+          <li>
+            No <code>eval</code>, <code>Function</code>, <code>document.write</code> or
+            <code>insertAdjacentHTML</code>. The single production
+            <code>innerHTML</code> assigns a constant empty string.
+          </li>
+          <li>
+            Both demo scripts build DOM exclusively through <code>createElement</code> and
+            <code>textContent</code>.
+          </li>
+          <li>
+            Both development HTTP servers bind to <code>127.0.0.1</code> and reject any
+            resolved path outside the repository root.
+          </li>
+          <li>
+            <code>fetch-assets.mjs</code> refuses non-HTTPS sources and verifies SHA-256
+            and byte length after download.
+          </li>
+        </ul>
+      </div>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >51 critical and 476 high advisories in the build and test tree</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">yarn.lock — 846 advisories across 1,445 audited packages</div>
+        <p>
+          The runtime dependency set is empty, so none of this reaches library consumers.
+          All of it reaches contributors and CI. Detail and remediation in dimension 8.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Default loader fetches from a third-party CDN with no integrity check and no
+            timeout</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">src/defaultCharDataLoader.ts:4</div>
+        <p>
+          Requests go to <code>cdn.jsdelivr.net</code>. <code>xhr.timeout</code> is never
+          assigned, so the <code>ontimeout</code> handler registered at line 27 can never
+          fire, and a hung connection leaves the load pending indefinitely. There is no
+          subresource integrity or digest check, although the data version is already
+          pinned to 2.0.1.
+        </p>
+        <p>
+          <span class="lab">Fix</span> Set an explicit timeout, verify the pinned digest,
+          and surface the CDN dependency in the README's usage section rather than only in
+          licensing.
+        </p>
+      </div>
+
+      <div class="f l">
+        <div class="hd">
+          <span class="ti">Demo pages declare no Content-Security-Policy</span
+          ><span class="sev l">Low</span>
+        </div>
+        <div class="loc">demo/multilingual/index.html:2 · demo/index.html</div>
+        <p>
+          No live exposure, since the pages load only same-origin resources and
+          <code>check-font-animation.cjs</code> asserts that at test time. A
+          <code>default-src 'self'</code> policy costs one line and documents the
+          guarantee.
+        </p>
+      </div>
+
+      <h2 id="d3">
+        <span class="num">03</span>Correctness &amp; reliability
+        <span class="sev m">Medium</span>
+      </h2>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >SVG pointer coordinates silently unconverted when the transform matrix is
+            unavailable</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">src/renderers/svg/RenderTarget.ts:64, :74</div>
+        <p>
+          <code>getScreenCTM()</code> returns null for an element that is not rendered.
+          The optional chain then yields <code>undefined</code>, and the DOM Geometry spec
+          defines <code>matrixTransform(optional DOMMatrixInit matrix = {})</code> — so
+          <code>undefined</code> becomes an identity matrix and the method returns raw
+          client coordinates.
+        </p>
+        <p>
+          <span class="lab">Failure scenario</span> A writer mounted inside a container
+          that is <code>display:none</code> at first input, or inside a subtree a
+          framework attaches after mount. Every stroke maps to viewport space instead of
+          SVG user space, every match fails, and nothing is logged.
+        </p>
+        <p>
+          <span class="lab">Note</span> The newer <code>FontWriter.point()</code> already
+          guards this exact case by checking the determinant. The older path does not.
+        </p>
+        <pre><code>// current
+const localPt = this._pt.matrixTransform(this.node.getScreenCTM()?.inverse());
+return { x: localPt.x, y: localPt.y };
+
+// suggested — mirrors the FontWriter guard
+const matrix = this.node.getScreenCTM();
+if (matrix &amp;&amp; matrix.a * matrix.d - matrix.b * matrix.c !== 0) {
+  const localPt = this._pt.matrixTransform(matrix.inverse());
+  return { x: localPt.x, y: localPt.y };
+}
+return super._getMousePoint.call(this, evt);</code></pre>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Dimension clamp applied on the unit path but not the character path</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">src/Positioner.ts:39</div>
+        <pre><code>const effectiveWidth = bounds ? Math.max(1e-6, width - 2 * padding) : width - 2 * padding;</code></pre>
+        <p>
+          <code>_fillWidthAndHeight</code> falls back to
+          <code>getBoundingClientRect()</code>, which returns zero for an unlaid-out
+          element, and <code>updateDimensions</code> validates only when the mode is
+          <code>'unit'</code>. <code>scale</code> then becomes zero and
+          <code>convertExternalPoint</code> divides by it, producing
+          <code>Infinity</code> or <code>NaN</code> for every pointer coordinate.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti">Unguarded <code>evt.touches[0]</code></span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">src/renderers/RenderTargetBase.ts:87</div>
+        <p>
+          Latent rather than live: the method is bound only to <code>touchstart</code> and
+          <code>touchmove</code> today. Any future binding to <code>touchend</code> or
+          <code>touchcancel</code>, where the ended touch has moved to
+          <code>changedTouches</code>, throws inside an event handler.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti">Hardcoded index 31 coupled to a default parameter</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">src/units/gradeStroke.ts:57, :60</div>
+        <p>
+          <code>target.points[31 - i]</code> and <code>errors[31]</code> both assume
+          <code>sample()</code> returned exactly 32 points, true only because
+          <code>count = 32</code> is its default. Retuning the sampling density — a
+          plausible change — yields <code>undefined</code> distances and
+          <code>NaN</code> comparisons rather than a compile or test failure.
+        </p>
+      </div>
+
+      <h4>Also found</h4>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Location</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <code>_run</code> dereferences <code>undefined</code> for an empty looping
+                chain; unreachable via public API because
+                <code>validateCharData</code> requires a non-empty stroke array
+              </td>
+              <td><code>src/RenderState.ts:172</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>parseFloat(x, 10)</code> with a numeric fallback — correct by
+                accident, and the author's own <code>@ts-expect-error</code> says so
+              </td>
+              <td><code>src/utils.ts:132</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                Adjacent option backfills read from different source objects; identical
+                result, asymmetric invitation to break one
+              </td>
+              <td><code>src/Scribing.ts:713</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>destroy()</code> override bypasses the sub-target's own
+                <code>destroy()</code> and clears a shared <code>defs</code>
+              </td>
+              <td><code>src/renderers/svg/ScribingRenderer.ts:108</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="d4">
+        <span class="num">04</span>Compliance &amp; standards
+        <span class="sev m">Medium</span>
+      </h2>
+
+      <p>
+        Licensing is handled better than in most projects this size.
+        <code>COPYING.md</code> separates four distinct regimes — MIT on the library,
+        Arphic Public License on the Chinese data, OFL-1.1 on the Noto fonts, CC-BY-SA-3.0
+        on the KanjiVG-derived packs — and <code>packs/NOTICES.md</code> states explicitly
+        that ShareAlike propagates to the transformed data. Per-asset provenance,
+        revision, byte length and SHA-256 live in a lockfile and are verified offline.
+      </p>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Package metadata still attributes the fork to the upstream author</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">package.json — author field</div>
+        <p>
+          The <code>author</code> field names the original author and publishes their
+          email address, while <code>repository</code>, <code>homepage</code> and
+          <code>bugs</code> all point at the fork. On publish, npm would attribute the
+          package to a third party and list them as the contact for issues they cannot act
+          on. Attribution to the original author is already correct in
+          <code>LICENSE</code>, <code>COPYING.md</code> and <code>CITATION.cff</code>.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Build targets contradict the documented runtime requirements</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">babel.config.js · tsconfig.json · docs/fonts.md</div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>Declared</th>
+                <th>Value</th>
+                <th>Conflict</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Babel browsers</td>
+                <td><code>&gt;2%</code></td>
+                <td>
+                  resolved against stale <code>caniuse-lite</code>; effective target
+                  indeterminate
+                </td>
+              </tr>
+              <tr>
+                <td>Babel node</td>
+                <td><code>12</code></td>
+                <td>end of life April 2022; CI runs Node 22</td>
+              </tr>
+              <tr>
+                <td>tsconfig target</td>
+                <td><code>es5</code></td>
+                <td>Babel owns emit, so this affects typecheck only</td>
+              </tr>
+              <tr>
+                <td>docs/fonts.md floor</td>
+                <td>
+                  WASM, top-level await, WebCrypto, Path2D, Pointer Events,
+                  FinalizationRegistry
+                </td>
+                <td>evergreen browsers only</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The emitted bundle confirms it: classes and arrow functions preserved, optional
+          chaining and nullish coalescing transpiled away, and <code>Path2D</code>,
+          <code>MessageChannel</code>, <code>Math.imul</code>, <code>Uint16Array</code>,
+          <code>AbortController</code> and <code>WeakMap</code> shipped unpolyfilled. The
+          project pays a downlevel cost for browsers that cannot run it at all.
+        </p>
+      </div>
+
+      <h4>Also found</h4>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                No <code>engines</code>, <code>exports</code>, <code>sideEffects</code>,
+                <code>browserslist</code> or <code>keywords</code>. The documented deep
+                import <code>scribing/extras/fonts/provider.mjs</code> works only because
+                no export map exists — adding one later is a breaking change.
+              </td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>CITATION.cff</code> uses the entity form for the fork author
+                alongside a structured entry for the original author; citation tooling
+                renders the two differently.
+              </td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="d5">
+        <span class="num">05</span>Maintainability &amp; readability
+        <span class="sev h">High</span>
+      </h2>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >The heaviest algorithms are compressed past the point of review — and shipped
+            as npm source</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">extras/fonts/ · demo/multilingual/ · scripts/</div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>File</th>
+                <th class="n">Lines</th>
+                <th class="n">Longest line</th>
+                <th>In npm package</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>extras/fonts/skeleton.mjs</code></td>
+                <td class="n">303</td>
+                <td class="n">570</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td><code>extras/fonts/progress.mjs</code></td>
+                <td class="n">56</td>
+                <td class="n">504</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td><code>extras/fonts/animation.mjs</code></td>
+                <td class="n">216</td>
+                <td class="n">470</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td><code>extras/fonts/provider.mjs</code></td>
+                <td class="n">176</td>
+                <td class="n">218</td>
+                <td>yes</td>
+              </tr>
+              <tr>
+                <td><code>demo/multilingual/fonts.mjs</code></td>
+                <td class="n">99</td>
+                <td class="n">long handlers</td>
+                <td>no</td>
+              </tr>
+              <tr>
+                <td><code>scripts/check-font-sources.cjs</code></td>
+                <td class="n">45</td>
+                <td class="n">long scenarios</td>
+                <td>no</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <code>path-geometry.mjs</code> and <code>yield-work.mjs</code> are legitimately
+          derived and gated. These four are not — they are the medial-graph
+          skeletonisation, per-pixel progress assignment, animation preparation and
+          HarfBuzz shaping adapter, written directly in this style. One line of
+          <code>skeleton.mjs</code> holds a nested loop, a bounds guard, a work counter, a
+          yield checkpoint and a projection search.
+        </p>
+        <p>
+          <span class="lab">Why it matters</span> These files are inside
+          <code>package.json</code> <code>files</code>, so they are what a downstream
+          contributor reads. No diff of a 570-character line is legible.
+          <code>.eslintrc</code> covers only <code>src</code>, so no linter touches them.
+          This is the single largest obstacle to anyone but the original author
+          maintaining the font feature.
+        </p>
+      </div>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti">Cyclomatic complexity far above any workable threshold</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">
+          measured with eslint complexity rule over src, excluding tests
+        </div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>Function</th>
+                <th>File</th>
+                <th class="n">Complexity</th>
+                <th class="n">Lines</th>
+                <th class="n">Coverage</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>validateAnimation</code></td>
+                <td><code>src/fonts/validateAnimation.ts:77</code></td>
+                <td class="n">48</td>
+                <td class="n">141</td>
+                <td class="n">2.42%</td>
+              </tr>
+              <tr>
+                <td><code>prepareMaskField</code></td>
+                <td><code>src/fonts/animationMask.ts:16</code></td>
+                <td class="n">34</td>
+                <td class="n">137</td>
+                <td class="n">0.71%</td>
+              </tr>
+              <tr>
+                <td><code>validateShape</code></td>
+                <td><code>src/fonts/validateShape.ts:62</code></td>
+                <td class="n">32</td>
+                <td class="n">104</td>
+                <td class="n">89.29%</td>
+              </tr>
+              <tr>
+                <td><code>maskPath</code></td>
+                <td><code>src/fonts/animationMask.ts:292</code></td>
+                <td class="n">30</td>
+                <td class="n">67</td>
+                <td class="n">0.71%</td>
+              </tr>
+              <tr>
+                <td><code>outline</code></td>
+                <td><code>src/fonts/animationMask.ts:174</code></td>
+                <td class="n">26</td>
+                <td class="n">117</td>
+                <td class="n">0.71%</td>
+              </tr>
+              <tr>
+                <td><code>pathGeometry</code> group handler</td>
+                <td><code>src/fonts/pathGeometry.ts:141</code></td>
+                <td class="n">23</td>
+                <td class="n">61</td>
+                <td class="n">64.64%</td>
+              </tr>
+              <tr>
+                <td><code>endUserStroke</code></td>
+                <td><code>src/Quiz.ts:98</code></td>
+                <td class="n">16</td>
+                <td class="n">70</td>
+                <td class="n">97.00%</td>
+              </tr>
+              <tr>
+                <td><code>setAnimation</code></td>
+                <td><code>src/fonts/FontWriter.ts:156</code></td>
+                <td class="n">16</td>
+                <td class="n">79</td>
+                <td class="n">48.17%</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <span class="lab">Sharpest concentration</span>
+          <code>validateAnimation</code> has the highest complexity and the second-lowest
+          coverage in the repository, in the same function.
+        </p>
+      </div>
+
+      <h4>Also found</h4>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Location</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                Two files carry most of the public surface; <code>FontWriter</code> alone
+                has five methods over 60 lines and mixes DOM construction, pointer input,
+                canvas rasterisation, SVG mask emission, scheduling and raster comparison
+              </td>
+              <td><code>FontWriter.ts</code> 799 · <code>Scribing.ts</code> 788</td>
+              <td><span class="sev m">Medium</span></td>
+            </tr>
+            <tr>
+              <td>
+                Geometry serialised to SVG path strings and re-parsed with a regular
+                expression inside a hot loop, for no external consumer
+              </td>
+              <td><code>src/fonts/animationMask.ts:153, :207</code></td>
+              <td><span class="sev m">Medium</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>lint-test</code> covers <code>src</code> only, leaving 2,953 script
+                lines, 1,008 extras lines and 499 demo lines unlinted
+              </td>
+              <td><code>.eslintrc</code> · <code>package.json</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                Inner destructuring shadows <code>isMatch</code> and <code>avgDist</code>;
+                <code>no-shadow</code> is not enabled
+              </td>
+              <td><code>src/strokeMatches.ts:57</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>boundsOf</code> returns corners while the field it feeds holds width
+                and height; the caller converts correctly, the name does not
+              </td>
+              <td><code>scripts/data/build.mjs:65</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="d6">
+        <span class="num">06</span>Performance &amp; efficiency
+        <span class="sev m">Medium</span>
+      </h2>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >Full SVG teardown and rebuild on every pointermove — including moves that add
+            no point</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">src/fonts/FontWriter.ts:649 (handler) · :518 (render)</div>
+        <pre><code>const last = this.gesture[this.gesture.length - 1];
+if (Math.hypot(last.x - point.x, last.y - point.y) * this.transform.scale &gt;= 0.5)
+  this.gesture.push(point);
+this.render();          // ← unconditional</code></pre>
+        <p>
+          <code>render()</code> then runs
+          <code>while (this.surface.firstChild) this.surface.removeChild(...)</code> and
+          recreates every glyph path, every committed polyline and the in-progress
+          gesture.
+        </p>
+        <p>
+          <span class="lab">Impact</span> Cost per pointer event is O(glyphs + total
+          committed points). The documented ceiling is 1,024 gestures and 65,536 points on
+          a 32-glyph run, so a long session rebuilds tens of thousands of nodes per event,
+          on the input path, at sampling rates reaching 120&nbsp;Hz. The distance
+          threshold that was written to limit work does not limit the work that dominates.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Animation frames recompute the full mask, and the cache cannot hit during
+            playback</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">
+          src/fonts/animationMask.ts:292 · driven from FontWriter.ts:440, :472
+        </div>
+        <p>
+          The memo key is <code>`${stroke}:${threshold}`</code> where
+          <code>threshold = fraction * 65535</code>. <code>fraction</code> advances every
+          frame, so the key changes every frame and the cache never hits. Each miss scans
+          all <code>width × height</code> cells, emits clipped triangles at the front, and
+          runs <code>outline()</code>, which builds two Maps over every edge and walks the
+          resulting graph. The SVG path additionally creates a fresh
+          <code>&lt;mask&gt;</code> and a fresh <code>&lt;path&gt;</code> per glyph, per
+          tile, per frame.
+        </p>
+        <p>
+          <span class="lab">Fix</span> Quantise the threshold to the number of distinct
+          visual steps a tile can show, so consecutive frames hit. Reuse the mask elements
+          and update only the <code>d</code> attribute. Attach time is documented at about
+          1.2&nbsp;s for 1.87M cells; per-frame playback cost is documented nowhere.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >1 MB of scratch allocated per tile for at most 8,193 reachable slots</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">src/fonts/animationMask.ts:101</div>
+        <p>
+          Two <code>Float64Array(65536)</code> indexed by <code>owners[i]</code>.
+          <code>owners</code> is a <code>Uint16Array</code>, but
+          <code>validateAnimation</code> caps strokes at 8,192 and rejects any larger
+          owner, so indices above 8,192 are unreachable. Not a correctness problem — 8×
+          the necessary memory traffic during the most allocation-sensitive phase.
+        </p>
+      </div>
+
+      <h4>Also found</h4>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Location</th>
+              <th>Severity</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                The chosen plan's step is graded twice, and a miss rescans every remaining
+                step of every plan
+              </td>
+              <td><code>src/units/UnitQuiz.ts:121,135,145</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+            <tr>
+              <td>
+                Total point count recomputed with a full <code>reduce</code> on every
+                pointerdown and pointermove
+              </td>
+              <td><code>src/fonts/FontWriter.ts:611, :634</code></td>
+              <td><span class="sev l">Low</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2 id="d7">
+        <span class="num">07</span>Testing &amp; validation
+        <span class="sev h">High</span>
+      </h2>
+
+      <p>
+        30 suites, 329 tests, 15 snapshots, all passing in 43 seconds. Plus 19 data tests,
+        34 font tests, and seven Playwright gates across Chromium and WebKit. All pass.
+      </p>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Area</th>
+              <th class="n">Statements</th>
+              <th class="n">Branches</th>
+              <th class="n">Functions</th>
+              <th class="n">Lines</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>All files</td>
+              <td class="n">72.94%</td>
+              <td class="n">63.72%</td>
+              <td class="n">86.18%</td>
+              <td class="n">75.14%</td>
+            </tr>
+            <tr>
+              <td><code>src/</code> core</td>
+              <td class="n">96.53%</td>
+              <td class="n">88.29%</td>
+              <td class="n">97.95%</td>
+              <td class="n">98.00%</td>
+            </tr>
+            <tr>
+              <td><code>src/models</code></td>
+              <td class="n">100%</td>
+              <td class="n">100%</td>
+              <td class="n">100%</td>
+              <td class="n">100%</td>
+            </tr>
+            <tr>
+              <td><code>src/renderers</code></td>
+              <td class="n">98.51%</td>
+              <td class="n">88.89%</td>
+              <td class="n">100%</td>
+              <td class="n">100%</td>
+            </tr>
+            <tr>
+              <td><code>src/renderers/svg</code></td>
+              <td class="n">90.24%</td>
+              <td class="n">76.58%</td>
+              <td class="n">100%</td>
+              <td class="n">91.46%</td>
+            </tr>
+            <tr>
+              <td><code>src/units</code></td>
+              <td class="n">92.27%</td>
+              <td class="n">86.25%</td>
+              <td class="n">98.75%</td>
+              <td class="n">96.87%</td>
+            </tr>
+            <tr class="total">
+              <td><code>src/fonts</code></td>
+              <td class="n">37.75%</td>
+              <td class="n">29.02%</td>
+              <td class="n">40.17%</td>
+              <td class="n">39.48%</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti">A 96% gate against 72.94% actual, wired to nothing</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">.codecov.yml · .circleci/config.yml</div>
+        <p>
+          <code>target: 96</code>, <code>threshold: 1</code>, for both project and patch.
+          The <code>codecov</code> package is declared and invoked by no script; CI
+          contains no upload step. A reader reasonably concludes coverage is enforced at
+          96%. It is enforced at zero.
+        </p>
+      </div>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >The largest and most complex new module is effectively untested at unit
+            level</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">src/fonts/</div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>File</th>
+                <th class="n">Lines</th>
+                <th class="n">Statements</th>
+                <th>Uncovered</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>animationMask.ts</code></td>
+                <td class="n">358</td>
+                <td class="n">0.71%</td>
+                <td>20&ndash;142, 157&ndash;357</td>
+              </tr>
+              <tr>
+                <td><code>validateAnimation.ts</code></td>
+                <td class="n">217</td>
+                <td class="n">2.42%</td>
+                <td>5, 8, 10&ndash;216</td>
+              </tr>
+              <tr>
+                <td><code>yieldWork.ts</code></td>
+                <td class="n">17</td>
+                <td class="n">0%</td>
+                <td>3&ndash;15</td>
+              </tr>
+              <tr>
+                <td><code>FontWriter.ts</code></td>
+                <td class="n">799</td>
+                <td class="n">48.17%</td>
+                <td>154&ndash;299, 421&ndash;491, 540&ndash;665, 751&ndash;770</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          Those ranges are exactly the mask-field reconstruction, the seam-removing
+          <code>outline()</code> traversal, the marching-squares front, and the animation
+          attach and playback paths.
+        </p>
+        <p>
+          <span class="lab">Mitigation, and its limit</span> The browser gates do exercise
+          this code end to end, and they are thorough. But they need Playwright browsers
+          and 194&nbsp;MB of assets, they take minutes, and they assert about rendered
+          output rather than about geometry invariants. A seam regression surfaces as a
+          pixel diff in a slow gate, not as a fast failing test naming the invariant that
+          broke.
+        </p>
+        <p>
+          <span class="lab">Fix</span> Unit-test <code>outline()</code> for shared-edge
+          cancellation, T-junction collinearity and winding direction;
+          <code>clippedTriangle</code> for threshold-on-vertex, all-inside and
+          all-outside; <code>prepareMaskField</code> on small synthetic tiles with known
+          gradients. None of these needs a browser or a font.
+        </p>
+      </div>
+
+      <h2 id="d8">
+        <span class="num">08</span>Dependency &amp; environment safety
+        <span class="sev c">Critical</span>
+      </h2>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th class="n">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Runtime dependencies</td>
+              <td class="n">0</td>
+            </tr>
+            <tr>
+              <td>Direct devDependencies</td>
+              <td class="n">30</td>
+            </tr>
+            <tr>
+              <td>Packages audited</td>
+              <td class="n">1,445</td>
+            </tr>
+            <tr>
+              <td>Total advisories</td>
+              <td class="n">846</td>
+            </tr>
+            <tr class="total">
+              <td>Critical / High / Moderate / Low</td>
+              <td class="n">51 / 476 / 265 / 54</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>
+        An empty runtime dependency set is a real strength — none of the following reaches
+        a library consumer. All of it reaches contributors and CI.
+      </p>
+
+      <div class="f c">
+        <div class="hd">
+          <span class="ti"
+            >Six distinct critical advisories execute during a normal build or test
+            run</span
+          ><span class="sev c">Critical</span>
+        </div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Advisory</th>
+                <th>Fixed in</th>
+                <th>Reached through</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>handlebars</code></td>
+                <td>Remote code execution when compiling templates</td>
+                <td>≥ 4.7.7</td>
+                <td><code>semantic-release</code></td>
+              </tr>
+              <tr>
+                <td><code>@babel/traverse</code></td>
+                <td>Arbitrary code execution when compiling crafted code</td>
+                <td>≥ 7.23.2</td>
+                <td>Babel, rollup-plugin-ts, jest</td>
+              </tr>
+              <tr>
+                <td><code>minimist</code></td>
+                <td>Prototype pollution</td>
+                <td>≥ 1.2.6</td>
+                <td>Babel, rollup-plugin-ts, jest</td>
+              </tr>
+              <tr>
+                <td><code>json-schema</code></td>
+                <td>Prototype pollution</td>
+                <td>≥ 0.4.0</td>
+                <td><code>semantic-release</code>, jest</td>
+              </tr>
+              <tr>
+                <td><code>tar</code></td>
+                <td>Decompression and parse denial of service</td>
+                <td>≥ 7.5.19</td>
+                <td>rollup-plugin-filesize, semantic-release</td>
+              </tr>
+              <tr>
+                <td><code>form-data</code></td>
+                <td>Unsafe random function for boundary selection</td>
+                <td>≥ 2.5.4</td>
+                <td><code>semantic-release</code>, jest</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <code>@babel/traverse</code> and <code>minimist</code> are on the
+          <code>yarn build</code> path. Every contributor who builds this repository
+          executes them.
+        </p>
+      </div>
+
+      <h4>Advisory concentration by direct dependency</h4>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Direct dependency</th>
+              <th class="n">Crit</th>
+              <th class="n">High</th>
+              <th class="n">Mod</th>
+              <th class="n">Low</th>
+              <th>Invoked anywhere?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>semantic-release</code></td>
+              <td class="n">4</td>
+              <td class="n">22</td>
+              <td class="n">21</td>
+              <td class="n">6</td>
+              <td><span class="sev c">no</span></td>
+            </tr>
+            <tr>
+              <td><code>jest-cli</code></td>
+              <td class="n">4</td>
+              <td class="n">16</td>
+              <td class="n">17</td>
+              <td class="n">3</td>
+              <td>yes</td>
+            </tr>
+            <tr>
+              <td><code>@wessberg/rollup-plugin-ts</code></td>
+              <td class="n">2</td>
+              <td class="n">7</td>
+              <td class="n">5</td>
+              <td class="n">2</td>
+              <td>yes — deprecated package</td>
+            </tr>
+            <tr>
+              <td><code>@babel/core</code></td>
+              <td class="n">2</td>
+              <td class="n">3</td>
+              <td class="n">2</td>
+              <td class="n">2</td>
+              <td>yes</td>
+            </tr>
+            <tr>
+              <td><code>rollup-plugin-filesize</code></td>
+              <td class="n">1</td>
+              <td class="n">9</td>
+              <td class="n">5</td>
+              <td class="n">3</td>
+              <td>yes</td>
+            </tr>
+            <tr>
+              <td><code>@babel/preset-env</code></td>
+              <td class="n">1</td>
+              <td class="n">3</td>
+              <td class="n">2</td>
+              <td class="n">0</td>
+              <td>yes</td>
+            </tr>
+            <tr>
+              <td><code>eslint</code></td>
+              <td class="n">0</td>
+              <td class="n">7</td>
+              <td class="n">4</td>
+              <td class="n">1</td>
+              <td>yes</td>
+            </tr>
+            <tr>
+              <td><code>codecov</code></td>
+              <td class="n">0</td>
+              <td class="n">4</td>
+              <td class="n">3</td>
+              <td class="n">2</td>
+              <td><span class="sev c">no</span></td>
+            </tr>
+            <tr>
+              <td><code>rollup-plugin-terser</code></td>
+              <td class="n">0</td>
+              <td class="n">2</td>
+              <td class="n">0</td>
+              <td class="n">0</td>
+              <td>yes — deprecated package</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="f h">
+        <div class="hd">
+          <span class="ti"
+            >Two undeclared dependencies, resolved only through jest 26's hoisted
+            tree</span
+          ><span class="sev h">High</span>
+        </div>
+        <div class="loc">scripts/check-demo.cjs:4 · jest-jsdom-env.js:6</div>
+        <p>
+          <code>require('jsdom')</code> and
+          <code>require('jest-environment-jsdom')</code> appear in neither dependency
+          list. The installed <code>jsdom</code> is 16.4.0, from 2020. jest 28 removed the
+          bundled jsdom environment, so the upgrade breaks both <code>yarn test</code> and
+          <code>yarn check-demo</code> — a build break that is already scheduled and
+          currently invisible.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti"
+            >Toolchain is four to five years old; two build plugins deprecated
+            upstream</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="tw">
+          <table>
+            <thead>
+              <tr>
+                <th>Package</th>
+                <th>Installed</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>jest-cli</code></td>
+                <td>^26.6.3</td>
+                <td>2020 — end of life</td>
+              </tr>
+              <tr>
+                <td><code>eslint</code></td>
+                <td>^7.18.0</td>
+                <td>2021 — end of life</td>
+              </tr>
+              <tr>
+                <td><code>typescript</code></td>
+                <td>^4.1.3</td>
+                <td>2020</td>
+              </tr>
+              <tr>
+                <td><code>rollup</code></td>
+                <td>^2.36.2</td>
+                <td>2021</td>
+              </tr>
+              <tr>
+                <td><code>@wessberg/rollup-plugin-ts</code></td>
+                <td>^1.3.8</td>
+                <td>deprecated — renamed <code>rollup-plugin-ts</code></td>
+              </tr>
+              <tr>
+                <td><code>rollup-plugin-terser</code></td>
+                <td>^7.0.2</td>
+                <td>deprecated — use <code>@rollup/plugin-terser</code></td>
+              </tr>
+              <tr>
+                <td><code>codecov</code></td>
+                <td>^3.8.1</td>
+                <td>deprecated by Codecov</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          <span class="lab">Sequence</span> remove dead packages → declare
+          <code>jsdom</code> and <code>jest-environment-jsdom</code> → Babel → jest →
+          eslint and TypeScript → swap the two rollup plugins. One commit and one full CI
+          run each.
+        </p>
+      </div>
+
+      <div class="f m">
+        <div class="hd">
+          <span class="ti">194.3 MB of untracked assets that CI requires</span
+          ><span class="sev m">Medium</span>
+        </div>
+        <div class="loc">fonts/assets 169 MB · fonts/motor 21 MB</div>
+        <p>
+          Five CI steps and <code>prepublishOnly</code> read these files. The current git
+          pack is 56.0&nbsp;MiB; committing takes it past 250&nbsp;MB, permanently, since
+          history cannot be pruned without a rewrite. The largest single file is a
+          24&nbsp;MB CJK serif face, well under GitHub's 100&nbsp;MB hard limit — so the
+          push succeeds and the cost stays invisible until every subsequent clone.
+        </p>
+        <p>
+          <span class="lab">Options</span> Git LFS · a release-artifact download driven by
+          the existing <code>fetch-assets.mjs --download</code>, which already verifies
+          SHA-256 against the lockfile · a separate assets repository. If they do go into
+          git, record that as a decision in <code>fonts/README.md</code>.
+        </p>
+      </div>
+
+      <h2 id="d9">
+        <span class="num">09</span>Documentation &amp; knowledge transfer
+        <span class="sev l">Low</span>
+      </h2>
+
+      <p>
+        The documentation is a genuine strength. <code>docs/fonts.md</code> states what
+        the animation preparer does and does not claim, names the one character that has
+        no bundled glyph and why, reports a measured attach time with the machine it came
+        from and calls it
+        <em>&ldquo;measured setup cost, not a universal device guarantee&rdquo;</em>, and
+        separates three distinct grades of Unicode coverage claim. Very few projects
+        distinguish their own evidence classes this carefully.
+      </p>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Document</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <code>README.md</code>, <code>docs/fonts.md</code>,
+                <code>docs/multilingual.md</code>, <code>fonts/README.md</code>,
+                <code>packs/NOTICES.md</code>, <code>COPYING.md</code>,
+                <code>LICENSE</code>, <code>CITATION.cff</code>, <code>AGENTS.md</code>
+              </td>
+              <td><span class="sev ok">present</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>CONTRIBUTING.md</code> — fifteen check commands, five needing
+                Playwright and 194 MB of assets, with no map of which to run locally
+              </td>
+              <td><span class="sev l">missing</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>SECURITY.md</code> — no disclosure address for a library that parses
+                untrusted fonts, SVG paths and third-party JSON
+              </td>
+              <td><span class="sev l">missing</span></td>
+            </tr>
+            <tr>
+              <td>
+                <code>CHANGELOG.md</code> — version 3.0.0 declared, latest commit is
+                <code>feat!</code>, breaking changes recorded in commit subjects only
+              </td>
+              <td><span class="sev l">missing</span></td>
+            </tr>
+            <tr>
+              <td>
+                Architecture map — three parallel subsystems (character, writing-unit,
+                font) share a render target and almost nothing else
+              </td>
+              <td><span class="sev l">missing</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr class="rule" />
+
+      <h2 id="actions">Prioritised actions</h2>
+
+      <h3>Immediate — do first</h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Action</th>
+              <th>Effort</th>
+              <th>Blocks</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="n">1</td>
+              <td>
+                Remove <code>semantic-release</code>, <code>codecov</code>,
+                <code>@types/nise</code>
+              </td>
+              <td>~15 agent-min + 1 CI cycle</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="n">2</td>
+              <td>Declare <code>jsdom</code> and <code>jest-environment-jsdom</code></td>
+              <td>~10 agent-min + 1 CI cycle</td>
+              <td>must precede any jest upgrade</td>
+            </tr>
+            <tr>
+              <td class="n">3</td>
+              <td>Decide font-asset hosting before committing the working tree</td>
+              <td>~30 agent-min decision; 1&ndash;2 agent-hr to implement</td>
+              <td>blocks the commit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Short-term — one to two weeks</h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Action</th>
+              <th>Location</th>
+              <th>Effort</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="n">4</td>
+              <td>Guard the SVG pointer transform</td>
+              <td><code>svg/RenderTarget.ts:64,74</code></td>
+              <td>~30 agent-min</td>
+            </tr>
+            <tr>
+              <td class="n">5</td>
+              <td>Reconcile the coverage gate, then unit-test the mask geometry</td>
+              <td><code>.codecov.yml</code>, <code>animationMask.ts</code></td>
+              <td>~30 agent-min + 3&ndash;5 agent-hr</td>
+            </tr>
+            <tr>
+              <td class="n">6</td>
+              <td>
+                Format and lint <code>extras</code>, <code>demo</code>,
+                <code>scripts</code>
+              </td>
+              <td><code>.eslintrc</code>, <code>package.json</code></td>
+              <td>~1 agent-hr, land alone</td>
+            </tr>
+            <tr>
+              <td class="n">7</td>
+              <td>Return early from <code>move()</code> when no point was appended</td>
+              <td><code>FontWriter.ts:649</code></td>
+              <td>~20 agent-min + 2&ndash;3 agent-hr refactor</td>
+            </tr>
+            <tr>
+              <td class="n">8</td>
+              <td>
+                Upgrade jest, eslint, TypeScript, rollup and the two deprecated plugins
+              </td>
+              <td>toolchain</td>
+              <td>2&ndash;4 agent-hr; clock-time dominated by ~6 sequential CI runs</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Medium-term — one month</h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Action</th>
+              <th>Effort</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="n">9</td>
+              <td>Extract the shared structural validator across four call sites</td>
+              <td>~2 agent-hr</td>
+            </tr>
+            <tr>
+              <td class="n">10</td>
+              <td>
+                Split the three highest-complexity functions, then enable the
+                <code>complexity</code> rule
+              </td>
+              <td>~3 agent-hr — unlocks #5</td>
+            </tr>
+            <tr>
+              <td class="n">11</td>
+              <td>
+                Fix <code>package.json</code> metadata: author, engines, exports,
+                sideEffects, keywords, browserslist
+              </td>
+              <td>~45 agent-min</td>
+            </tr>
+            <tr>
+              <td class="n">12&ndash;15</td>
+              <td>
+                Positioner clamp · touch-list guard · gradeStroke indices · loader timeout
+                and CDN disclosure
+              </td>
+              <td>~1.5 agent-hr total</td>
+            </tr>
+            <tr>
+              <td class="n">16</td>
+              <td>
+                Quantise the mask cache key and reuse SVG mask elements across frames
+              </td>
+              <td>~2 agent-hr + a measurement pass</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Long-term — when time permits</h3>
+      <ol start="17">
+        <li>
+          Delete the dead code catalogued in dimension 1 — polyfill and its tests,
+          write-only statics, <code>validateFontPath</code>,
+          <code>demo/test_data.js</code>, <code>.npmignore</code>,
+          <code>isMsBrowser</code>. <em>~1 agent-hour.</em>
+        </li>
+        <li>
+          Add <code>CONTRIBUTING.md</code>, <code>SECURITY.md</code>,
+          <code>CHANGELOG.md</code> and a one-page architecture map with a Mermaid module
+          diagram. <em>~2 agent-hours.</em>
+        </li>
+        <li>
+          Size the <code>prepareMaskField</code> scratch arrays to the real stroke count;
+          have <code>outline()</code> accept structured cells instead of re-parsing
+          strings. <em>~1.5 agent-hours.</em>
+        </li>
+        <li>
+          Remaining low-severity items: parseFloat radix, the option-backfill asymmetry,
+          the empty looping chain, the sub-target destroy path,
+          <code>boundsOf</code> naming, <code>no-shadow</code>, and a CSP meta tag.
+          <em>~1 agent-hour.</em>
+        </li>
+      </ol>
+
+      <hr class="rule" />
+
+      <h2 id="positives">What this codebase does well</h2>
+
+      <div class="pos">
+        <h4>Structural validation is genuinely hardened, not decorative</h4>
+        <p>
+          Every validator inspects own property descriptors, rejects non-<code
+            >Object.prototype</code
+          >
+          and non-<code>Array.prototype</code> prototypes, rejects symbol keys, rejects
+          accessor properties, checks that the own-property count matches the array
+          length, and rejects a <code>toJSON</code> hook by name.
+          <code>src/units/provider.ts:60</code> validates <em>before</em> serialising,
+          specifically so a hidden hook cannot substitute unvalidated data after the
+          check. That ordering is deliberate and correct, and it is the kind of detail
+          most reviews never reach.
+        </p>
+      </div>
+
+      <div class="pos">
+        <h4>Cancellation and lifecycle correctness is systematic</h4>
+        <p>
+          Generation counters, abort controllers and serial numbers guard
+          <code>setCharacter</code>, <code>_setUnit</code>, <code>Quiz</code>,
+          <code>UnitQuiz</code>, <code>FontWriter.setAnimation</code> and both demo
+          scripts. Superseded loads settle rather than hanging. Reentrant callbacks that
+          destroy or restart a writer cannot schedule work on the replacement. This is the
+          failure class that breaks most interactive libraries, and it has clearly been
+          attacked on purpose.
+        </p>
+      </div>
+
+      <div class="pos">
+        <h4>The one deliberate duplication has an automated drift gate</h4>
+        <p>
+          <code>extras/fonts/path-geometry.mjs</code> is generated from its TypeScript
+          source by <code>build-geometry.cjs</code>, and
+          <code>check-assets.mjs</code> regenerates it and asserts byte equality with a
+          message naming the command to run. That is the right way to keep a derived copy
+          honest — and the pattern to reuse for any future derived artefact.
+        </p>
+      </div>
+
+      <div class="pos">
+        <h4>The package check verifies the real tarball, not an approximation</h4>
+        <p>
+          <code>scripts/check-package.cjs</code> runs <code>npm pack</code>, extracts it,
+          asserts no <code>src/</code>, <code>packs/</code>, <code>scripts/</code> or font
+          binaries leaked in, asserts the bundles retain the upstream copyright and
+          permission notice, asserts HarfBuzz did not leak into the core bundle, loads CJS
+          and ESM entry points, evaluates both browser bundles in a fresh VM context,
+          exercises the optional provider through a mocked fetch, and compiles a strict
+          external TypeScript consumer. Very few libraries verify their published artefact
+          this thoroughly.
+        </p>
+      </div>
+
+      <div class="pos">
+        <h4>Zero runtime dependencies</h4>
+        <p>None of the 846 advisories reaches a consumer of the published package.</p>
+      </div>
+
+      <hr class="rule" />
+
+      <h2 id="stats">Summary statistics</h2>
+
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th class="n">Critical</th>
+              <th class="n">High</th>
+              <th class="n">Medium</th>
+              <th class="n">Low</th>
+              <th class="n">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1. Redundant &amp; low-value code</td>
+              <td class="n">0</td>
+              <td class="n">0</td>
+              <td class="n">2</td>
+              <td class="n">5</td>
+              <td class="n">7</td>
+            </tr>
+            <tr>
+              <td>2. Security &amp; risk management</td>
+              <td class="n">0</td>
+              <td class="n">1</td>
+              <td class="n">2</td>
+              <td class="n">1</td>
+              <td class="n">4</td>
+            </tr>
+            <tr>
+              <td>3. Correctness &amp; reliability</td>
+              <td class="n">0</td>
+              <td class="n">1</td>
+              <td class="n">3</td>
+              <td class="n">4</td>
+              <td class="n">8</td>
+            </tr>
+            <tr>
+              <td>4. Compliance &amp; standards</td>
+              <td class="n">0</td>
+              <td class="n">0</td>
+              <td class="n">2</td>
+              <td class="n">3</td>
+              <td class="n">5</td>
+            </tr>
+            <tr>
+              <td>5. Maintainability &amp; readability</td>
+              <td class="n">0</td>
+              <td class="n">2</td>
+              <td class="n">2</td>
+              <td class="n">3</td>
+              <td class="n">7</td>
+            </tr>
+            <tr>
+              <td>6. Performance &amp; efficiency</td>
+              <td class="n">0</td>
+              <td class="n">1</td>
+              <td class="n">2</td>
+              <td class="n">2</td>
+              <td class="n">5</td>
+            </tr>
+            <tr>
+              <td>7. Testing &amp; validation</td>
+              <td class="n">0</td>
+              <td class="n">2</td>
+              <td class="n">2</td>
+              <td class="n">1</td>
+              <td class="n">5</td>
+            </tr>
+            <tr>
+              <td>8. Dependency &amp; environment safety</td>
+              <td class="n">1</td>
+              <td class="n">2</td>
+              <td class="n">2</td>
+              <td class="n">2</td>
+              <td class="n">7</td>
+            </tr>
+            <tr>
+              <td>9. Documentation &amp; knowledge transfer</td>
+              <td class="n">0</td>
+              <td class="n">0</td>
+              <td class="n">0</td>
+              <td class="n">3</td>
+              <td class="n">3</td>
+            </tr>
+            <tr class="total">
+              <td>Total</td>
+              <td class="n">1</td>
+              <td class="n">9</td>
+              <td class="n">17</td>
+              <td class="n">24</td>
+              <td class="n">51</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Gate status at the time of audit</h3>
+      <div class="tw">
+        <table>
+          <thead>
+            <tr>
+              <th>Gate</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>yarn typecheck</code></td>
+              <td><span class="sev ok">pass</span></td>
+            </tr>
+            <tr>
+              <td><code>yarn lint-test</code></td>
+              <td><span class="sev ok">pass</span> — covers <code>src</code> only</td>
+            </tr>
+            <tr>
+              <td><code>yarn test --runInBand</code></td>
+              <td>
+                <span class="sev ok">pass</span> — 30 suites, 329 tests, 15 snapshots
+              </td>
+            </tr>
+            <tr>
+              <td><code>yarn test-data</code></td>
+              <td><span class="sev ok">pass</span> — 19 tests</td>
+            </tr>
+            <tr>
+              <td><code>yarn check-data</code></td>
+              <td>
+                <span class="sev ok">pass</span> — 149 packs, 8,720 units, integrity
+                verified
+              </td>
+            </tr>
+            <tr>
+              <td><code>yarn check-fonts</code></td>
+              <td>
+                <span class="sev ok">pass</span> — 139 fonts, 120 script entries, all
+                hashes match
+              </td>
+            </tr>
+            <tr>
+              <td><code>yarn test-fonts</code></td>
+              <td><span class="sev ok">pass</span> — 34 tests</td>
+            </tr>
+            <tr>
+              <td><code>yarn build</code></td>
+              <td>
+                <span class="sev ok">pass</span> — warns:
+                <code>caniuse-lite</code> outdated
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <hr class="rule" />
+
+      <h2>Conclusion</h2>
+
+      <p>
+        Scribing's first-party code is stronger than its surroundings. The validation
+        layer, the cancellation discipline, the packaging verification and the licensing
+        documentation all sit above the standard this kind of library usually meets, and
+        every gate in the repository passes today. There is no critical defect in code
+        that anyone wrote here.
+      </p>
+
+      <p>
+        The risk sits in the perimeter. The dependency tree carries fifty-one critical
+        advisories, and the two packages contributing most of them are declared but never
+        invoked — one of them, <code>semantic-release</code>, existing to do precisely
+        what the CI configuration says must never happen. Two dependencies that
+        first-party code imports directly are not declared at all, and they will break the
+        test suite the moment the overdue jest upgrade lands. A coverage gate demands 96%
+        while measuring nothing, over a module sitting at 0.71%. And roughly 1,500 lines
+        of the font runtime, shipped as npm source, are compressed to a density at which
+        review is not possible.
+      </p>
+
+      <p>
+        None of these is difficult. The dependency cleanup and the two missing
+        declarations are under half an agent-hour combined. The formatting pass is one
+        agent-hour and fully mechanical. The substantive work — unit tests for the mask
+        geometry, splitting the three highest-complexity functions, and the pointer-move
+        rendering fix — is perhaps eight to twelve agent-hours of focused effort, with
+        clock-time dominated by six or so sequential CI runs during the toolchain upgrade
+        rather than by the edits themselves.
+      </p>
+
+      <p>
+        One decision cannot be deferred and is not the auditor's to make: whether
+        194&nbsp;MB of font and motor assets enter git history. Five CI steps and
+        <code>prepublishOnly</code> need them, no single file breaches GitHub's hard
+        limit, so the commit will succeed and the cost will only become visible in every
+        subsequent clone.
+      </p>
+
+      <p>
+        <strong>Production readiness:</strong> the library is ready for the
+        technical-preview status it claims. It is not ready to publish until
+        <code>package.json</code> names its actual maintainer, the unused release tooling
+        is gone, and the asset-hosting decision is made — all three of which block or
+        contaminate the first <code>npm publish</code>.
+      </p>
+
+      <footer>
+        Full findings, code excerpts and remediation detail:
+        <code>dev-docs/research/20260909-code-audit.md</code><br />
+        Audit completed 2026-09-09 · nine-dimension full pass · all figures measured
+        against the working tree at time of audit.
+      </footer>
+    </div>
+  </body>
+</html>

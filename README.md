@@ -13,7 +13,15 @@ yarn install --frozen-lockfile
 yarn build
 ```
 
-Serve the repository with a local HTTP server and open `/demo/` for Chinese or `/demo/multilingual/` for local multilingual packs. The multilingual demo loads the selected pack from `packs/generated/`; it does not use a remote data service.
+Node.js 22 or newer. Run `yarn serve-demo` and open the printed URL for `/demo/multilingual/`, or serve the repository with any local HTTP server and open `/demo/` for Chinese. The multilingual demo loads the selected pack from `packs/generated/`; it does not use a remote data service.
+
+The optional font demo additionally needs the Noto binaries, which are not in git:
+
+```sh
+yarn fetch-fonts   # ~169 MB, verified against fonts/assets.lock.json
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full check workflow, [docs/architecture.md](docs/architecture.md) for how the three subsystems fit together, and [SECURITY.md](SECURITY.md) for what the library validates and what it trusts.
 
 ## Usage
 
@@ -39,18 +47,26 @@ This fork has not yet been published to npm. The package name in this repository
 
 The inherited API is described in the [upstream documentation](https://hanziwriter.org/docs.html). Use `Scribing` in place of `HanziWriter` in its examples. Custom stroke datasets can be supplied through `charDataLoader`.
 
+**Without a `charDataLoader`, `setCharacter()` fetches from a third-party CDN.** The default loader requests `https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/<char>.json` on first use. That is a cross-origin request to jsDelivr and a disclosure of which characters are being practised. Supply your own loader, as shown below, to keep every request on your own origin.
+
 ## Validation
 
+The fast checks need nothing but the repository and finish in under a minute:
+
 ```sh
-yarn typecheck
+yarn prettier-check
 yarn lint-test
-yarn test --runInBand
+yarn typecheck
+yarn test --runInBand   # enforces coverage thresholds
+yarn test-data
+yarn check-data
 yarn build
 yarn check-demo
 yarn check-package
 ```
 
-CI runs these checks with Node.js 22. Publishing is manual; pushing to `master` does not publish a package.
+A second tier exercises real browsers and the font binaries, and takes many minutes.
+CI runs both with Node.js 22. Publishing is manual; pushing to `master` does not publish a package.
 
 ## Lifecycle
 
@@ -92,3 +108,7 @@ When replacing a character, stale responses cannot update the current exercise. 
 Scribing is derived from Hanzi Writer by David Chanin. The original copyright notice is retained in [LICENSE](LICENSE), and the library remains MIT licensed.
 
 The default Chinese stroke data still comes from [Hanzi Writer Data](https://github.com/chanind/hanzi-writer-data), derived from [Make Me a Hanzi](https://github.com/skishore/makemeahanzi) and Arphic fonts. That data retains its separate Arphic Public License; see [COPYING.md](COPYING.md).
+
+### Formal font animation and practice
+
+`Scribing.createFontWriter` displays real filled font outlines for animation, tracing and copying. The optional HarfBuzz provider supports contextual shaping and changing actual font files; the optional guide preparer fits compatible supplied stroke plans and creates clearly labeled drawing sequences for other forms. The main action says Animate strokes for supplied plans and Reveal shape for generated or mixed paths; Replay my ink stays separate. Source-loading errors offer Retry without discarding the selected font or learner ink. The offline multilingual demo includes 139 Noto fonts across 120 script/language entries, with local TTF/OTF input and a separate ordered-model view. Font assets are optional and excluded from the core npm package. See [font API, browser requirements and checks](docs/fonts.md) and [asset provenance](fonts/README.md).
