@@ -51,12 +51,12 @@
 | 43 | extras/fonts/provider.mjs | 363  |  Low  |  6  |  shapeCustom copies oversized buffers before validating their byte length, unnecessarily duplicating potentially huge allocations  | open |
 | 44 | extras/fonts/skeleton.mjs | 7  |  Low  |  9  |  Exported helpers lack contracts for binary masks, dimensions, coordinate validity, owner limits, mutation, and cancellation  | open (doc) |
 | 45 | extras/fonts/skeleton.mjs | 232  |  Medium  |  6  |  Merging compares every disconnected trail pair synchronously; 8,192 separated strokes blocked the event loop for approximately 2.23 seconds | open |
-| 46 | extras/fonts/skeleton.mjs | 261  |  Medium  |  3  |  Spreading long trails into Math.min throws RangeError; reproduced with a 1,206,808-cell mask within the caller’s cell limit  | open |
+| 46 | extras/fonts/skeleton.mjs | 261  |  Medium  |  3  |  Spreading long trails into Math.min throws RangeError; reproduced with a 1,206,808-cell mask within the caller’s cell limit  | fixed |
 | 47 | extras/fonts/skeleton.mjs | 300  |  Low  |  3  |  nearestSkeletonMap can resolve after cancellation during its final yield; empty inputs also bypass cancellation, as does componentTrails  | open |
 | 48 | extras/fonts/skeleton.mjs | 302  |  Medium  |  2  |  Unvalidated dimensions can make holeCount loop indefinitely; holeCount(new Uint8Array(1), 3, 3) repeatedly enqueues beyond its buffers  | open |
 | 49 | extras/fonts/skeleton.mjs | 372  |  Medium  |  2  |  Non-finite or excessively long trail segments produce unbounded synchronous sampling without cancellation checks  | open |
 | 50 | extras/fonts/skeleton.mjs | 379  |  Medium  |  3  |  Owner IDs silently wrap in Uint16Array; startIndex 65535 assigns owner zero and defeats the visited sentinel  | open |
-| 51 | extras/fonts/skeleton.mjs | 487  |  Medium  |  3  |  Spreading all component areas into Math.max can exceed the engine’s argument limit on highly fragmented masks  | open |
+| 51 | extras/fonts/skeleton.mjs | 487  |  Medium  |  3  |  Spreading all component areas into Math.max can exceed the engine’s argument limit on highly fragmented masks  | fixed |
 | 52 | extras/fonts/skeleton.mjs | 576  |  Medium  |  5  |  repairSourceJunctions spans 1,052 lines with deeply nested repair strategies and shared mutable bookkeeping  | open |
 | 53 | extras/fonts/skeleton.mjs | 706  |  Low  |  7  |  Work-budget exhaustion lacks a regression covering discarded current-pair updates and previously committed repairs  | deferred (test gap) |
 | 54 | extras/fonts/skeleton.mjs | 936  |  Low  |  1  |  Each segment stores an arc property that is never read  | open |
@@ -102,7 +102,7 @@
 | 94 | src/fonts/types.ts | 3  |  Low  |  3  |  FontShape permits mutations that throw or silently fail on the deeply frozen instance returned by getShape  | open |
 | 95 | src/validation/plainStructure.ts | 66  |  Low  |  3  |  A Proxy can remove an enumerated property before descriptor retrieval, causing an uncontrolled TypeError instead of fail with the offending | open |
 | 96 | src/validation/plainStructure.ts | 160  |  Low  |  3  |  Prototype checks accept a Float64Array reparented to Uint16Array.prototype; copying silently converts values such as 65537 and -1 into 1 an | open |
-| 97 | src/Quiz.ts | 55  |  Medium  |  3  |  Negative out-of-range, fractional, and NaN start indices survive normalization and crash stroke grading  | open |
+| 97 | src/Quiz.ts | 55  |  Medium  |  3  |  Negative out-of-range, fractional, and NaN start indices survive normalization and crash stroke grading  | fixed |
 | 98 | src/Quiz.ts | 78  |  Medium  |  6  |  Every attempted stroke remains retained, including after normal completion, accumulating point arrays and hidden SVG elements  | open |
 | 99 | src/Quiz.ts | 88  |  Medium  |  6  |  Unbounded gesture growth combined with copying all points on every movement produces quadratic allocation work  | open |
 | 100 | src/Quiz.ts | 95  |  Medium  |  3  |  Resizing during drawing mixes points converted with different positioners in one gesture  | open |
@@ -118,7 +118,7 @@
 | 110 | src/strokeMatches.ts | 144  |  Low  |  6  |  Curve normalization repeats for the same gesture and reference strokes across candidate checks and reverse retries  | open |
 | 111 | src/strokeMatches.ts | 147  |  Low  |  6  |  All five Frechet comparisons execute even after a rotation satisfies the acceptance threshold  | open |
 | 112 | src/strokeMatches.ts | 185  |  Low  |  1  |  withinDistThresh is redundantly checked after its false branch has already returned  | open |
-| 113 | src/utils.ts | 19  |  Medium  |  3  |  Error normalization itself throws for values such as Object.create(null), disrupting loader rejection handling  | open |
+| 113 | src/utils.ts | 19  |  Medium  |  3  |  Error normalization itself throws for values such as Object.create(null), disrupting loader rejection handling  | fixed |
 | 114 | src/utils.ts | 41  |  Low  |  2  |  The merge imports inherited override properties and lets an own __proto__ key change the returned object's prototype  | open |
 | 115 | src/utils.ts | 63  |  Low  |  9  |  The comment describes reading a nested value, but inflate constructs a nested object  | open (doc) |
 | 116 | src/utils.ts | 70  |  Low  |  3  |  A scope containing __proto__ changes a container's prototype instead of creating the requested own property  | open |
