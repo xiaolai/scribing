@@ -459,6 +459,104 @@ describe('FontWriter animation and input', () => {
     });
   });
 
+  describe('work avoided', () => {
+    // These pin the two performance claims as observable behaviour rather than as a
+    // timing number, which would be noisy on a shared runner and would not say which
+    // work was skipped.
+    let removeGeometryStubs: () => void;
+    beforeEach(() => {
+      removeGeometryStubs = installGeometryStubs();
+    });
+    afterEach(() => removeGeometryStubs());
+
+    it('does not re-render for a pointer move that records no point', async () => {
+      const w = writer('svg');
+      await w.setShape(shape());
+      w.startTrace();
+      const surface = document.querySelector('#font svg')!;
+      surface.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+
+      // render() replaces the whole root group, so its identity is a reliable witness.
+      const groupBefore = surface.querySelector('g');
+      // Same coordinates: below the movement threshold, so nothing is recorded.
+      window.dispatchEvent(pointerEvent('pointermove', { clientX: 10, clientY: 10 }));
+      expect(surface.querySelector('g')).toBe(groupBefore);
+
+      // A move that clears the threshold must still render.
+      window.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90 }));
+      expect(surface.querySelector('g')).not.toBe(groupBefore);
+      w.destroy();
+    });
+
+    it('reuses every animation element across frames, not just the mask', async () => {
+      const w = writer('svg');
+      await w.setShape(shape());
+      await w.setAnimation(animationFor(w.check().shapeId));
+
+      const playback = w.animate();
+      tick(0);
+      const surface = document.querySelector('#font svg')!;
+      const first = {
+        mask: surface.querySelector('mask'),
+        reveal: surface.querySelector('mask path'),
+        ink: surface.querySelector('g[mask]'),
+      };
+      tick(40);
+      tick(80);
+      expect(surface.querySelector('mask')).toBe(first.mask);
+      expect(surface.querySelector('mask path')).toBe(first.reveal);
+      expect(surface.querySelector('g[mask]')).toBe(first.ink);
+
+      w.cancel();
+      await playback;
+      w.destroy();
+    });
+  });
+
+  describe('a caller-supplied surface', () => {
+    // The writer borrows the canvas; it does not own it. Overwriting role and
+    // aria-label and never putting them back leaves the caller's element altered
+    // after destroy, which is a mutation of something the caller still holds.
+    it('restores attributes it overwrote', async () => {
+      document.body.innerHTML =
+        '<canvas id="own" role="application" aria-label="mine"></canvas>';
+      const canvas = document.querySelector<HTMLCanvasElement>('#own')!;
+      const w = Scribing.createFontWriter(canvas, {
+        width: 300,
+        height: 300,
+        renderer: 'canvas',
+      });
+      await w.setShape(shape());
+      expect(canvas.getAttribute('role')).toBe('img');
+
+      w.destroy();
+      expect(canvas.getAttribute('role')).toBe('application');
+      expect(canvas.getAttribute('aria-label')).toBe('mine');
+    });
+
+    it('removes attributes that were absent before it mounted', async () => {
+      document.body.innerHTML = '<canvas id="own"></canvas>';
+      const canvas = document.querySelector<HTMLCanvasElement>('#own')!;
+      const w = Scribing.createFontWriter(canvas, {
+        width: 300,
+        height: 300,
+        renderer: 'canvas',
+      });
+      await w.setShape(shape());
+      w.destroy();
+
+      expect(canvas.hasAttribute('role')).toBe(false);
+      expect(canvas.hasAttribute('aria-label')).toBe(false);
+    });
+
+    it('still labels a surface it created itself', async () => {
+      const w = writer('svg');
+      await w.setShape(shape());
+      expect(document.querySelector('#font svg')!.getAttribute('role')).toBe('img');
+      w.destroy();
+    });
+  });
+
   describe('comparison', () => {
     it('reports zero coverage with no ink', async () => {
       const w = writer('svg');

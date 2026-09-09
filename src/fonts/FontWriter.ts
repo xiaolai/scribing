@@ -55,6 +55,11 @@ export default class FontWriter {
   private generation = 0;
   private transform = { x: 0, y: 0, scale: 1 };
   private oldTouchAction = '';
+  /**
+   * Attributes this writer set on a surface it did not create, with the value to put
+   * back on destroy. `null` means the attribute was absent and must be removed again.
+   */
+  private restoreAttributes: [string, string | null][] = [];
 
   constructor(target: string | HTMLElement, options: FontWriterOptions) {
     const host = typeof target === 'string' ? document.getElementById(target) : target;
@@ -81,14 +86,22 @@ export default class FontWriter {
     }
     this.oldTouchAction = this.surface.style.touchAction;
     this.surface.style.touchAction = 'none';
-    this.surface.setAttribute('role', 'img');
-    this.surface.setAttribute('aria-label', 'Font outline drawing area');
+    // A caller-supplied canvas belongs to the caller. Record what was there so destroy
+    // can put it back, including the case where the attribute was absent entirely.
+    this.setOwnedAttribute('role', 'img');
+    this.setOwnedAttribute('aria-label', 'Font outline drawing area');
     this.surface.addEventListener('pointerdown', this.down);
     window.addEventListener('pointermove', this.move);
     window.addEventListener('pointerup', this.up);
     window.addEventListener('pointercancel', this.cancelPointer);
     this.surface.addEventListener('lostpointercapture', this.cancelPointer);
     this.render();
+  }
+  private setOwnedAttribute(name: string, value: string) {
+    if (!this.owned) {
+      this.restoreAttributes.push([name, this.surface.getAttribute(name)]);
+    }
+    this.surface.setAttribute(name, value);
   }
   private alive() {
     if (this.destroyed) throw new Error('FontWriter has been destroyed');
@@ -823,6 +836,11 @@ export default class FontWriter {
     window.removeEventListener('pointercancel', this.cancelPointer);
     this.surface.removeEventListener('lostpointercapture', this.cancelPointer);
     this.surface.style.touchAction = this.oldTouchAction;
+    for (const [name, previous] of this.restoreAttributes) {
+      if (previous === null) this.surface.removeAttribute(name);
+      else this.surface.setAttribute(name, previous);
+    }
+    this.restoreAttributes = [];
     if (this.owned && this.surface.parentNode)
       this.surface.parentNode.removeChild(this.surface);
     else if (this.surface instanceof HTMLCanvasElement)
