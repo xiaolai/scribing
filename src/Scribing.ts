@@ -46,6 +46,12 @@ export * from './units/types';
 export * from './fonts/types';
 export type { default as FontWriter } from './fonts/FontWriter';
 
+/** Colours whose option may be null, meaning "fall back to another colour". */
+const NULLABLE_COLORS: ReadonlySet<keyof ColorOptions> = new Set([
+  'radicalColor',
+  'highlightCompleteColor',
+]);
+
 export default class Scribing {
   _options: ParsedScribingOptions;
   _destroyed = false;
@@ -388,29 +394,52 @@ export default class Scribing {
       onComplete?: OnCompleteFunction;
     } = {},
   ) {
-    let mutations: GenericMutation[] = [];
-
-    const fixedColorVal = (() => {
-      // If we're removing radical color, tween it to the stroke color
-      if (colorName === 'radicalColor' && !colorVal) {
-        return this._options.strokeColor;
-      }
-      return colorVal;
-    })();
-
-    const mappedColor = colorStringToVals(fixedColorVal as string);
+    if (colorVal === null && !NULLABLE_COLORS.has(colorName)) {
+      // The old code handed the null straight to colorStringToVals, which failed with
+      // "Cannot read properties of null (reading 'toUpperCase')".
+      throw new Error(`Color "${colorName}" cannot be null.`);
+    }
+    // Validate before recording, so a rejected value leaves the option untouched.
+    const mappedColor = colorVal === null ? null : colorStringToVals(colorVal);
+    const previousRadicalColor = this._options.radicalColor;
+    const { strokeColor } = this._options;
+    const duration = options.duration ?? this._options.strokeFadeDuration;
 
     this._options[colorName] = colorVal as any;
 
-    const duration = options.duration ?? this._options.strokeFadeDuration;
+    if (colorName === 'highlightCompleteColor') {
+      // This one has no render-state channel: the quiz reads the option directly when
+      // it builds the completion highlight, and falls back to highlightColor when it is
+      // null. Tweening it only wrote a key that nothing renders.
+      return this._withData(() => {
+        const res = { canceled: false };
+        options.onComplete?.(res);
+        return res;
+      });
+    }
 
-    mutations = mutations.concat(
-      characterActions.updateColor(colorName, mappedColor, duration),
-    );
+    const mutations: GenericMutation[] = [];
+
+    // Radicals paint with strokeColor while radicalColor is null, so a tween into a
+    // radical colour has no numeric starting point and would snap to the target on the
+    // first frame. Seeding the current strokeColor gives it one.
+    if (colorName === 'radicalColor' && colorVal && !previousRadicalColor) {
+      mutations.push(
+        ...characterActions.updateColor(colorName, colorStringToVals(strokeColor), 0),
+      );
+    }
+
+    // If we're removing radical color, tween it to the stroke color
+    const target =
+      colorName === 'radicalColor' && !colorVal
+        ? colorStringToVals(strokeColor)
+        : mappedColor;
+
+    mutations.push(...characterActions.updateColor(colorName, target, duration));
 
     // make sure to set radicalColor back to null after the transition finishes if val == null
     if (colorName === 'radicalColor' && !colorVal) {
-      mutations = mutations.concat(characterActions.updateColor(colorName, null, 0));
+      mutations.push(...characterActions.updateColor(colorName, null, 0));
     }
 
     return this._withData(() =>

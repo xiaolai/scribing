@@ -1231,10 +1231,10 @@ describe('Scribing', () => {
 
       clock.tick(999);
       await resolvePromises();
-      expect(writer._renderState!.state.options.radicalColor.r).toBeCloseTo(30, 0);
-      expect(writer._renderState!.state.options.radicalColor.g).toBeCloseTo(30, 0);
-      expect(writer._renderState!.state.options.radicalColor.b).toBeCloseTo(30, 0);
-      expect(writer._renderState!.state.options.radicalColor.a).toBeCloseTo(1, 0);
+      expect(writer._renderState!.state.options.radicalColor!.r).toBeCloseTo(30, 0);
+      expect(writer._renderState!.state.options.radicalColor!.g).toBeCloseTo(30, 0);
+      expect(writer._renderState!.state.options.radicalColor!.b).toBeCloseTo(30, 0);
+      expect(writer._renderState!.state.options.radicalColor!.a).toBeCloseTo(1, 0);
       clock.tick(30);
       await resolvePromises();
 
@@ -1244,6 +1244,99 @@ describe('Scribing', () => {
       expect(resolvedVal).toEqual({ canceled: false });
       expect(onComplete).toHaveBeenCalledTimes(1);
       expect(onComplete).toHaveBeenCalledWith({ canceled: false });
+    });
+
+    it('tweens a radical colour up from strokeColor when none was set', async () => {
+      // Radicals paint with strokeColor while radicalColor is null, so the tween has to
+      // start there. Without a numeric start the interpolation snaps on frame one.
+      document.body.innerHTML = '<div id="target"></div>';
+      const writer = Scribing.create('target', '人', {
+        strokeColor: '#000',
+        charDataLoader,
+      });
+      await writer._withDataPromise;
+      expect(writer._renderState!.state.options.radicalColor).toBeNull();
+
+      writer.updateColor('radicalColor', '#FFF', { duration: 1000 });
+      await resolvePromises();
+      clock.tick(500);
+      await resolvePromises();
+
+      const midway = writer._renderState!.state.options.radicalColor!;
+      expect(midway.r).toBeGreaterThan(0);
+      expect(midway.r).toBeLessThan(255);
+
+      clock.tick(600);
+      await resolvePromises();
+      expect(writer._renderState!.state.options.radicalColor).toEqual({
+        r: 255,
+        g: 255,
+        b: 255,
+        a: 1,
+      });
+    });
+
+    it('keeps radicals following strokeColor while radicalColor is unset', async () => {
+      document.body.innerHTML = '<div id="target"></div>';
+      const writer = Scribing.create('target', '人', {
+        strokeColor: '#000',
+        charDataLoader,
+      });
+      await writer._withDataPromise;
+
+      writer.updateColor('strokeColor', '#FFF', { duration: 0 });
+      await resolvePromises();
+
+      expect(writer._renderState!.state.options.strokeColor).toEqual({
+        r: 255,
+        g: 255,
+        b: 255,
+        a: 1,
+      });
+      expect(writer._renderState!.state.options.radicalColor).toBeNull();
+    });
+
+    it('accepts null for highlightCompleteColor instead of throwing', async () => {
+      // This colour has no render-state channel; the quiz reads the option and falls
+      // back to highlightColor. The null went straight into colorStringToVals, which
+      // failed with "Cannot read properties of null".
+      document.body.innerHTML = '<div id="target"></div>';
+      const writer = Scribing.create('target', '人', {
+        highlightCompleteColor: '#0F0',
+        charDataLoader,
+      });
+      await writer._withDataPromise;
+
+      const onComplete = jest.fn();
+      await expect(
+        writer.updateColor('highlightCompleteColor', null, { onComplete }),
+      ).resolves.toEqual({ canceled: false });
+
+      expect(writer._options.highlightCompleteColor).toBeNull();
+      expect(onComplete).toHaveBeenCalledWith({ canceled: false });
+      expect(writer._renderState!.state.options).not.toHaveProperty(
+        'highlightCompleteColor',
+      );
+    });
+
+    it('rejects null for a colour that has no fallback', async () => {
+      document.body.innerHTML = '<div id="target"></div>';
+      const writer = Scribing.create('target', '人', { charDataLoader });
+      await writer._withDataPromise;
+
+      expect(() => writer.updateColor('strokeColor', null)).toThrow(
+        'Color "strokeColor" cannot be null.',
+      );
+      expect(writer._options.strokeColor).toBe('#555');
+    });
+
+    it('leaves the option untouched when the colour string is invalid', async () => {
+      document.body.innerHTML = '<div id="target"></div>';
+      const writer = Scribing.create('target', '人', { charDataLoader });
+      await writer._withDataPromise;
+
+      expect(() => writer.updateColor('strokeColor', 'not-a-color')).toThrow();
+      expect(writer._options.strokeColor).toBe('#555');
     });
   });
 

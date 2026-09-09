@@ -324,8 +324,9 @@ describe('Quiz', () => {
       clock.tick(1000);
       await resolvePromises();
 
-      // should disappear
-      expect(renderState.state.userStrokes![currentStrokeId]).toBe(null);
+      // The entry is deleted, not blanked: a null left the key in every later state
+      // copy and both renderers walk the whole map on each frame.
+      expect(currentStrokeId in renderState.state.userStrokes!).toBe(false);
     });
   });
 

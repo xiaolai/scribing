@@ -6,7 +6,7 @@ import {
   Point,
   RecursivePartial,
 } from './typings/types';
-import { copyAndMergeDeep, colorStringToVals, noop } from './utils';
+import { copyAndMergeDeep, colorStringToVals, noop, toError } from './utils';
 
 export type StrokeRenderState = {
   opacity: number;
@@ -25,7 +25,7 @@ export type RenderStateObject = {
     drawingColor: ColorObject;
     strokeColor: ColorObject;
     outlineColor: ColorObject;
-    radicalColor: ColorObject;
+    radicalColor: ColorObject | null;
     highlightColor: ColorObject;
   };
   character: {
@@ -52,8 +52,11 @@ type OnStateChangeCallback = (
 
 type MutationChain = {
   _isActive: boolean;
+  /** True between pauseAll and resumeAll, so mutations started meanwhile start paused. */
+  _isPaused: boolean;
   _index: number;
   _resolve: OnCompleteFunction;
+  _reject: (error: Error) => void;
   _mutations: GenericMutation[];
   _loop: boolean | undefined;
   _scopes: string[];
@@ -92,7 +95,13 @@ export default class RenderState {
         drawingColor: colorStringToVals(options.drawingColor),
         strokeColor: colorStringToVals(options.strokeColor),
         outlineColor: colorStringToVals(options.outlineColor),
-        radicalColor: colorStringToVals(options.radicalColor || options.strokeColor),
+        // Null means "radicals use strokeColor", and the stroke renderers already
+        // read it that way. Storing a copy of the initial strokeColor instead froze the
+        // radicals at that colour, so a later updateColor('strokeColor', …) repainted
+        // every stroke except the radical ones.
+        radicalColor: options.radicalColor
+          ? colorStringToVals(options.radicalColor)
+          : null,
         highlightColor: colorStringToVals(options.highlightColor),
       },
       character: {
@@ -150,11 +159,13 @@ export default class RenderState {
 
     this.cancelMutations(scopes);
 
-    return new Promise((resolve: OnCompleteFunction) => {
+    return new Promise<{ canceled: boolean }>((resolve, reject) => {
       const mutationChain: MutationChain = {
         _isActive: true,
+        _isPaused: false,
         _index: 0,
         _resolve: resolve,
+        _reject: reject,
         _mutations: mutations,
         _loop: options.loop,
         _scopes: scopes,
@@ -196,12 +207,39 @@ export default class RenderState {
 
     const activeMutation = mutationChain._mutations[mutationChain._index];
 
-    activeMutation.run(this).then(() => {
-      if (mutationChain._isActive) {
-        mutationChain._index++;
-        this._run(mutationChain);
-      }
-    });
+    let running: Promise<void>;
+    try {
+      running = activeMutation.run(this);
+    } catch (error) {
+      // A mutation drives caller-supplied code: its value thunk and, through
+      // updateState, the renderer. A throw used to leave the chain in _mutationChains
+      // with its promise never settled, and from the second mutation onwards it became
+      // a rejection nothing observed.
+      this._failMutationChain(mutationChain, toError(error));
+      return;
+    }
+
+    // The index advances in a microtask, so pauseAll can land on a mutation that has
+    // already finished. Without this the mutation after it started running anyway.
+    if (mutationChain._isPaused) activeMutation.pause();
+
+    running.then(
+      () => {
+        if (mutationChain._isActive) {
+          mutationChain._index++;
+          this._run(mutationChain);
+        }
+      },
+      (error) => this._failMutationChain(mutationChain, toError(error)),
+    );
+  }
+
+  _failMutationChain(mutationChain: MutationChain, error: Error) {
+    mutationChain._isActive = false;
+    this._mutationChains = this._mutationChains.filter(
+      (chain) => chain !== mutationChain,
+    );
+    mutationChain._reject(error);
   }
 
   _getActiveMutations() {
@@ -209,11 +247,34 @@ export default class RenderState {
   }
 
   pauseAll() {
+    this._mutationChains.forEach((chain) => {
+      chain._isPaused = true;
+    });
     this._getActiveMutations().forEach((mutation) => mutation.pause());
   }
 
   resumeAll() {
+    this._mutationChains.forEach((chain) => {
+      chain._isPaused = false;
+    });
     this._getActiveMutations().forEach((mutation) => mutation.resume());
+  }
+
+  /**
+   * Delete a user stroke rather than blanking it.
+   *
+   * `updateState` merges, so writing null to `userStrokes.<id>` left the key in place.
+   * Every later state copy carried it and both renderers walk the whole map on every
+   * frame, so a long session kept paying for every stroke it had ever drawn.
+   */
+  removeUserStroke(id: string | number) {
+    const current = this.state.userStrokes;
+    if (!current || !(id in current)) return;
+    const userStrokes = { ...current };
+    delete userStrokes[id];
+    const nextState = { ...this.state, userStrokes };
+    this._onStateChange(nextState, this.state);
+    this.state = nextState;
   }
 
   /**

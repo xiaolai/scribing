@@ -1,8 +1,42 @@
 import Mutation, { GenericMutation } from './Mutation';
 import * as characterActions from './characterActions';
-import { objRepeat, objRepeatCb } from './utils';
+import { noop, objRepeat, objRepeatCb } from './utils';
 import Character from './models/Character';
+import RenderState from './RenderState';
 import { ColorObject, Point } from './typings/types';
+
+/**
+ * Delete one user stroke from the render state instead of blanking it.
+ *
+ * `updateState` merges, so writing null to `userStrokes.<id>` left the key behind. Both
+ * renderers walk the whole map on every frame and every state copy carried it, so a
+ * session kept paying for every stroke it had ever drawn. One mutation per id keeps the
+ * `userStrokes.<id>` cancellation scope, which is what stops an in-flight fade from
+ * writing the entry back after it is gone.
+ */
+class RemoveUserStroke implements GenericMutation {
+  scope: string;
+  _runningPromise: Promise<void> | undefined;
+  _id: string | number;
+
+  constructor(id: string | number) {
+    this._id = id;
+    this.scope = `userStrokes.${id}`;
+  }
+
+  run(renderState: RenderState) {
+    renderState.removeUserStroke(this._id);
+    return Promise.resolve();
+  }
+
+  /** Removal is unconditional, matching the `force: true` mutation it replaces. */
+  cancel(renderState: RenderState) {
+    renderState.removeUserStroke(this._id);
+  }
+
+  pause = noop;
+  resume = noop;
+}
 
 export const startQuiz = (
   character: Character,
@@ -34,7 +68,6 @@ export const startQuiz = (
 
 export const startUserStroke = (id: string | number, point: Point): GenericMutation[] => {
   return [
-    new Mutation('quiz.activeUserStrokeId', id, { force: true }),
     new Mutation(
       `userStrokes.${id}`,
       {
@@ -57,23 +90,15 @@ export const hideUserStroke = (
   userStrokeId: string | number,
   duration: number,
 ): GenericMutation[] => {
-  return [
-    new Mutation(`userStrokes.${userStrokeId}.opacity`, 0, { duration }),
-    // Do not remove the stroke, keep it hidden until quiz ends
-    // This avoids a bug in which touchmove stops being triggered in the middle of a stroke
-    // the only doc i found https://stackoverflow.com/questions/29384973/touchmove-event-stops-triggering-after-any-element-is-removed-from-dom
-    // so if the user on his phone is too quick to start his new stroke, the new stroke may stops in mid air
-    //new Mutation(`userStrokes.${userStrokeId}`, null, { force: true }),
-  ];
+  // The stroke is only faded out here, never removed. Removing a node mid-gesture stops
+  // touchmove from firing on some mobile browsers, so a user quick enough to start the
+  // next stroke would see it stop in mid air.
+  // https://stackoverflow.com/questions/29384973/touchmove-event-stops-triggering-after-any-element-is-removed-from-dom
+  return [new Mutation(`userStrokes.${userStrokeId}.opacity`, 0, { duration })];
 };
 
 export const removeAllUserStrokes = (userStrokeIds: Array<number>): GenericMutation[] => {
-  return (
-    userStrokeIds?.map(
-      (userStrokeId) =>
-        new Mutation(`userStrokes.${userStrokeId}`, null, { force: true }),
-    ) || []
-  );
+  return userStrokeIds?.map((userStrokeId) => new RemoveUserStroke(userStrokeId)) || [];
 };
 
 export const highlightCompleteChar = (
@@ -88,5 +113,3 @@ export const highlightCompleteChar = (
     ...characterActions.hideCharacter('highlight', character, duration / 2),
   ];
 };
-
-export const highlightStroke = characterActions.highlightStroke;
