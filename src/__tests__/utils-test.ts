@@ -156,3 +156,46 @@ describe('utils', () => {
     });
   });
 });
+
+describe('caller-supplied keys and colour components', () => {
+  it('does not let __proto__ reparent a merged object', () => {
+    // `output[key] = …` with the key "__proto__" runs the accessor inherited from
+    // Object.prototype and replaces the prototype instead of adding a property.
+    const override = JSON.parse('{"__proto__": {"polluted": true}}');
+    const merged = utils.copyAndMergeDeep({ a: 1 }, override) as any;
+
+    expect(Object.getPrototypeOf(merged)).toBe(Object.prototype);
+    expect(Object.prototype.hasOwnProperty.call(merged, '__proto__')).toBe(true);
+    expect(({} as any).polluted).toBeUndefined();
+  });
+
+  it('ignores properties inherited by the override object', () => {
+    const base = { a: 1, b: 2 };
+    const override = Object.create({ b: 99 });
+    override.a = 5;
+    expect(utils.copyAndMergeDeep(base, override)).toEqual({ a: 5, b: 2 });
+  });
+
+  it('does not let a __proto__ scope reparent an inflated container', () => {
+    const inflated = utils.inflate('__proto__.polluted', true) as any;
+    expect(Object.getPrototypeOf(inflated)).toBe(Object.prototype);
+    expect(({} as any).polluted).toBeUndefined();
+  });
+
+  it('clamps colour components that CSS would clamp', () => {
+    expect(utils.colorStringToVals('rgb(300, 20, 30)')).toEqual({
+      r: 255,
+      g: 20,
+      b: 30,
+      a: 1,
+    });
+  });
+
+  it('keeps a component that overflows to Infinity finite', () => {
+    // A 400-digit component parses to Infinity, which reached the renderer as
+    // `rgba(Infinity, …)` and made every tween through it NaN.
+    const huge = '9'.repeat(400);
+    const color = utils.colorStringToVals(`rgba(${huge}, 0, 0, ${huge})`);
+    expect(color).toEqual({ r: 255, g: 0, b: 0, a: 1 });
+  });
+});

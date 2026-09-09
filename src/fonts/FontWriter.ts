@@ -4,6 +4,7 @@ import validateAnimation from './validateAnimation';
 import pathGeometry, { contourProbes } from './pathGeometry';
 import {
   FontShape,
+  ReadonlyFontShape,
   FontComparison,
   FontWriterOptions,
   FontAnimation,
@@ -175,7 +176,7 @@ export default class FontWriter {
     this.visible = true;
     this.render();
   }
-  getShape(): FontShape {
+  getShape(): ReadonlyFontShape {
     return this.required();
   }
   async setAnimation(value: FontAnimation): Promise<void> {

@@ -14,6 +14,11 @@ export type CharDataLoaderFn = (
   char: string,
   onLoad: (data: CharacterJson) => void,
   onError: (err?: any) => void,
+  /**
+   * Aborted when the request is superseded or the writer is destroyed. A loader that
+   * ignores it still works; it just keeps downloading a result nobody will use.
+   */
+  options?: { signal: AbortSignal },
 ) => Promise<CharacterJson> | CharacterJson | void;
 
 export type Point = { x: number; y: number };
@@ -109,9 +114,20 @@ type BaseScribingOptions = {
   drawingFadeDuration: number;
   /** Default: 4 */
   drawingWidth: number;
-  /** Default: 2 */
+  /**
+   * Default: 2.
+   *
+   * @deprecated No effect. Both built-in renderers fill the character outline from the
+   * character data, so a character stroke has no line width to set. The width of the
+   * lines a learner draws is `drawingWidth`.
+   */
   strokeWidth: number;
-  /** Default: 2 */
+  /**
+   * Default: 2.
+   *
+   * @deprecated No effect. The outline is the same filled path as the character, drawn
+   * in `outlineColor`, so it has no separate line width either.
+   */
   outlineWidth: number;
 
   rendererOverride: {
@@ -125,7 +141,11 @@ type BaseScribingOptions = {
   strokeHighlightDuration: number;
 };
 
-export type ScribingOptions = Partial<PositionerOptions> &
+/**
+ * `bounds` is deliberately not offered: the writer takes it from the writing unit it has
+ * loaded, so a caller-supplied value was accepted by the type and then ignored.
+ */
+export type ScribingOptions = Partial<Omit<PositionerOptions, 'bounds'>> &
   QuizOptions &
   ColorOptions &
   LoadingManagerOptions &

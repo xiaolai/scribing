@@ -241,3 +241,42 @@ describe('LoadingManager', () => {
     });
   });
 });
+
+describe('aborting superseded requests', () => {
+  // Cancellation settled the caller's promise but left the transfer running, so
+  // scrubbing through characters queued a full download for every one of them.
+  const recordingLoader = (signals: AbortSignal[]) => {
+    return ((_char: string, _onLoad: any, _onError: any, options?: any) => {
+      if (options?.signal) signals.push(options.signal);
+    }) as any;
+  };
+
+  it('aborts the previous request when a new one starts', () => {
+    const signals: AbortSignal[] = [];
+    const manager = new LoadingManager({ charDataLoader: recordingLoader(signals) });
+
+    void manager.loadCharData('人');
+    void manager.loadCharData('一');
+
+    expect(signals).toHaveLength(2);
+    expect(signals[0].aborted).toBe(true);
+    expect(signals[1].aborted).toBe(false);
+  });
+
+  it('aborts the current request on an explicit cancel', () => {
+    const signals: AbortSignal[] = [];
+    const manager = new LoadingManager({ charDataLoader: recordingLoader(signals) });
+
+    void manager.loadCharData('人');
+    manager.cancel();
+
+    expect(signals[0].aborted).toBe(true);
+  });
+
+  it('still works with a loader that ignores the signal', async () => {
+    const manager = new LoadingManager({
+      charDataLoader: ((_char: string, onLoad: any) => onLoad(ren)) as any,
+    });
+    await expect(manager.loadCharData('人')).resolves.toEqual(ren);
+  });
+});

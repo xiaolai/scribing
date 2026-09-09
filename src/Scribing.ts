@@ -1,6 +1,6 @@
 import FontWriter from './fonts/FontWriter';
 import { FontWriterOptions } from './fonts/types';
-import RenderState from './RenderState';
+import RenderState, { CharacterName } from './RenderState';
 import parseCharData from './parseCharData';
 import Positioner from './Positioner';
 import Quiz from './Quiz';
@@ -46,6 +46,11 @@ export * from './typings/types';
 export * from './units/types';
 export * from './fonts/types';
 export type { default as FontWriter } from './fonts/FontWriter';
+
+type VisibilityOptions = {
+  onComplete?: OnCompleteFunction;
+  duration?: number;
+};
 
 /** Colours whose option may be null, meaning "fall back to another colour". */
 const NULLABLE_COLORS: ReadonlySet<keyof ColorOptions> = new Set([
@@ -146,54 +151,42 @@ export default class Scribing {
     this._setupListeners();
   }
 
-  showCharacter(
-    options: {
-      onComplete?: OnCompleteFunction;
-      duration?: number;
-    } = {},
+  /**
+   * Fade one character layer in or out.
+   *
+   * The four public visibility methods differ only in the layer they touch and the
+   * action they run; everything else — the default duration, waiting for data, and
+   * forwarding the result to onComplete — was written out four times.
+   */
+  private _setLayerVisibility(
+    charName: CharacterName,
+    action: (
+      charName: CharacterName,
+      character: Character,
+      duration: number,
+    ) => GenericMutation[],
+    options: VisibilityOptions,
   ) {
-    this._options.showCharacter = true;
+    const duration =
+      typeof options.duration === 'number'
+        ? options.duration
+        : this._options.strokeFadeDuration;
     return this._withData(() =>
-      this._renderState
-        ?.run(
-          characterActions.showCharacter(
-            'main',
-            this._character!,
-            typeof options.duration === 'number'
-              ? options.duration
-              : this._options.strokeFadeDuration,
-          ),
-        )
-        .then((res) => {
-          options.onComplete?.(res);
-          return res;
-        }),
+      this._renderState?.run(action(charName, this._character!, duration)).then((res) => {
+        options.onComplete?.(res);
+        return res;
+      }),
     );
   }
 
-  hideCharacter(
-    options: {
-      onComplete?: OnCompleteFunction;
-      duration?: number;
-    } = {},
-  ) {
+  showCharacter(options: VisibilityOptions = {}) {
+    this._options.showCharacter = true;
+    return this._setLayerVisibility('main', characterActions.showCharacter, options);
+  }
+
+  hideCharacter(options: VisibilityOptions = {}) {
     this._options.showCharacter = false;
-    return this._withData(() =>
-      this._renderState
-        ?.run(
-          characterActions.hideCharacter(
-            'main',
-            this._character!,
-            typeof options.duration === 'number'
-              ? options.duration
-              : this._options.strokeFadeDuration,
-          ),
-        )
-        .then((res) => {
-          options.onComplete?.(res);
-          return res;
-        }),
-    );
+    return this._setLayerVisibility('main', characterActions.hideCharacter, options);
   }
 
   animateCharacter(
@@ -301,54 +294,14 @@ export default class Scribing {
     return this._withData(() => this._renderState?.resumeAll());
   }
 
-  showOutline(
-    options: {
-      duration?: number;
-      onComplete?: OnCompleteFunction;
-    } = {},
-  ) {
+  showOutline(options: VisibilityOptions = {}) {
     this._options.showOutline = true;
-    return this._withData(() =>
-      this._renderState
-        ?.run(
-          characterActions.showCharacter(
-            'outline',
-            this._character!,
-            typeof options.duration === 'number'
-              ? options.duration
-              : this._options.strokeFadeDuration,
-          ),
-        )
-        .then((res) => {
-          options.onComplete?.(res);
-          return res;
-        }),
-    );
+    return this._setLayerVisibility('outline', characterActions.showCharacter, options);
   }
 
-  hideOutline(
-    options: {
-      duration?: number;
-      onComplete?: OnCompleteFunction;
-    } = {},
-  ) {
+  hideOutline(options: VisibilityOptions = {}) {
     this._options.showOutline = false;
-    return this._withData(() =>
-      this._renderState
-        ?.run(
-          characterActions.hideCharacter(
-            'outline',
-            this._character!,
-            typeof options.duration === 'number'
-              ? options.duration
-              : this._options.strokeFadeDuration,
-          ),
-        )
-        .then((res) => {
-          options.onComplete?.(res);
-          return res;
-        }),
-    );
+    return this._setLayerVisibility('outline', characterActions.hideCharacter, options);
   }
 
   /** Updates the size of the writer instance without resetting render state */
@@ -767,8 +720,10 @@ export default class Scribing {
       throw Error('Failed to load character data. Call setCharacter and try again.');
     }
 
-    // A superseded, failed or destroyed writer resolves with undefined rather than
-    // running `func`; the return type is explicit so the empty path is not accidental.
+    // A superseded or destroyed writer resolves with undefined rather than running
+    // `func`; the return type is explicit so the empty path is not accidental. A load
+    // that fails while this is waiting rejects instead: the rejection belongs to
+    // whoever asked for the character, and swallowing it would report a silent success.
     if (this._withDataPromise) {
       return this._withDataPromise.then((): T | undefined => {
         if (

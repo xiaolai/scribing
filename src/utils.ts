@@ -44,12 +44,35 @@ export const selectIndex = <T>(arr: Array<T>, index: number) => {
   return arr[fixIndex(index, arr.length)];
 };
 
+/**
+ * Create an own data property, whatever the key is.
+ *
+ * `target.__proto__ = value` runs the accessor inherited from `Object.prototype` and
+ * replaces the object's prototype instead of adding a property, so every write of a
+ * caller-supplied key has to go through this.
+ */
+function setOwn(target: any, key: string, value: unknown) {
+  if (key === '__proto__') {
+    Object.defineProperty(target, key, {
+      value,
+      writable: true,
+      enumerable: true,
+      configurable: true,
+    });
+    return;
+  }
+  target[key] = value;
+}
+
 export function copyAndMergeDeep<T>(base: T, override: RecursivePartial<T> | undefined) {
   const output = { ...base };
-  for (const key in override) {
-    const baseVal = base[key];
+  if (!override) return output;
+  // Own keys only. `for…in` also walked the prototype chain, so anything added to
+  // Object.prototype was merged in as though the caller had passed it.
+  for (const key of Object.keys(override) as Array<keyof RecursivePartial<T>>) {
+    const baseVal = base[key as keyof T];
     const overrideVal = override[key];
-    if (baseVal === overrideVal) {
+    if ((baseVal as unknown) === (overrideVal as unknown)) {
       continue;
     }
     if (
@@ -59,23 +82,27 @@ export function copyAndMergeDeep<T>(base: T, override: RecursivePartial<T> | und
       typeof overrideVal === 'object' &&
       !Array.isArray(overrideVal)
     ) {
-      output[key] = copyAndMergeDeep(baseVal, overrideVal);
+      setOwn(output, key as string, copyAndMergeDeep(baseVal, overrideVal as any));
     } else {
-      // @ts-ignore
-      output[key] = overrideVal;
+      setOwn(output, key as string, overrideVal);
     }
   }
   return output;
 }
 
-/** basically a simplified version of lodash.get, selects a key out of an object like 'a.b' from {a: {b: 7}} */
+/**
+ * Wrap a value in the nesting its dotted scope describes: `inflate('a.b', 7)` builds
+ * `{a: {b: 7}}`. This is the inverse of a lodash-style `get`, not a `get`.
+ */
 export function inflate(scope: string, obj: any): any {
   const parts = scope.split('.');
   const final: any = {};
   let current = final;
   for (let i = 0; i < parts.length; i++) {
     const cap = i === parts.length - 1 ? obj : {};
-    current[parts[i]] = cap;
+    // A mutation scope is caller-supplied, and a segment named __proto__ would have
+    // reparented the container instead of creating the requested property.
+    setOwn(current, parts[i], cap);
     current = cap;
   }
   return final;
@@ -96,6 +123,15 @@ export function average(arr: number[]) {
 export function timeout(duration = 0) {
   return new Promise((resolve) => setTimeout(resolve, duration));
 }
+
+/**
+ * CSS clamps out-of-range colour components rather than rejecting them, and the digit
+ * runs the patterns below accept are unbounded: a 400-digit component parses to
+ * Infinity, which then reached the renderer as `rgba(Infinity, …)` and made every tween
+ * through it NaN.
+ */
+const clampChannel = (value: number, max: number) =>
+  Number.isNaN(value) ? 0 : Math.min(max, Math.max(0, value));
 
 export function colorStringToVals(colorString: string): ColorObject {
   const normalizedColor = colorString.toUpperCase().trim();
@@ -125,10 +161,10 @@ export function colorStringToVals(colorString: string): ColorObject {
   );
   if (rgbMatch) {
     return {
-      r: parseInt(rgbMatch[1], 10),
-      g: parseInt(rgbMatch[2], 10),
-      b: parseInt(rgbMatch[3], 10),
-      a: rgbMatch[4] === undefined ? 1 : parseFloat(rgbMatch[4]),
+      r: clampChannel(parseInt(rgbMatch[1], 10), 255),
+      g: clampChannel(parseInt(rgbMatch[2], 10), 255),
+      b: clampChannel(parseInt(rgbMatch[3], 10), 255),
+      a: rgbMatch[4] === undefined ? 1 : clampChannel(parseFloat(rgbMatch[4]), 1),
     };
   }
   throw new Error(`Invalid color: ${colorString}`);

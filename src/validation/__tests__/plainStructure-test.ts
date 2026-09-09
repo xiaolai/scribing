@@ -197,3 +197,40 @@ describe('readUint16Array', () => {
     expect(() => readUint16Array(new Sneaky(5), 2, fail)).toThrow('rejected');
   });
 });
+
+describe('hostile shapes that used to slip past', () => {
+  const fail = ((detail: string) => {
+    throw new Error(`invalid:${detail}`);
+  }) as (detail: string) => never;
+
+  it('rejects a key a proxy lists but refuses to describe', () => {
+    // ownKeys may report a key that getOwnPropertyDescriptor then denies. Reading
+    // through the missing descriptor threw a TypeError out of the validator instead of
+    // producing the rejection the caller asked for.
+    const source = new Proxy(
+      { a: 1 },
+      {
+        ownKeys: () => ['a', 'ghost'],
+        getOwnPropertyDescriptor: (target, key) =>
+          Object.getOwnPropertyDescriptor(target, key),
+        getPrototypeOf: () => Object.prototype,
+      },
+    );
+
+    expect(() => readPlainObject(source, fail)).toThrow('invalid:ghost');
+  });
+
+  it('rejects a Float64Array reparented onto Uint16Array.prototype', () => {
+    // instanceof and the prototype check both pass for a reparented instance, and
+    // copying it into a Uint16Array truncated every value without a word.
+    const floats = new Float64Array([1.5, 2.5, 3.5]);
+    Object.setPrototypeOf(floats, Uint16Array.prototype);
+
+    expect(() => readUint16Array(floats, 3, fail)).toThrow('invalid:');
+  });
+
+  it('still accepts a real Uint16Array of the expected length', () => {
+    const values = new Uint16Array([1, 2, 3]);
+    expect(Array.from(readUint16Array(values, 3, fail))).toEqual([1, 2, 3]);
+  });
+});

@@ -13,7 +13,11 @@ const defaultCharDataLoader = (
   char: string,
   onLoad: (parsedJson: CharacterJson) => void,
   onError: (error?: any, context?: any) => void,
+  options?: { signal?: AbortSignal },
 ) => {
+  const signal = options?.signal;
+  // A request that is superseded before it starts has nothing to download.
+  if (signal?.aborted) return;
   // load char data from Hanzi Writer Data CDN (currently hosted on jsdelivr)
   const xhr = new XMLHttpRequest();
   if (xhr.overrideMimeType) {
@@ -51,6 +55,9 @@ const defaultCharDataLoader = (
     }
     // Status 0 is reported by the error, abort, or timeout event with its context.
   };
+  // Stop the transfer when the writer moves on. Without this a superseded character
+  // kept its connection open until the response arrived or the timeout fired.
+  signal?.addEventListener('abort', () => xhr.abort(), { once: true });
   xhr.send(null);
 };
 

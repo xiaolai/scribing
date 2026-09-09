@@ -1,3 +1,10 @@
+/** Every property, recursively, made read-only. Arrays become readonly arrays. */
+export type DeepReadonly<T> = T extends (infer U)[]
+  ? readonly DeepReadonly<U>[]
+  : T extends object
+    ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
+    : T;
+
 /** Filled font outlines. These paths never imply handwritten motor strokes. */
 export interface FontShape {
   schemaVersion: 1;
@@ -18,6 +25,15 @@ export interface FontShape {
     advanceY: number;
   }[];
 }
+/**
+ * What `getShape()` hands back: the validated shape, deeply frozen.
+ *
+ * The mutable `FontShape` is the form a caller builds and passes in. Typing the result
+ * as that same shape invited writes that throw in strict mode and are dropped silently
+ * everywhere else.
+ */
+export type ReadonlyFontShape = DeepReadonly<FontShape>;
+
 export interface FontComparison {
   kind: 'unordered-shape-comparison';
   shapeId: string;

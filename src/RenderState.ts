@@ -70,7 +70,6 @@ export type RenderStateOptions = {
   drawingColor: string;
   drawingFadeDuration: number;
   drawingWidth: number;
-  outlineWidth: number;
   showCharacter: boolean;
   showOutline: boolean;
 };

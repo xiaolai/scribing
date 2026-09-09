@@ -63,10 +63,15 @@ export function readPlainObject(
 
   for (const key of Object.getOwnPropertyNames(source)) {
     if (forbid.indexOf(key) >= 0 || (keys && keys.indexOf(key) < 0)) fail(keyDetail(key));
-    const descriptor = Object.getOwnPropertyDescriptor(source, key)!;
+    // A Proxy may list a key from its ownKeys trap that its getOwnPropertyDescriptor
+    // trap then denies, and reading through the missing descriptor raised a TypeError
+    // out of the validator instead of the rejection the caller asked for.
+    const descriptor = Object.getOwnPropertyDescriptor(source, key);
     // An accessor or a non-enumerable property can return a different value on the
     // second read, so reject it rather than reading it at all.
-    if (!descriptor.enumerable || !hasOwn(descriptor, 'value')) fail(keyDetail(key));
+    if (!descriptor || !descriptor.enumerable || !hasOwn(descriptor, 'value')) {
+      fail(keyDetail(key));
+    }
     // defineProperty, not assignment. `result[key] = …` with key "__proto__" runs the
     // Object.prototype setter and replaces the prototype of `result` with a
     // caller-controlled object instead of creating an own property.
@@ -117,7 +122,9 @@ export function readPlainArray(
     fail(detail);
   }
   const source = value as unknown[];
-  const length = Object.getOwnPropertyDescriptor(source, 'length')!.value;
+  const lengthDescriptor = Object.getOwnPropertyDescriptor(source, 'length');
+  if (!lengthDescriptor || !hasOwn(lengthDescriptor, 'value')) fail(detail);
+  const length = lengthDescriptor!.value;
   if (
     !Number.isInteger(length) ||
     length < min ||
@@ -138,10 +145,25 @@ export function readPlainArray(
   return result;
 }
 
+const typedArrayPrototype = Object.getPrototypeOf(Uint16Array.prototype);
+
 /** Length getter from `%TypedArray%.prototype`, immune to an own `length` on the instance. */
 const typedArrayLength = Object.getOwnPropertyDescriptor(
-  Object.getPrototypeOf(Uint16Array.prototype),
+  typedArrayPrototype,
   'length',
+)!.get!;
+
+/**
+ * Element-type getter from `%TypedArray%.prototype`.
+ *
+ * It reports the internal element type, so it still says `Float64Array` for one that has
+ * been reparented onto `Uint16Array.prototype`. The prototype check alone accepted such
+ * an instance, and copying it into a `Uint16Array` silently truncated every value. It
+ * returns undefined rather than throwing for anything that is not a typed array.
+ */
+const typedArrayTag = Object.getOwnPropertyDescriptor(
+  typedArrayPrototype,
+  Symbol.toStringTag,
 )!.get!;
 
 /**
@@ -159,6 +181,7 @@ export function readUint16Array(
   if (
     !(value instanceof Uint16Array) ||
     Object.getPrototypeOf(value) !== Uint16Array.prototype ||
+    typedArrayTag.call(value) !== 'Uint16Array' ||
     typedArrayLength.call(value) !== length ||
     Object.getOwnPropertySymbols(value).length ||
     Object.getOwnPropertyNames(value).length !== length

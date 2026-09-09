@@ -10,6 +10,8 @@ export default class LoadingManager {
   _resolve: ((data: CharacterJson | undefined) => void) | undefined;
   _reject: ((error?: Error | CustomError | string) => void) | undefined;
   _options: LoadingManagerOptions;
+  /** Aborted on the next cancel, so a superseded request can stop downloading. */
+  _abort: AbortController | undefined;
 
   /** Set when calling LoadingManager.loadCharData  */
   _loadingChar: string | undefined;
@@ -38,11 +40,15 @@ export default class LoadingManager {
       }
     };
 
+    const controller = new AbortController();
+    this._abort = controller;
+
     try {
       const returnedData = this._options.charDataLoader(
         char,
         wrappedResolve,
         wrappedReject,
+        { signal: controller.signal },
       );
       if (returnedData !== undefined) {
         Promise.resolve(returnedData).then(wrappedResolve, wrappedReject);
@@ -97,6 +103,10 @@ export default class LoadingManager {
   cancel() {
     this._loadCounter++;
     this._isLoading = false;
+    // Tell the loader to stop as well. Superseded requests used to run to completion,
+    // so scrubbing through characters queued a full download for every one of them.
+    this._abort?.abort();
+    this._abort = undefined;
     this._resolve?.(undefined);
     this._resolve = undefined;
     this._reject = undefined;
