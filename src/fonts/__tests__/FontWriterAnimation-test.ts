@@ -459,6 +459,43 @@ describe('FontWriter animation and input', () => {
     });
   });
 
+  it('does not allocate a backing canvas larger than the surface', async () => {
+    // A tile only has to CONTAIN its glyphs; validateAnimation never bounds how much
+    // larger it may be, and its bounds are capped only at 1e7. Sizing the scratch
+    // layer straight from those bounds lets a valid animation descriptor ask for a
+    // canvas tens of thousands of pixels on a side.
+    const created: HTMLCanvasElement[] = [];
+    const realCreate = document.createElement.bind(document);
+    jest.spyOn(document, 'createElement').mockImplementation(((
+      tag: string,
+      ...rest: unknown[]
+    ) => {
+      const element = realCreate(tag, ...(rest as []));
+      if (tag === 'canvas') created.push(element as HTMLCanvasElement);
+      return element;
+    }) as typeof document.createElement);
+
+    const w = writer('canvas');
+    await w.setShape(shape());
+    const huge = animationFor(w.check().shapeId);
+    huge.tiles[0].bounds = [0, 0, 10_000_000, 10_000_000];
+    await w.setAnimation(huge);
+
+    const playback = w.animate();
+    tick(0);
+
+    // The surface is 300 CSS px at a device ratio the writer caps at 3.
+    const budget = 300 * 3 + 64;
+    for (const canvas of created) {
+      expect(canvas.width).toBeLessThanOrEqual(budget);
+      expect(canvas.height).toBeLessThanOrEqual(budget);
+    }
+
+    w.cancel();
+    await playback;
+    w.destroy();
+  });
+
   describe('work avoided', () => {
     // These pin the two performance claims as observable behaviour rather than as a
     // timing number, which would be noisy on a shared runner and would not say which

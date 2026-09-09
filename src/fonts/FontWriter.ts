@@ -451,15 +451,35 @@ export default class FontWriter {
     this.animation.tiles.forEach((tile, index) => {
       const t = this.transform,
         [x, y, w, h] = tile.bounds;
-      const left = Math.floor((t.x + x * t.scale) * ratio) - 1,
-        top = Math.floor((t.y - (y + h) * t.scale) * ratio) - 1;
-      const pixelWidth = Math.ceil(w * t.scale * ratio) + 3,
-        pixelHeight = Math.ceil(h * t.scale * ratio) + 3;
       // A tile owns only its referenced glyphs. Rasterize its local display rectangle,
       // rather than clearing a full high-DPI practice surface once per character.
+      //
+      // Clip that rectangle to the surface first. Validation only requires a tile to
+      // CONTAIN its glyphs, never bounding how much larger it may be, and tile bounds
+      // are capped at 1e7, so sizing the layer straight from them let a structurally
+      // valid animation request a 26,800,003-pixel-wide canvas on a 300-pixel writer.
+      // Nothing outside the surface is ever drawn, so the clip costs no output.
+      const rawLeft = Math.floor((t.x + x * t.scale) * ratio) - 1,
+        rawTop = Math.floor((t.y - (y + h) * t.scale) * ratio) - 1;
+      const left = Math.max(0, rawLeft),
+        top = Math.max(0, rawTop);
+      const pixelWidth = Math.min(
+          ctx.canvas.width - left,
+          rawLeft + Math.ceil(w * t.scale * ratio) + 3 - left,
+        ),
+        pixelHeight = Math.min(
+          ctx.canvas.height - top,
+          rawTop + Math.ceil(h * t.scale * ratio) + 3 - top,
+        );
+      // Entirely off-surface, or degenerate: nothing of this tile is visible.
+      if (pixelWidth <= 0 || pixelHeight <= 0) return;
+
       layer.width = pixelWidth;
       layer.height = pixelHeight;
-      const layerContext = layer.getContext('2d')!;
+      const layerContext = layer.getContext('2d');
+      // A refused context means the allocation failed; skip rather than throw a
+      // TypeError from inside an animation frame.
+      if (!layerContext) return;
       layerContext.scale(ratio, ratio);
       layerContext.translate(t.x - left / ratio, t.y - top / ratio);
       layerContext.scale(t.scale, -t.scale);
