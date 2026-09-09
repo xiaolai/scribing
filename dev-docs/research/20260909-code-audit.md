@@ -1,7 +1,7 @@
 # Code Audit Report
 
 **Date**: 2026-09-09
-**Auditor**: Claude Code (`/audit`, nine-dimension full pass)
+**Method**: nine-dimension full audit pass
 **Codebase**: Scribing (fork of Hanzi Writer)
 **Languages**: TypeScript (library), JavaScript ESM/CJS (build + demo + optional font runtime), Python (maintenance-only catalog generation)
 

@@ -10,8 +10,11 @@ coverage and the check gates. No public API was removed or renamed.
 ### Fixed
 
 A second audit pass closed every remaining behavioural finding. The entries below group
-them by what was wrong rather than by file; the per-finding record is in
-`.cc-suite/audits/`.
+them by what was wrong rather than by file. What the pass did not change was
+twenty-eight requests for a structural limit stricter than the one this project
+configures: complexity 15 against the 20 in `eslint.config.js`, or 50 lines per function
+against 110. Those limits are a deliberate choice recorded there, and the few files that
+exceed even them are in that file's `GRANDFATHERED` list with the reason.
 
 **Animation chains could hang, drift or fall back to the wrong colour.** A duration that
 cannot be run — `strokeAnimationSpeed: 0` arrives as `Infinity`, a negative speed arrives

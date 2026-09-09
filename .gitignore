@@ -18,3 +18,6 @@ work/
 # Everything else under fonts/ is tracked: the lockfiles, catalogs, Unicode data,
 # licence notices and the motor inventories.
 fonts/assets/
+
+# Local audit tool output, kept out of the published history.
+.cc-suite/
