@@ -43,9 +43,8 @@ jobs:
       - run:
           name: Demo smoke
           command: yarn check-demo
-      - run:
-          name: Package tarball
-          command: yarn check-package
+      # check-package is NOT here. It shapes text with a real NotoSans binary, and
+      # fonts/assets is not in git, so it belongs in the job that restores them.
       - persist_to_workspace:
           root: ~/repo
           paths:
@@ -85,6 +84,12 @@ jobs:
       - run:
           name: Font provider and source-loader tests
           command: yarn test-fonts
+      - run:
+          name: Optional runtime coverage floors
+          command: yarn check-font-coverage
+      - run:
+          name: Package tarball
+          command: yarn check-package
       # Browsers are ~400 MB per install and change only with the Playwright pin.
       - restore_cache:
           keys:
