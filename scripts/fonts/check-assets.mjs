@@ -18,6 +18,21 @@ for (const entry of derived.files)
     `Derived catalog drift: ${entry.file}`,
   );
 const vendor = await json('extras/fonts/vendor/manifest.json');
+// The vendored HarfBuzz runtime is a copy, not a resolved dependency, so bumping
+// harfbuzzjs in package.json does not touch extras/fonts/vendor. Without this check
+// the stale bytes and the stale manifest stay mutually consistent and the drift is
+// invisible: every hash below would still match.
+{
+  const installed = JSON.parse(
+    await readFile(resolve(root, 'node_modules/harfbuzzjs/package.json'), 'utf8'),
+  ).version;
+  assert.equal(
+    vendor.version,
+    installed,
+    `Vendored HarfBuzz is ${vendor.version} but harfbuzzjs resolves to ${installed}. ` +
+      're-vendor extras/fonts/vendor and update its manifest, or pin the dependency back.',
+  );
+}
 for (const entry of vendor.files)
   assert.equal(
     createHash('sha256')

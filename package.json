@@ -98,7 +98,8 @@
     "check-font-animation": "node scripts/check-font-animation.cjs",
     "check-font-contours": "node scripts/fonts/check-contours.cjs && node scripts/fonts/check-endpoints.cjs",
     "check-font-sources": "node scripts/check-font-sources.cjs",
-    "serve-demo": "node scripts/serve-demo.cjs"
+    "serve-demo": "node scripts/serve-demo.cjs",
+    "check-font-coverage": "node scripts/fonts/check-coverage.mjs"
   },
   "files": [
     "dist",
