@@ -251,22 +251,10 @@ export default class FontWriter {
         ctx.restore();
       });
       const ink = ctx.getImageData(0, 0, tile.width, tile.height).data;
-      // Both directions of the same coverage question. A cell with ink and no owner is
-      // never revealed; a stroke whose cells all fall outside the ink is a playback step
-      // that reveals nothing. validateAnimation cannot see either, because answering
-      // them means rasterizing the outlines.
-      const inkedOwners = new Set<number>();
-      const declaredOwners = new Set<number>();
-      for (let i = 0; i < tile.owners.length; i++) {
-        const owner = tile.owners[i];
-        if (owner) declaredOwners.add(owner);
-        if (ink[i * 4 + 3] > 0) {
-          if (!owner) throw new Error('Animation leaves font ink uncovered');
-          inkedOwners.add(owner);
-        }
-      }
-      for (const owner of declaredOwners)
-        if (!inkedOwners.has(owner)) throw new Error('Animation step covers no font ink');
+      for (let i = 0; i < tile.owners.length; i++)
+        if (ink[i * 4 + 3] > 0 && !tile.owners[i])
+          throw new Error('Animation leaves font ink uncovered');
+      this.assertStrokesReachTheGlyphs(tile, shape);
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       for (const i of tile.glyphIndices) {
         const glyph = shape.glyphs[i],
@@ -302,6 +290,57 @@ export default class FontWriter {
     this.maskCaches = caches;
     this.svgAnimationNodes = undefined;
   }
+  /**
+   * Every stroke in a tile must own at least one cell inside the glyphs it covers.
+   *
+   * A tile is padded beyond the glyph outlines, and a stroke owning only padding is a
+   * playback step that reveals nothing at all; validateAnimation cannot see it, because
+   * it never measures the outlines. Comparing against the rendered raster instead would
+   * be too strict: a tile is only a few hundred cells across an em, so a thin stroke can
+   * own cells the coarse raster reads as empty while the glyph really has ink there.
+   */
+  private assertStrokesReachTheGlyphs(
+    tile: FontAnimation['tiles'][number],
+    shape: FontShape,
+  ) {
+    const [x, y, w, h] = tile.bounds;
+    let minCol = tile.width,
+      minRow = tile.height,
+      maxCol = -1,
+      maxRow = -1;
+    for (const i of tile.glyphIndices) {
+      const glyph = shape.glyphs[i];
+      const box = pathGeometry(glyph.path);
+      if (!box) continue;
+      minCol = Math.min(minCol, Math.floor(((box.minX + glyph.x - x) * tile.width) / w));
+      maxCol = Math.max(maxCol, Math.floor(((box.maxX + glyph.x - x) * tile.width) / w));
+      minRow = Math.min(
+        minRow,
+        Math.floor(((y + h - box.maxY - glyph.y) * tile.height) / h),
+      );
+      maxRow = Math.max(
+        maxRow,
+        Math.floor(((y + h - box.minY - glyph.y) * tile.height) / h),
+      );
+    }
+    if (maxCol < minCol || maxRow < minRow) return;
+
+    const declared = new Set<number>();
+    const reaching = new Set<number>();
+    for (let i = 0; i < tile.owners.length; i++) {
+      const owner = tile.owners[i];
+      if (!owner) continue;
+      declared.add(owner);
+      const col = i % tile.width,
+        row = Math.floor(i / tile.width);
+      if (col >= minCol && col <= maxCol && row >= minRow && row <= maxRow)
+        reaching.add(owner);
+    }
+    for (const owner of declared)
+      if (!reaching.has(owner))
+        throw new Error('Animation step lies entirely outside the glyphs');
+  }
+
   animate({ speed = 1, loop = false }: FontAnimationOptions = {}): Promise<void> {
     const shape = this.required();
     if (!this.animation) throw new Error('Prepare a font animation first');
