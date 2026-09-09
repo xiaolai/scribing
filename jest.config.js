@@ -28,4 +28,15 @@ module.exports = {
     '!src/units/types.ts',
     '!src/renderers/*/index.ts',
   ],
+  // Set just under the measured numbers, so a real regression fails the build while
+  // ordinary churn does not. Raise these when coverage rises; never lower them to
+  // make a red build green.
+  coverageThreshold: {
+    global: {
+      statements: 93,
+      branches: 85,
+      functions: 96,
+      lines: 95,
+    },
+  },
 };
