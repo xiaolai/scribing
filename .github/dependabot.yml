@@ -1,0 +1,38 @@
+# The repository reached 846 advisories before this was added. Automation is the point:
+# a one-time cleanup fixes the instance, a bot fixes the mechanism.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    # One PR per ecosystem area rather than thirty. Each still runs the full CI matrix.
+    groups:
+      babel:
+        patterns: ['@babel/*']
+      rollup:
+        patterns: ['rollup', 'rollup-plugin-*', '@rollup/*']
+      eslint:
+        patterns: ['eslint', '@eslint/*', 'typescript-eslint', 'globals']
+      jest:
+        patterns: ['jest', 'jest-*', '@types/jest']
+    ignore:
+      # Pinned deliberately. Every generated pack manifest records the compressor as
+      # "fflate@0.8.2 gzip level9 mtime0", so a bump invalidates 149 manifests. The
+      # open advisory is in unzipSync, which this project never calls. See SECURITY.md.
+      - dependency-name: fflate
+      # Vendored, not resolved. extras/fonts/vendor holds a copy of the runtime, and
+      # bumping the dependency alone would leave those bytes stale. check-assets.mjs
+      # fails if the two disagree, so this needs a deliberate re-vendor.
+      - dependency-name: harfbuzzjs
+      # check-assets.mjs asserts this exact version against the tracked medians.
+      - dependency-name: hanzi-writer-data
+      # Data reproducibility depends on their exact output bytes.
+      - dependency-name: svgpath
+      - dependency-name: saxes
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
