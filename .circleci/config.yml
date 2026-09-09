@@ -85,7 +85,17 @@ jobs:
       - run:
           name: Font provider and source-loader tests
           command: yarn test-fonts
-      - run: yarn playwright install --with-deps chromium webkit
+      # Browsers are ~400 MB per install and change only with the Playwright pin.
+      - restore_cache:
+          keys:
+            - v1-playwright-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install browsers
+          command: yarn playwright install --with-deps chromium webkit
+      - save_cache:
+          paths:
+            - ~/.cache/ms-playwright
+          key: v1-playwright-{{ checksum "yarn.lock" }}
       - run:
           name: Multilingual demo
           command: yarn check-multilingual-demo

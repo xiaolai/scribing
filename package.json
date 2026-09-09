@@ -80,7 +80,7 @@
     "lint-test": "eslint",
     "lint-fix": "eslint --fix",
     "build": "rm -rf dist && rollup -c && node scripts/fonts/stamp-demo.cjs",
-    "prepublishOnly": "npm run build && npm run check-package",
+    "prepublishOnly": "npm run fetch-fonts && npm run build && npm run check-package",
     "prettier": "prettier -w .",
     "prettier-check": "prettier -c .",
     "typecheck": "tsc --noEmit && tsc --project tsconfig.build.json --noEmit",
