@@ -108,6 +108,6 @@ lower them to make a red build green.
 
 Small, self-contained commits. Each one should leave the fast tier green.
 
-Publishing is manual and deliberate. `prepublishOnly` runs `yarn build` and
-`yarn check-package`, and the latter reads `fonts/catalog.json` and font binaries, so
-run `yarn fetch-fonts` before publishing. CI never publishes.
+Publishing is manual and deliberate. `prepublishOnly` fetches the font binaries,
+builds, and verifies the packed tarball, so it works from a clean checkout. CI never
+publishes.
