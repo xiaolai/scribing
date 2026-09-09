@@ -16,7 +16,15 @@ export const cancelAnimationFrame =
  * Identity is preserved for real Errors, so callers can still compare by reference.
  */
 export function toError(value: unknown): Error {
-  return value instanceof Error ? value : new Error(String(value));
+  if (value instanceof Error) return value;
+  try {
+    return new Error(String(value));
+  } catch {
+    // String() throws on an object with a null prototype or a hostile toString, and
+    // this runs on the rejection path: throwing here would replace a rejection the
+    // caller can handle with a crash they cannot.
+    return new Error('Unknown error');
+  }
 }
 
 export function arrLast<TValue>(arr: Array<TValue>) {

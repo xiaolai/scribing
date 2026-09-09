@@ -30,5 +30,8 @@
 # stamper would otherwise take turns rewriting each other's output.
 /demo/multilingual/index.html
 
+# Audit run records. Machine-written tables, kept verbatim as the record of a run.
+/.cc-suite
+
 # Written by Jest in its own format.
 **/__snapshots__

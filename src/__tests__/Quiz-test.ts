@@ -1177,4 +1177,23 @@ describe('Quiz', () => {
     expect(renderState.state.character.highlight.strokes[0].opacity).toBe(0);
     expect(renderState.state.character.highlight.strokes[1].opacity).toBe(0);
   });
+
+  describe('quizStartStrokeNum normalization', () => {
+    // fixIndex only rewrites negatives by adding the length, so -99 on a two-stroke
+    // character produced -97, and NaN or a fraction produced an index matching no
+    // stroke. Grading then ran against strokes[undefined].
+    it.each([
+      ['far negative', -99, 0],
+      ['NaN', NaN, 0],
+      ['fractional', 1.5, 1],
+      ['beyond the last stroke', 99, 1],
+      ['the usual negative offset', -1, 1],
+    ])('clamps %s to a real stroke index', (_label, requested, expected) => {
+      const renderState = createRenderState();
+      const quiz = new Quiz(char, renderState, new Positioner(opts));
+      quiz.startQuiz({ ...opts, quizStartStrokeNum: requested } as any);
+      expect(quiz._currentStrokeIndex).toBe(expected);
+      expect(char.strokes[quiz._currentStrokeIndex]).toBeDefined();
+    });
+  });
 });

@@ -509,7 +509,7 @@ export async function componentTrails(ink, trails, width, height, signal) {
     }
     if (id >= 0) components[id].trails.push(trail);
   }
-  const maxArea = Math.max(1, ...components.map((c) => c.area));
+  const maxArea = Math.max(1, maxOf(components.map((c) => c.area)));
   components.sort(
     (a, b) =>
       Number(a.area < maxArea * 0.2) - Number(b.area < maxArea * 0.2) ||

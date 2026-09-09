@@ -48,11 +48,18 @@ export default class Quiz {
 
     this._isActive = true;
     this._options = options;
-    const startIndex = fixIndex(
+    // Clamp into range and to an integer. fixIndex only rewrites negatives by adding
+    // the length, so -99 on a two-stroke character produced -97, and a NaN or
+    // fractional option produced an index that never matches a stroke. Either way the
+    // quiz then graded against strokes[undefined] and crashed on the first attempt.
+    const lastIndex = this._character.strokes.length - 1;
+    const requested = fixIndex(
       options.quizStartStrokeNum,
       this._character.strokes.length,
     );
-    this._currentStrokeIndex = Math.min(startIndex, this._character.strokes.length - 1);
+    this._currentStrokeIndex = Number.isFinite(requested)
+      ? Math.min(Math.max(0, Math.floor(requested)), lastIndex)
+      : 0;
     this._mistakesOnStroke = 0;
     this._totalMistakes = 0;
 

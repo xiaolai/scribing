@@ -104,6 +104,27 @@ describe('utils', () => {
     });
   });
 
+  describe('toError', () => {
+    it('preserves an Error by reference', () => {
+      const original = new Error('boom');
+      expect(utils.toError(original)).toBe(original);
+    });
+
+    it('does not throw while normalising a value String() rejects', () => {
+      // This runs on the rejection path. Throwing here would turn a rejection the
+      // caller can handle into a crash they cannot.
+      const hostile = Object.create(null);
+      expect(() => String(hostile)).toThrow(TypeError);
+      expect(utils.toError(hostile)).toBeInstanceOf(Error);
+      expect(utils.toError(hostile).message).toBe('Unknown error');
+    });
+
+    it('still stringifies ordinary values', () => {
+      expect(utils.toError('nope').message).toBe('nope');
+      expect(utils.toError(42).message).toBe('42');
+    });
+  });
+
   describe('minOf / maxOf', () => {
     // Math.min(...array) throws RangeError past roughly 125,000 arguments, and point
     // arrays here are validated up to 1,000,000 entries. These must agree with the
