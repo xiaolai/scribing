@@ -52,6 +52,7 @@ Then:
 ```sh
 yarn check-fonts             # offline hashes and derived-artifact drift, ~2 s
 yarn test-fonts              # shaping and source-loader tests, ~2 s
+yarn check-font-coverage     # per-file coverage floors for the shipped runtime, ~30 s
 yarn check-multilingual-demo # ordered-model demo workflow
 yarn check-font-demo         # real browser rendering and practice
 yarn check-font-sources      # Chromium and WebKit source/retry workflow
@@ -99,10 +100,17 @@ Upgrading it would invalidate 149 manifests.
 `eslint.config.js` enforces correctness rules everywhere with no exemptions, and
 structural limits (complexity 20, 110 lines per function, depth 8) on everything except
 a named `GRANDFATHERED` list. That list holds numeric kernels whose only checks are the
-slow browser gates. Adding to it needs a reason; removing from it is welcome.
+slow browser gates, and each entry carries its reason. Adding to it needs a reason;
+removing from it is welcome, but read the note on `skeleton.mjs` first: the gates do not
+currently protect a refactor of it, and the note says what would.
 
-Coverage thresholds live in `jest.config.js`. Raise them when coverage rises. Do not
-lower them to make a red build green.
+Coverage has two floors. `jest.config.js` holds the aggregate thresholds for `src`.
+`scripts/fonts/check-coverage.mjs` holds a per-file floor for each module of the
+optional runtime that ships in the package, because an aggregate lets one file rot while
+the total holds steady. It also asserts the file inventory: a shipped module that no
+test imports fails the check rather than quietly vanishing from the report.
+
+Raise floors when coverage rises. Do not lower one to make a red build green.
 
 ## Commits and releases
 

@@ -45,6 +45,21 @@ const structure = {
  * restructuring them is a separate, gated piece of work. Downgrading the size metrics
  * here keeps every *other* rule enforcing on them, and keeps the limits enforcing on
  * every file not named below. Remove entries as the functions are split up.
+ *
+ * skeleton.mjs is the largest item and is deliberately deferred. Four functions fail
+ * the limits, not one: repairSourceJunctions (1,037 lines, complexity 314), thinInk
+ * (39), graphTrails (38 and 114 lines) and componentTrails (26). More importantly the
+ * gates do not currently protect a split. check-contours fabricates its own ownership
+ * and progress arrays, so it never reaches junction repair, and the 120-script sweep in
+ * check-font-animation runs with sourceLoader: null. A stage extraction could alter
+ * stroke ownership, making a later stroke's ink appear early, while every final
+ * rendered contour stays identical and all twelve configurations still pass.
+ *
+ * The prerequisite is an oracle: capture real repair inputs and outputs, then assert
+ * complete owners and progress equality across fixtures with three or more source
+ * strokes, shared terminals, a nonzero startIndex, and budget exhaustion above the
+ * 2,000,000 work-unit cap. Build that first. Splitting before it exists trades a
+ * readability problem for a correctness risk nothing would catch.
  */
 const GRANDFATHERED = [
   'extras/fonts/animation.mjs',

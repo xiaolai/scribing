@@ -59,6 +59,11 @@ coverage and the check gates. No public API was removed or renamed.
   unreachable there, but the dictionary reader used by data packs would have reached it.
 - Error chains are preserved. `MotorSourceError` and the check harness now attach the
   underlying failure as `cause` instead of discarding it.
+- **A caller-supplied canvas is no longer permanently altered.** `FontWriter` set `role`
+  and `aria-label` on whatever surface it was given and restored only `touchAction` on
+  destroy, so a canvas the caller still owned kept the writer's attributes forever, and
+  attributes that had been absent were left behind. It now records the prior value,
+  including absence, and puts it back.
 
 ### Performance
 
@@ -113,9 +118,34 @@ fetch-fonts`, which verifies every byte length and SHA-256 against
   unchecked. Prettier reformatted the compressed modules: `extras/fonts/skeleton.mjs`
   went from 303 lines at up to 570 characters to 1,626 lines at up to 98.
 - CI splits into a fast tier (no browsers, no font binaries) and a slow browser tier.
+  `check-package` runs in the browser tier, not the fast one: it shapes text with a real
+  NotoSans binary, and `fonts/assets` is not in git, so in the fast job it would have
+  failed on a clean checkout. Playwright browsers are cached on the lockfile checksum.
+  `prepublishOnly` fetches the fonts itself rather than documenting that you must.
 - Removed dead code: the IE-era `Object.assign` polyfill and its tests, `isMsBrowser`,
   the write-only static `LoadingManager` reference, the unused `validateFontPath` export,
   the unreferenced `demo/test_data.js`, and `.npmignore` (superseded by `files`).
+
+### Verification
+
+- **The optional runtime has per-file coverage floors.** `extras/fonts` is 3,684 lines
+  that ship in the package and had no enforced coverage at all. Measured: provider 97.9%,
+  yield-work 84.2%, progress 71.2%, skeleton 56.4%, animation 23.1%. An aggregate
+  threshold would let one file rot while the total held, so `check-coverage.mjs` asserts
+  a floor per file, and asserts the inventory too, since a module no test imports
+  disappears from the report rather than failing.
+- **The vendored HarfBuzz runtime is cross-checked against the dependency.**
+  `extras/fonts/vendor` is a copy, not a resolved dependency, so bumping `harfbuzzjs`
+  left the vendored bytes stale while the vendor manifest and those bytes stayed
+  mutually consistent, making the drift invisible. `check-assets.mjs` now fails if the
+  manifest version and the installed version disagree.
+- **The performance claims are pinned as behaviour, not timing.** A pointer move below
+  the movement threshold must leave the rendered group identical, and consecutive
+  animation frames must preserve mask, reveal and ink element identity. A timing
+  threshold would be noisy on a shared runner and would not say which work was skipped.
+- **Dependabot, grouped by ecosystem**, with every deliberately pinned dependency on the
+  ignore list and the reason beside it. The one-time cleanup fixed the instance; this
+  fixes the mechanism that produced 846 advisories.
 
 ### Testing
 
@@ -131,6 +161,27 @@ fetch-fonts`, which verifies every byte length and SHA-256 against
   to, plus a direct save/restore balance assertion that survives a mock upgrade.
 - `.codecov.yml` deleted. It demanded 96% coverage, measured 72.9%, and was wired to
   nothing.
+
+### Deferred, with reasons
+
+- **Splitting `repairSourceJunctions`** (1,037 lines, cyclomatic complexity 314). An
+  external review established that the gates do not protect this refactor:
+  `check-font-contours` fabricates its own ownership and progress arrays and never
+  reaches junction repair, and the 120-script sweep runs with `sourceLoader: null`. A
+  stage extraction could change stroke ownership so a later stroke's ink appears early,
+  while every rendered contour stays identical and all twelve configurations pass. The
+  prerequisite oracle is described in `eslint.config.js`. Splitting first would trade a
+  readability problem for a correctness risk nothing would catch.
+- **Upgrading `fflate` past 0.8.2.** Verified that 0.8.3 produces byte-identical gzip
+  output, so the data would not change. Not done: the advisory is in `unzipSync`, which
+  this project never calls, on a development dependency, and clearing it means
+  rewriting the provenance string in 149 tracked manifests. `check-data-reproducible`
+  would only prove the new output reproduces the new baseline, not that it matches the
+  old one, so the churn would buy an unverified equivalence.
+- **Changing `role="img"` on the drawing surface.** A pointer surface does not become a
+  button or an application by relabelling, and `FontWriter` has no keyboard interaction
+  to back a different role. Deciding this needs a screen reader, not an accessibility
+  tree assertion. The genuine defect nearby was fixed instead: see below.
 
 ### Documentation
 
