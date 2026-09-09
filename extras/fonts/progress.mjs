@@ -239,13 +239,17 @@ export async function projectCurveProgress(
   signal,
   ink,
 ) {
+  // Check before the first trail, not after it. The checkpoint only fired on multiples
+  // of 32, so an already-aborted request still paid for a full turn-field index and a
+  // terminal fit on trail zero, which for a large trail is the expensive part.
+  stop(signal);
   const indexes = [];
   for (let i = 0; i < trails.length; i++) {
     const tree =
       kinds[i] === 'curve' ? indexTrail(turnField(trails[i], ink, width)) : null;
     if (tree && !tree.closed) tree.terminals = terminalFits(trails[i], ink, width);
     indexes.push(tree);
-    if (i % 32 === 0) {
+    if (i % 32 === 31) {
       stop(signal);
       await yieldWork();
       stop(signal);

@@ -29,7 +29,37 @@ const maxOf = (values) => {
   return best;
 };
 
+/**
+ * Reject a mask that does not match the dimensions it is handed with.
+ *
+ * These helpers index a flat mask as `y * width + x`, and nothing checked that the two
+ * agreed. A mask shorter than `width * height` sent `holeCount` into an unbounded loop:
+ * a write past the end of a typed array is silently dropped, so a cell outside the mask
+ * never recorded as seen and was enqueued again on every visit.
+ */
+const assertGrid = (mask, width, height, label) => {
+  if (
+    !ArrayBuffer.isView(mask) ||
+    !Number.isInteger(width) ||
+    !Number.isInteger(height) ||
+    width <= 0 ||
+    height <= 0 ||
+    mask.length !== width * height
+  )
+    throw new RangeError(`${label} needs a mask of exactly width * height cells`);
+};
+
+/**
+ * Thin a binary ink mask to a one-cell-wide skeleton.
+ *
+ * @param {Uint8Array} input binary mask, exactly `width * height` cells
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @param {AbortSignal} [signal] aborting it throws AbortError from the next checkpoint
+ * @returns {Promise<Uint8Array>} a new mask; `input` is not modified
+ */
 export async function thinInk(input, width, height, signal) {
+  assertGrid(input, width, height, 'thinInk');
   const ink = input.slice(),
     remove = [];
   let changed = true,
@@ -254,32 +284,42 @@ export function graphTrails(ink, width, height) {
     }
   // Join smooth continuations through junctions; retain branches as separate trails.
   const merged = trails.filter((t) => t.length);
+  // After a join, keep scanning from the trail that just grew instead of restarting the
+  // whole double loop. The restart made this cubic in the number of trails, on the main
+  // thread with nothing able to interrupt it, and thousands of separated strokes stall
+  // the page. The outer pass still repeats to a fixed point, so the same set of joins
+  // is reachable.
   for (let changed = true; changed;) {
     changed = false;
-    outer: for (let a = 0; a < merged.length; a++)
-      for (let b = a + 1; b < merged.length; b++) {
-        const A = merged[a],
-          B = merged[b];
-        if (A.length < 2 || B.length < 2) continue;
-        for (const ra of [false, true])
-          for (const rb of [false, true]) {
-            const aa = ra ? A.slice().reverse() : A,
-              bb = rb ? B.slice().reverse() : B;
-            if (distance(aa[aa.length - 1], bb[0]) > 0.0001) continue;
-            const p = aa[Math.max(0, aa.length - 3)],
-              q = aa[aa.length - 1],
-              r = bb[Math.min(2, bb.length - 1)];
-            const u = [q[0] - p[0], q[1] - p[1]],
-              v = [r[0] - q[0], r[1] - q[1]],
-              den = Math.hypot(...u) * Math.hypot(...v);
-            if (den && (u[0] * v[0] + u[1] * v[1]) / den > 0.75) {
-              merged[a] = aa.concat(bb.slice(1));
-              merged.splice(b, 1);
-              changed = true;
-              break outer;
+    for (let a = 0; a < merged.length; a++) {
+      for (let joined = true; joined;) {
+        joined = false;
+        for (let b = a + 1; b < merged.length && !joined; b++) {
+          const A = merged[a],
+            B = merged[b];
+          if (A.length < 2 || B.length < 2) continue;
+          for (const ra of [false, true])
+            for (const rb of [false, true]) {
+              if (joined) continue;
+              const aa = ra ? A.slice().reverse() : A,
+                bb = rb ? B.slice().reverse() : B;
+              if (distance(aa[aa.length - 1], bb[0]) > 0.0001) continue;
+              const p = aa[Math.max(0, aa.length - 3)],
+                q = aa[aa.length - 1],
+                r = bb[Math.min(2, bb.length - 1)];
+              const u = [q[0] - p[0], q[1] - p[1]],
+                v = [r[0] - q[0], r[1] - q[1]],
+                den = Math.hypot(...u) * Math.hypot(...v);
+              if (den && (u[0] * v[0] + u[1] * v[1]) / den > 0.75) {
+                merged[a] = aa.concat(bb.slice(1));
+                merged.splice(b, 1);
+                joined = true;
+                changed = true;
+              }
             }
-          }
+        }
       }
+    }
   }
   return merged.sort(
     (a, b) =>
@@ -287,7 +327,21 @@ export function graphTrails(ink, width, height) {
       minOf(a.map((p) => p[0])) - minOf(b.map((p) => p[0])),
   );
 }
+/**
+ * For every cell, the index of the nearest skeleton cell by 8-connected flood order.
+ *
+ * @param {Uint8Array} skeleton binary mask, exactly `width * height` cells
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @param {AbortSignal} [signal] aborting it throws AbortError
+ * @returns {Promise<Int32Array>} nearest index per cell, or -1 where the mask is empty
+ */
 export async function nearestSkeletonMap(skeleton, width, height, signal) {
+  assertGrid(skeleton, width, height, 'nearestSkeletonMap');
+  // An empty skeleton never enters the loop below, so without these an already-aborted
+  // request still resolved, and a request aborted during the final yield resolved with
+  // a completed map.
+  stop(signal);
   const nearest = new Int32Array(skeleton.length);
   nearest.fill(-1);
   const queue = new Int32Array(skeleton.length);
@@ -322,9 +376,20 @@ export async function nearestSkeletonMap(skeleton, width, height, signal) {
         }
       }
   }
+  stop(signal);
   return nearest;
 }
+
+/**
+ * Number of enclosed holes in a binary mask, ignoring regions that touch the border.
+ *
+ * @param {Uint8Array} mask binary mask, exactly `width * height` cells
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @returns {number} count of interior background regions of at least nine cells
+ */
 export function holeCount(mask, width, height) {
+  assertGrid(mask, width, height, 'holeCount');
   const seen = new Uint8Array(mask.length),
     queue = new Int32Array(mask.length);
   let holes = 0;
@@ -358,7 +423,16 @@ export function holeCount(mask, width, height) {
   }
   return holes;
 }
+/**
+ * Grow a binary mask by one cell in all eight directions.
+ *
+ * @param {Uint8Array} mask binary mask, exactly `width * height` cells
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @returns {Uint8Array} a new mask; `mask` is not modified
+ */
 export function dilateCoverage(mask, width, height) {
+  assertGrid(mask, width, height, 'dilateCoverage');
   const out = mask.slice();
   for (let i = 0; i < mask.length; i++)
     if (mask[i]) {
@@ -371,6 +445,18 @@ export function dilateCoverage(mask, width, height) {
     }
   return out;
 }
+/**
+ * Owner and progress maps for a set of trails over a coverage mask.
+ *
+ * @param {Uint8Array} coverage binary mask, exactly `width * height` cells
+ * @param {Uint8Array} skeleton binary mask of the same size
+ * @param {Array<Array<[number, number]>>} trails ordered cell-space points per stroke
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @param {number} startIndex global index of the first trail; owners are one-based
+ * @param {AbortSignal} [signal] aborting it throws AbortError
+ * @returns {Promise<{owners: Uint16Array, progress: Uint16Array}>} owner 0 means unowned
+ */
 export async function assignOwnership(
   coverage,
   skeleton,
@@ -380,10 +466,25 @@ export async function assignOwnership(
   startIndex,
   signal,
 ) {
+  assertGrid(coverage, width, height, 'assignOwnership');
+  assertGrid(skeleton, width, height, 'assignOwnership');
+  // `owners` is a Uint16Array in which 0 means unowned, so an id past 65535 wraps to
+  // zero and reads back as a cell nothing ever draws: startIndex 65535 silently made
+  // the first trail invisible.
+  if (
+    !Number.isInteger(startIndex) ||
+    startIndex < 0 ||
+    startIndex + trails.length > 65534
+  )
+    throw new RangeError('assignOwnership cannot address more than 65534 strokes');
   const owners = new Uint16Array(coverage.length),
     progress = new Uint16Array(coverage.length),
     nearest = await nearestSkeletonMap(skeleton, width, height, signal),
     queue = new Int32Array(coverage.length);
+  // Sampling twice per cell along a trail cannot resolve more than the grid's own
+  // diagonal, and an unvalidated point made `steps` non-finite: the loop below then ran
+  // forever, synchronously, with no checkpoint able to interrupt it.
+  const maxSteps = 2 * (width + height);
   let tail = 0;
   trails.forEach((trail, index) => {
     const lengths = [0];
@@ -393,8 +494,10 @@ export async function assignOwnership(
     for (let segment = 0; segment < trail.length; segment++) {
       const a = trail[Math.max(0, segment - 1)],
         b = trail[segment],
-        length = distance(a, b),
-        steps = Math.max(1, Math.ceil(length * 2));
+        length = distance(a, b);
+      if (!Number.isFinite(length))
+        throw new RangeError('assignOwnership needs finite trail points');
+      const steps = Math.max(1, Math.min(maxSteps, Math.ceil(length * 2)));
       for (let n = 0; n <= steps; n++) {
         const t = n / steps,
           x = Math.max(0, Math.min(width - 1, Math.round(a[0] + (b[0] - a[0]) * t))),
@@ -958,7 +1061,9 @@ export async function repairSourceJunctions(
           let arc = 0;
           for (let n = 1; n < A.length && arc < limit; n++) {
             const length = distance(A[n - 1], A[n]);
-            if (length) segments.push({ a: A[n - 1], b: A[n], length, arc });
+            // `arc` is tracked to stop the scan at `limit`; the segments themselves are
+            // only ever projected onto, so it is not carried on them.
+            if (length) segments.push({ a: A[n - 1], b: A[n], length });
             arc += length;
           }
           const run = [];
@@ -1025,7 +1130,9 @@ export async function repairSourceJunctions(
                 r += 0.25;
               radii.push(Math.min(2 * Math.max(...baseWidths), Math.max(0, r - 0.25)));
             }
-            if (radii.every((r) => r >= 0.5)) profile.push({ p, q, normal, radii });
+            // The normal is what sizes `radii` above; the consumers below take theirs
+            // from `projection`, so carrying it on the entry served nothing.
+            if (radii.every((r) => r >= 0.5)) profile.push({ p, q, radii });
           }
           if (!profile.length) continue;
           const radius = Math.max(...profile.flatMap((s) => s.radii)),

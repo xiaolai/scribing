@@ -103,6 +103,19 @@ export function createFontProvider({
   // Copy metadata: changing the caller's catalog cannot bypass validation mid-request.
   const metadata = JSON.parse(JSON.stringify(catalog));
   const ranges = JSON.parse(JSON.stringify(scriptRanges));
+  // A catalog entry without a pinned digest and byte length turns the integrity check
+  // below into a no-op that still looks like it ran. Reject the catalog instead, once,
+  // rather than silently downloading whatever the URL happens to serve.
+  const HEX64 = /^[0-9a-f]{64}$/;
+  for (const font of metadata.fonts) {
+    if (
+      !HEX64.test(String(font?.sha256 ?? '')) ||
+      !Number.isInteger(font?.sizeBytes) ||
+      font.sizeBytes <= 0 ||
+      font.sizeBytes > MAX_FONT_BYTES
+    )
+      throw error('INVALID_CATALOG', 'Every catalog font must pin a SHA-256 and a size.');
+  }
   const fonts = new Map(metadata.fonts.map((f) => [f.id, f]));
   const scripts = new Map(metadata.scripts.map((s) => [s.id, s]));
   const cache = new Map();
@@ -166,6 +179,50 @@ export function createFontProvider({
         );
     }
   }
+  /**
+   * Read a response body under a hard byte cap.
+   *
+   * `content-length` is advisory and frequently absent, and `Number(null)` is 0, so the
+   * previous check let a header-less response straight through to `arrayBuffer()`, which
+   * buffers however much arrives. Streaming stops at the cap instead of discovering the
+   * overrun once the memory is already committed.
+   */
+  async function readCapped(response) {
+    const declared = Number(response.headers?.get('content-length'));
+    if (Number.isFinite(declared) && declared > MAX_FONT_BYTES)
+      throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
+    const reader = response.body?.getReader?.();
+    if (!reader) {
+      // A fetch implementation without a readable body, as in tests.
+      const buffered = new Uint8Array(await response.arrayBuffer());
+      if (buffered.byteLength > MAX_FONT_BYTES)
+        throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
+      return buffered;
+    }
+    const chunks = [];
+    let total = 0;
+    try {
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        total += value.byteLength;
+        if (total > MAX_FONT_BYTES)
+          throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
+        chunks.push(value);
+      }
+    } catch (cause) {
+      await reader.cancel?.().catch(() => undefined);
+      throw cause;
+    }
+    const bytes = new Uint8Array(total);
+    let offset = 0;
+    for (const chunk of chunks) {
+      bytes.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return bytes;
+  }
+
   async function makeFont(bytes, identity, signal) {
     alive(signal);
     validateSfnt(bytes);
@@ -214,10 +271,7 @@ export function createFontProvider({
       alive(signal);
       if (!response.ok)
         throw error('FONT_LOAD', `The font could not be loaded (${response.status}).`);
-      const length = Number(response.headers?.get('content-length'));
-      if (length > MAX_FONT_BYTES)
-        throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
-      const bytes = new Uint8Array(await response.arrayBuffer());
+      const bytes = await readCapped(response);
       alive(signal);
       if (bytes.length !== record.sizeBytes)
         throw error('FONT_INTEGRITY', 'The font file has an unexpected byte length.');
@@ -360,6 +414,16 @@ export function createFontProvider({
       alive(signal);
       const script = scriptFor(scriptId);
       validateText(text, script);
+      // Measure before copying. An oversized buffer was duplicated in full and only
+      // then rejected by validateSfnt, so the caller's mistake cost twice the memory.
+      const size =
+        bytes instanceof ArrayBuffer
+          ? bytes.byteLength
+          : bytes instanceof Uint8Array
+            ? bytes.byteLength
+            : undefined;
+      if (size !== undefined && (size < 12 || size > MAX_FONT_BYTES))
+        throw error('INVALID_FONT', 'Choose a TTF or OTF font up to 32 MiB.');
       const data =
         bytes instanceof ArrayBuffer
           ? new Uint8Array(bytes.slice(0))

@@ -209,7 +209,7 @@ async function main() {
     fs.writeFileSync(
       path.join(temp, 'consumer.ts'),
       `
-import Scribing, { ScribingOptions, CharacterJson, WritingUnit, WritingDataPack, UnitStrokeFeedback, FontShape, FontWriter, FontComparison, FontAnimation } from 'scribing';
+import Scribing, { ScribingOptions, CharacterJson, WritingUnit, WritingDataPack, UnitStrokeFeedback, FontShape, ReadonlyFontShape, FontWriter, FontComparison, FontAnimation } from 'scribing';
 const options: Partial<ScribingOptions> = { renderer: 'svg', showCharacter: false };
 const writer: Scribing = Scribing.create('target', '我', options);
 const data: Promise<CharacterJson | void> = Scribing.loadCharacterData('我');
@@ -222,7 +222,9 @@ const fontWriter: FontWriter = Scribing.createFontWriter('font', {width:300,heig
 declare const shape: FontShape;
 const fontPending: Promise<void> = fontWriter.setShape(shape);
 const comparison: FontComparison = fontWriter.check();
-const canonical: FontShape = fontWriter.getShape();
+// getShape() hands back the deeply frozen shape, so the type it is assigned to has
+// to say so; a mutable FontShape here would compile and then fail at runtime.
+const canonical: ReadonlyFontShape = fontWriter.getShape();
 declare const animation: FontAnimation;
 const animationPending: Promise<void> = fontWriter.setAnimation(animation);
 const playback: Promise<void> = fontWriter.animate({speed:2,loop:false});

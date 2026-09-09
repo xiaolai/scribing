@@ -26,10 +26,10 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
  * two are byte-identical. Measuring it here would report the same code twice.
  */
 const FLOORS = {
-  'extras/fonts/animation.mjs': 22,
+  'extras/fonts/animation.mjs': 26,
   'extras/fonts/progress.mjs': 70,
   'extras/fonts/provider.mjs': 96,
-  'extras/fonts/skeleton.mjs': 55,
+  'extras/fonts/skeleton.mjs': 60,
   'extras/fonts/yield-work.mjs': 80,
 };
 

@@ -13,7 +13,9 @@ import {
 } from './skeleton.mjs';
 const MAX_CELLS = 2097152,
   MAX_STROKES = 8192,
-  MAX_POINTS = 1000000;
+  MAX_POINTS = 1000000,
+  /** The core's per-tile edge limit; a tile wider or taller than this is rejected. */
+  MAX_TILE_EDGE = 16384;
 const stop = (signal) => {
   if (signal?.aborted)
     throw new DOMException('Animation preparation canceled', 'AbortError');
@@ -135,6 +137,47 @@ function validSourceRecord(record) {
   }
   return planIds.has(u.defaultPlanId);
 }
+/** Ceiling for the stroke-source index, which is a few tens of kilobytes in practice. */
+const MAX_INDEX_BYTES = 4 * 1024 * 1024;
+
+/**
+ * Read a response body under a hard byte cap.
+ *
+ * `arrayBuffer()` buffers everything that arrives and only then hands it back, so a
+ * response far larger than expected was already in memory by the time its length was
+ * compared. Streaming stops at the cap instead.
+ */
+async function readCapped(response, max) {
+  const reader = response.body?.getReader?.();
+  if (!reader) {
+    // A fetch implementation without a readable body, as in tests.
+    const buffered = new Uint8Array(await response.arrayBuffer());
+    if (buffered.byteLength > max) throw new RangeError('Response exceeds its cap');
+    return buffered;
+  }
+  const chunks = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > max) throw new RangeError('Response exceeds its cap');
+      chunks.push(value);
+    }
+  } catch (cause) {
+    await reader.cancel?.().catch(() => undefined);
+    throw cause;
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
+}
+
 export function createMotorSourceLoader({
   baseUrl = new URL('../../', import.meta.url),
   fetch: fetchImpl = globalThis.fetch,
@@ -175,8 +218,10 @@ export function createMotorSourceLoader({
     const parse = (body) => {
       try {
         return JSON.parse(body);
-      } catch {
-        throw error('JSON', `The ${group} stroke source contains invalid JSON.`);
+      } catch (cause) {
+        // MotorSourceError documents that `cause` carries the underlying failure, and
+        // dropping it here left a caller with nothing to diagnose from.
+        throw error('JSON', `The ${group} stroke source contains invalid JSON.`, cause);
       }
     };
     try {
@@ -184,10 +229,13 @@ export function createMotorSourceLoader({
         const response = await request('fonts/motor/index.json');
         let candidate;
         try {
-          candidate = await response.json();
-        } catch {
+          const raw = await readCapped(response, MAX_INDEX_BYTES);
+          candidate = JSON.parse(new TextDecoder().decode(raw));
+        } catch (cause) {
           stop(signal);
-          throw error('JSON', 'The stroke source index contains invalid JSON.');
+          if (cause instanceof RangeError)
+            throw error('SCHEMA', 'The stroke source index is larger than 4 MiB.', cause);
+          throw error('JSON', 'The stroke source index contains invalid JSON.', cause);
         }
         if (
           !plain(candidate) ||
@@ -220,10 +268,19 @@ export function createMotorSourceLoader({
         const response = await request(meta.file);
         let bytes;
         try {
-          bytes = await response.arrayBuffer();
-        } catch {
+          // The index already declared how large this file is, so the read is capped at
+          // exactly that. `arrayBuffer()` buffered whatever arrived and only then
+          // compared the length, which is too late to matter.
+          bytes = await readCapped(response, meta.sizeBytes);
+        } catch (cause) {
           stop(signal);
-          throw error('NETWORK', `The ${group} stroke source could not be read.`);
+          if (cause instanceof RangeError)
+            throw error(
+              'INTEGRITY',
+              `The ${group} stroke source has an unexpected byte length.`,
+              cause,
+            );
+          throw error('NETWORK', `The ${group} stroke source could not be read.`, cause);
         }
         stop(signal);
         if (bytes.byteLength !== meta.sizeBytes)
@@ -371,6 +428,17 @@ function boundsOfGlyphs(shape, indices) {
   }
   return Number.isFinite(x) && r > x && t > y ? [x, y, r - x, t - y] : null;
 }
+/**
+ * Ceiling on the points one source registration may expand into.
+ *
+ * A source record's own point count is bounded, but resampling places a point every two
+ * cells, so the expansion is set by the tile's size rather than by the record: a stack
+ * of long strokes across a large tile reaches tens of millions of points, and fifteen
+ * candidate placements are scored against them below. Past this the source registration
+ * is abandoned and the generated skeleton is used instead.
+ */
+const MAX_RESAMPLED_POINTS = 200000;
+
 function resample(points, step = 2) {
   const out = [points[0]];
   for (let i = 1; i < points.length; i++) {
@@ -425,9 +493,11 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
   // Fit the source body to stems rather than letting terminal serif tips set its width.
   // This bounded frame search changes registration only; all original ink remains owned.
   const nearest = await nearestSkeletonMap(skeleton, width, height, signal);
-  const project = (scaleX, offsetX) =>
-    source.map((s) =>
-      resample(
+  const project = (scaleX, offsetX) => {
+    const projected = [];
+    let total = 0;
+    for (const s of source) {
+      const trail = resample(
         s.points.map(([x, y]) => [
           sw
             ? (tx + tr) / 2 +
@@ -436,14 +506,21 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
             : (tx + tr) / 2,
           sh ? tb - ((y - sy) / sh) * (tb - ty) : (ty + tb) / 2,
         ]),
-      ),
-    );
+      );
+      total += trail.length;
+      if (total > MAX_RESAMPLED_POINTS) return null;
+      projected.push(trail);
+    }
+    return projected;
+  };
   let trails = project(1, 0),
     best = Infinity;
+  if (!trails) return null;
   for (const scaleX of [1, 0.95, 0.9, 0.85, 0.8])
     for (const offsetX of [0, -0.025, 0.025]) {
-      const candidate = project(scaleX, offsetX),
-        d = [];
+      const candidate = project(scaleX, offsetX);
+      if (!candidate) return null;
+      const d = [];
       for (const trail of candidate)
         for (const p of trail) {
           const at =
@@ -804,6 +881,16 @@ export async function prepareFontAnimation(
           (Math.ceil(s.bounds[3] * resolution) + 4),
       0,
     );
+  // Bound each edge as well as the total area. A long, narrow glyph can satisfy the
+  // cell budget at 25,604 x 30, which the core then rejects outright: its tile edge
+  // limit is 16,384, and the whole animation would fail validation. The +4 below is the
+  // padding each edge picks up.
+  const longestSide = specs.reduce(
+    (longest, spec) => Math.max(longest, spec.bounds[2], spec.bounds[3]),
+    0,
+  );
+  if (longestSide * resolution > MAX_TILE_EDGE - 4)
+    resolution = (MAX_TILE_EDGE - 4) / longestSide;
   if (cost() > maxCells) resolution *= Math.sqrt(maxCells / cost()) * 0.98;
   while (cost() > maxCells) resolution *= 0.98;
   const strokes = [],
@@ -1028,6 +1115,9 @@ export async function prepareFontAnimation(
     stop(signal);
     await pause();
   }
+  // The loop's last iteration ends on a pause, and a cancellation during it used to be
+  // reported as a completed animation.
+  stop(signal);
   const provenances = new Set(strokes.map((s) => s.provenance));
   return {
     schemaVersion: 1,

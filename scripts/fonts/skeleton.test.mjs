@@ -7,6 +7,8 @@ import {
   assignOwnership,
   normalizeOwnership,
   dilateCoverage,
+  holeCount,
+  nearestSkeletonMap,
 } from '../../extras/fonts/skeleton.mjs';
 const mask = (rows) => Uint8Array.from(rows.join(''), (c) => (c === '#' ? 1 : 0));
 test('near disconnected strokes retain a pen lift', () => {
@@ -88,4 +90,68 @@ test('parallel thinning never deletes a complete compact component', async () =>
     ),
   );
   assert.equal(sk[5 * 7 + 5], 1);
+});
+
+test('mask helpers reject dimensions the mask cannot hold', async () => {
+  // These index a flat mask as y * width + x. A mask shorter than width * height sent
+  // holeCount into an unbounded loop: a write past the end of a typed array is silently
+  // dropped, so a cell outside the mask was enqueued again on every visit.
+  assert.throws(() => holeCount(new Uint8Array(1), 3, 3), /width \* height/);
+  assert.throws(() => dilateCoverage(new Uint8Array(4), 3, 3), /width \* height/);
+  assert.throws(() => holeCount(new Uint8Array(9), 0, 9), /width \* height/);
+  await assert.rejects(
+    () => nearestSkeletonMap(new Uint8Array(1), 3, 3),
+    /width \* height/,
+  );
+});
+
+test('holeCount still counts an enclosed hole', () => {
+  const ring = mask(['#####', '#...#', '#...#', '#...#', '#####']);
+  assert.equal(holeCount(ring, 5, 5), 1);
+});
+
+test('an already aborted request never builds a nearest map', async () => {
+  const controller = new AbortController();
+  controller.abort();
+  await assert.rejects(
+    () => nearestSkeletonMap(new Uint8Array(9), 3, 3, controller.signal),
+    { name: 'AbortError' },
+  );
+});
+
+test('ownership refuses more strokes than a 16-bit owner map can address', async () => {
+  // owners is a Uint16Array where 0 means unowned, so an id past 65535 wraps to zero
+  // and reads back as a cell nothing ever draws.
+  const coverage = new Uint8Array(9);
+  const skeleton = new Uint8Array(9);
+  await assert.rejects(
+    () => assignOwnership(coverage, skeleton, [[[0, 0]]], 3, 3, 65535),
+    /65534 strokes/,
+  );
+  await assert.rejects(
+    () => assignOwnership(coverage, skeleton, [[[0, 0]]], 3, 3, -1),
+    /65534 strokes/,
+  );
+});
+
+test('ownership refuses a trail with non-finite points', async () => {
+  const coverage = Uint8Array.from([1, 1, 1, 1, 1, 1, 1, 1, 1]);
+  const skeleton = Uint8Array.from([0, 0, 0, 0, 1, 0, 0, 0, 0]);
+  await assert.rejects(
+    () =>
+      assignOwnership(
+        coverage,
+        skeleton,
+        [
+          [
+            [0, 0],
+            [Infinity, 0],
+          ],
+        ],
+        3,
+        3,
+        0,
+      ),
+    /finite trail points/,
+  );
 });

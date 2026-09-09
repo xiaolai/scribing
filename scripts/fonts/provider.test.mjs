@@ -199,3 +199,87 @@ test('provider matches independent native HarfBuzz positions in 85 fixtures', as
     p.destroy();
   }
 });
+
+test('rejects a catalog whose font entries do not pin a digest and a size', () => {
+  // Without the pin the integrity comparison in makeFont is skipped silently while
+  // still looking like it ran, so whatever the URL serves would be accepted.
+  for (const overrides of [
+    { sha256: undefined },
+    { sha256: '' },
+    { sha256: 'not-a-digest' },
+    { sizeBytes: undefined },
+    { sizeBytes: 0 },
+    { sizeBytes: -1 },
+  ]) {
+    const broken = JSON.parse(JSON.stringify(catalog));
+    Object.assign(broken.fonts[0], overrides);
+    assert.throws(
+      () =>
+        createFontProvider({ catalog: broken, scriptRanges, baseUrl, fetch: localFetch }),
+      /pin a SHA-256/,
+    );
+  }
+});
+
+test('stops reading a font body once it passes the size cap', async () => {
+  // content-length is advisory and often absent, and Number(null) is 0, so a response
+  // without the header used to reach arrayBuffer() and buffer whatever arrived.
+  let delivered = 0;
+  const chunk = new Uint8Array(1024 * 1024);
+  const streamingFetch = async () => ({
+    ok: true,
+    status: 200,
+    headers: new Headers(),
+    body: {
+      getReader: () => ({
+        read: async () => {
+          delivered += chunk.byteLength;
+          return { done: false, value: chunk };
+        },
+        cancel: async () => undefined,
+      }),
+    },
+    arrayBuffer: async () => {
+      throw new Error('the body should have been streamed');
+    },
+  });
+
+  const p = createFontProvider({ catalog, scriptRanges, baseUrl, fetch: streamingFetch });
+  try {
+    const script = catalog.scripts[0];
+    await assert.rejects(
+      p.shape({
+        scriptId: script.id,
+        text: script.examples[0].text,
+        fontId: script.fontIds[0],
+      }),
+      /exceeds 32 MiB/,
+    );
+    // The cap is 32 MiB; the reader is not allowed to run away past it.
+    assert.ok(delivered <= 33 * 1024 * 1024, `read ${delivered} bytes`);
+  } finally {
+    p.destroy();
+  }
+});
+
+test('rejects an oversized custom font before copying it', async () => {
+  const p = make();
+  try {
+    const huge = new ArrayBuffer(33 * 1024 * 1024);
+    await assert.rejects(
+      p.shapeCustom({ text: 'a', bytes: huge, name: 'Huge', scriptId: 'english' }),
+      /up to 32 MiB/,
+    );
+    await assert.rejects(
+      p.shapeCustom({
+        text: 'a',
+        bytes: new Uint8Array(4),
+        name: 'Tiny',
+        scriptId: 'english',
+      }),
+      /up to 32 MiB/,
+    );
+  } finally {
+    p.destroy();
+  }
+});
