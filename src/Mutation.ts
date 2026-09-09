@@ -9,7 +9,7 @@ import { RecursivePartial } from './typings/types';
 
 /** Used by `Mutation` & `Delay` */
 export interface GenericMutation<
-  TRenderStateClass extends GenericRenderStateClass = RenderState
+  TRenderStateClass extends GenericRenderStateClass = RenderState,
 > {
   /** Allows mutations starting with the provided string to be cancelled */
   scope: string;
@@ -78,7 +78,7 @@ type GenericRenderStateClass<T = any> = {
 
 export default class Mutation<
   TRenderStateClass extends GenericRenderStateClass,
-  TRenderStateObj = TRenderStateClass['state']
+  TRenderStateObj = TRenderStateClass['state'],
 > implements GenericMutation<TRenderStateClass> {
   static Delay = Delay;
 
@@ -193,7 +193,10 @@ export default class Mutation<
     this._resolve?.();
     this._resolve = undefined;
 
-    cancelAnimationFrame(this._frameHandle || -1);
+    // Only cancel a frame this mutation actually scheduled. The old `|| -1` sentinel
+    // handed a non-existent id to the host, which fake timers report as clearing a
+    // native timer they do not own.
+    if (this._frameHandle !== undefined) cancelAnimationFrame(this._frameHandle);
     this._frameHandle = undefined;
 
     if (this._force) {
@@ -229,7 +232,11 @@ function isAlreadyAtEnd<T>(
   for (const key in endValues) {
     const endValue = endValues[key];
     const startValue = startValues?.[key];
-    if (endValue >= 0) {
+    // Numeric leaves compare directly; anything else is a nested object to recurse into.
+    // This previously tested `endValue >= 0`, which sent negative numbers down the
+    // recursion branch, where `for (const key in <number>)` yields nothing and the
+    // mutation was silently reported as already complete.
+    if (typeof endValue === 'number') {
       if (endValue !== startValue) {
         return false;
       }

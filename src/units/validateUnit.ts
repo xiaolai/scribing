@@ -1,4 +1,5 @@
 import { WritingUnit } from './types';
+import { readPlainArray, readPlainObject } from '../validation/plainStructure';
 
 const fail = (path: string): never => {
   throw new Error(`Invalid writing unit: ${path}`);
@@ -13,28 +14,12 @@ const number = (value: unknown, path: string, positive = false): number => {
     fail(path);
   return value as number;
 };
-const object = (value: unknown, keys: string[], path: string): Record<string, any> => {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    [Object.prototype, null].indexOf(Object.getPrototypeOf(value)) < 0
-  )
-    fail(path);
-  if (Object.getOwnPropertySymbols(value).length) fail(path);
-  for (const key of Object.getOwnPropertyNames(value)) {
-    if (
-      keys.indexOf(key) < 0 ||
-      !Object.getOwnPropertyDescriptor(value, key)?.enumerable ||
-      !Object.prototype.hasOwnProperty.call(
-        Object.getOwnPropertyDescriptor(value, key),
-        'value',
-      )
-    )
-      fail(`${path}.${key}`);
-  }
-  return value as Record<string, any>;
-};
+/**
+ * Every listed key is optional here: presence and type are checked per field below,
+ * so the shared reader only enforces the allowlist and the data-property rule.
+ */
+const object = (value: unknown, keys: string[], path: string): Record<string, any> =>
+  readPlainObject(value, fail, { keys, optional: keys, detail: path });
 const id = (value: unknown, path: string) => {
   if (
     typeof value !== 'string' ||
@@ -44,31 +29,8 @@ const id = (value: unknown, path: string) => {
   )
     fail(path);
 };
-const array = (value: unknown, path: string, min: number, max: number): any[] => {
-  if (!Array.isArray(value) || value.length < min || value.length > max) fail(path);
-  const list = value as any[];
-  if (
-    Object.getPrototypeOf(list) !== Array.prototype ||
-    Object.getOwnPropertySymbols(list).length
-  )
-    fail(path);
-  for (let i = 0; i < list.length; i++) {
-    const descriptor = Object.getOwnPropertyDescriptor(list, String(i));
-    if (
-      !descriptor ||
-      !descriptor.enumerable ||
-      !Object.prototype.hasOwnProperty.call(descriptor, 'value')
-    )
-      fail(`${path}[${i}]`);
-  }
-  if (
-    Object.getOwnPropertyNames(list)
-      .filter((key) => key !== 'length')
-      .some((key) => !/^(0|[1-9][0-9]*)$/.test(key) || Number(key) >= list.length)
-  )
-    fail(path);
-  return list;
-};
+const array = (value: unknown, path: string, min: number, max: number): any[] =>
+  readPlainArray(value, fail, { min, max, detail: path });
 const point = (value: unknown, path: string) => {
   array(value, path, 2, 2).forEach((n, i) => number(n, `${path}[${i}]`));
 };
@@ -157,8 +119,8 @@ export default function validateUnit(input: unknown): asserts input is WritingUn
     if (planIds.has(p.id)) fail(`${path}.id duplicate`);
     planIds.add(p.id);
     const used = new Set<string>();
-    array(p.steps, `${path}.steps`, ids.size, ids.size).forEach((value, j) => {
-      const s = object(value, ['strokeId', 'direction'], `${path}.steps[${j}]`);
+    array(p.steps, `${path}.steps`, ids.size, ids.size).forEach((entry, j) => {
+      const s = object(entry, ['strokeId', 'direction'], `${path}.steps[${j}]`);
       if (!ids.has(s.strokeId) || used.has(s.strokeId))
         fail(`${path}.steps[${j}].strokeId`);
       used.add(s.strokeId);

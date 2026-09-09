@@ -84,7 +84,7 @@ describe('defaultCharDataLoader', () => {
     const onLoad = jest.fn();
     const onError = jest.fn();
     defaultCharDataLoader('人', onLoad, onError);
-    ((requests[0] as unknown) as XMLHttpRequest).abort();
+    (requests[0] as unknown as XMLHttpRequest).abort();
     expect(onError).toHaveBeenCalledTimes(1);
     expect(onLoad).not.toHaveBeenCalled();
   });

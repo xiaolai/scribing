@@ -7,11 +7,8 @@ type BoundEvent = {
 
 /** Generic render target */
 export default class RenderTargetBase<
-  TElement extends
-    | HTMLElement
-    | SVGElement
-    | SVGSVGElement
-    | HTMLCanvasElement = HTMLElement
+  TElement extends HTMLElement | SVGElement | SVGSVGElement | HTMLCanvasElement =
+    HTMLElement,
 > {
   node: TElement;
   _listenerCleanup: (() => void)[] = [];
@@ -85,9 +82,12 @@ export default class RenderTargetBase<
   }
 
   _getTouchPoint(evt: TouchEvent): Point {
+    // `touches` is empty on touchend and touchcancel, where the ended touch has
+    // already moved to `changedTouches`. Read whichever list still holds it, and
+    // fall back to the origin rather than throwing inside an event handler.
+    const touch = evt.touches[0] ?? evt.changedTouches[0];
+    if (!touch) return { x: 0, y: 0 };
     const { left, top } = this.getBoundingClientRect();
-    const x = evt.touches[0].clientX - left;
-    const y = evt.touches[0].clientY - top;
-    return { x, y };
+    return { x: touch.clientX - left, y: touch.clientY - top };
   }
 }

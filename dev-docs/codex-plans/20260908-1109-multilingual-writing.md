@@ -1,9 +1,9 @@
 ---
-title: "Multilingual Scribing: a shared engine with reviewed script and teaching-style packs"
-created_at: "2026-09-08 11:09 Asia/Shanghai"
-mode: "full-plan"
-status: "Proposed; revised after broader pen-data research, not implemented"
-baseline: "9ff4bec3"
+title: 'Multilingual Scribing: a shared engine with reviewed script and teaching-style packs'
+created_at: '2026-09-08 11:09 Asia/Shanghai'
+mode: 'full-plan'
+status: 'Proposed; revised after broader pen-data research, not implemented'
+baseline: '9ff4bec3'
 ---
 
 ## Outcomes
@@ -36,17 +36,17 @@ Non-goals for the first release: language courses, pronunciation/dictionaries, U
 
 ## Current Behavior Inventory
 
-| Entry/area | Current behavior | Gap |
-| --- | --- | --- |
-| `src/Scribing.ts`, `create`, `setCharacter`, `loadCharacterData` | Load an opaque symbol through callback/value/promise loaders; handle cancellation, render state, quiz lifecycle. | No provider/style selection or typed capability negotiation. The core already accepts a string; it does not itself require one code point. |
-| `src/typings/types.ts`, `src/parseCharData.ts` | One filled outline and one ordered median per numeric stroke index; optional radical indices. | A visual fragment is indistinguishable from an actual pen-down stroke; no dots, explicit variants, metrics or provenance. |
-| `src/Positioner.ts` | Fixed x=0..1024, y=-124..900, y-up; fit a square to the target. | Alphabet baselines, descenders, variable widths and contextual runs need explicit metrics. |
-| `src/renderers/StrokeRendererBase.ts`, SVG/Canvas stroke renderers | Reveal filled outlines using medians and a fixed width of 200. | Thin monoline letters and source animation fragments need different rendering primitives and reveal paths. |
-| `src/renderers/canvas/canvasUtils.ts` | Fallback handles a limited M/L/C/Q path subset and omits closing Z. | Imported SVG grammar must be canonicalized and both Canvas paths must agree. |
-| `src/Quiz.ts`, `src/strokeMatches.ts` | One gesture against one next stroke; single-point input discarded; absolute tolerances 250/350; later-stroke heuristic. | Dots, short marks, style-specific order/direction and approved alternative pen-lift plans. |
-| `src/geometry.ts`, `src/models/Stroke.ts` | Bounded normalization, duplicate-vector handling, Fréchet shape comparison. | Reusable foundation; new profiles still need calibration, reference feature caching and candidate limits. |
-| `demo/test.js` | Exactly one Unicode code point; Chinese CDN default. | Grapheme sequences, explicit packs, original text preservation, mixed/unsupported repertoire reporting. |
-| Persistence | Core has no database; assets are external JSON. | Version new assets and optional caches without requiring a migration of existing Chinese files. |
+| Entry/area                                                         | Current behavior                                                                                                        | Gap                                                                                                                                        |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/Scribing.ts`, `create`, `setCharacter`, `loadCharacterData`   | Load an opaque symbol through callback/value/promise loaders; handle cancellation, render state, quiz lifecycle.        | No provider/style selection or typed capability negotiation. The core already accepts a string; it does not itself require one code point. |
+| `src/typings/types.ts`, `src/parseCharData.ts`                     | One filled outline and one ordered median per numeric stroke index; optional radical indices.                           | A visual fragment is indistinguishable from an actual pen-down stroke; no dots, explicit variants, metrics or provenance.                  |
+| `src/Positioner.ts`                                                | Fixed x=0..1024, y=-124..900, y-up; fit a square to the target.                                                         | Alphabet baselines, descenders, variable widths and contextual runs need explicit metrics.                                                 |
+| `src/renderers/StrokeRendererBase.ts`, SVG/Canvas stroke renderers | Reveal filled outlines using medians and a fixed width of 200.                                                          | Thin monoline letters and source animation fragments need different rendering primitives and reveal paths.                                 |
+| `src/renderers/canvas/canvasUtils.ts`                              | Fallback handles a limited M/L/C/Q path subset and omits closing Z.                                                     | Imported SVG grammar must be canonicalized and both Canvas paths must agree.                                                               |
+| `src/Quiz.ts`, `src/strokeMatches.ts`                              | One gesture against one next stroke; single-point input discarded; absolute tolerances 250/350; later-stroke heuristic. | Dots, short marks, style-specific order/direction and approved alternative pen-lift plans.                                                 |
+| `src/geometry.ts`, `src/models/Stroke.ts`                          | Bounded normalization, duplicate-vector handling, Fréchet shape comparison.                                             | Reusable foundation; new profiles still need calibration, reference feature caching and candidate limits.                                  |
+| `demo/test.js`                                                     | Exactly one Unicode code point; Chinese CDN default.                                                                    | Grapheme sequences, explicit packs, original text preservation, mixed/unsupported repertoire reporting.                                    |
+| Persistence                                                        | Core has no database; assets are external JSON.                                                                         | Version new assets and optional caches without requiring a migration of existing Chinese files.                                            |
 
 A disposable probe against this commit accepted exact schematic A and ㄱ trajectories through the current parser/matcher, and confirmed that a true dot is rejected by the current validator. This proves reuse of geometric machinery only: the probe used placeholder outlines and did not test rendering, real handwriting or educational validity. Evidence: `work/scribing-feasibility/probe.cjs` and `result.json` in the planning task directory.
 
@@ -54,30 +54,30 @@ A disposable probe against this commit accepted exact schematic A and ㄱ trajec
 
 Source observations were made on 2026-09-08. Inventory counts are file/code-point counts, not quality guarantees.
 
-| Source | Verified usefulness | Chosen role / constraint |
-| --- | --- | --- |
-| [KanjiVG format](https://kanjivg.tagaini.net/svg-format.html), [repository](https://github.com/KanjiVG/kanjivg) | Ordered pen centerlines in a 109×109 frame; CC BY-SA 3.0. Inspected revision `55b5ba92a7cad78a62ef04db4be6f9562d949b7f` has 6,704 base character files, plus variants. | **Preferred Japanese source.** Compile paths into native centerline primitives and grading samples. Do not put an open centerline directly into the legacy filled-outline field. Manifest selected modern kana/kanji explicitly. |
-| [AnimCJK](https://github.com/parsimonhi/animCJK), [licensing](https://github.com/parsimonhi/animCJK/blob/master/licenses/COPYING.txt) | Revision `ec5e17cca76c87587790bcbce5ea0b4d4fb753d6`: 7,007 Japanese files, 177 kana, 535 Korean Hanja; no modern Hangul syllable files in its Korean directory. | Optional later filled/calligraphic Japanese pack. Licenses vary by file family. The graphics-prefixed export and kana SVG terms must not be casually conflated. |
-| [UJIpenchars2](https://archive.ics.uci.edu/dataset/177/uji%2Bpen%2Bcharacters%2Bversion%2B2) | Observed ordered strokes for 52 ASCII letters, 10 digits, Spanish additions and other symbols; 11,640 samples from 60 writers; UCI lists CC BY 4.0. | Useful English/Spanish reference and evaluation corpus. Observed adult handwriting is not an authoritative model for teaching children. Split evaluation by writer. |
-| [letterpaths](https://github.com/RobinL/letterpaths) | MIT path/tracing library; pinned `fb5a1d0ebe88e462fcc89c50921d7732a44eeeab` has 52 explicit print JSONs (26 uppercase + 26 lowercase), plus 52 lowercase cursive entry variants. | Import/compare both print cases with glyphed.js and observed writing in WI-001. Digits/punctuation are absent; source style remains subject to formation review. |
-| [Playwrite](https://github.com/TypeTogether/Playwrite) | Educational regional letterform/font project, OFL. | Style/reference candidate. Font contours still need ordered pen trajectories. Imported/derived assets retain applicable notices and terms. |
-| [Hangeul stroke diagrams](https://github.com/MagisterAdamus/hangeul-stroke-order) | 35 of 40 letter diagrams, CC BY-SA 4.0; inspected revision `935483f7e93d24aa2ec990bca1b43664307768d2`. | Reference or explicit derivative pack. Separate arrows/numbers from glyphs; these are not grading medians or a syllable allograph library. Use as a reference; first curate existing recorded/candidate Korean geometry and author only demonstrated gaps. |
-| [Geʾez handwriting fonts](https://github.com/raeytype/geez-handwriting-fonts) | Educational font variants with directional annotations, OFL. | Promising Ethiopic reference for a later pack; inventory and temporal paths still need work. |
-| [Omniglot](https://github.com/brendenlake/omniglot) | Both raw archives downloaded and parsed: 32,460 XY/time recordings across 50 alphabet collections, with explicit pen breaks. Korean 40 classes/800 recordings; class IDs need Unicode mapping. Repository MIT. | **Import now for broad candidate models and replay.** Curate copied-symbol stroke order; do not assume all classes are native instructional forms. |
-| [Calliar](https://github.com/ARBML/Calliar) | 2,500 Arabic path annotations; repository MIT. Authors traced existing calligraphy images with imposed dot-order conventions. | Useful supplied geometry; separate image-traced order from spontaneous handwriting and inspect original-image provenance. |
-| [Hershey](https://github.com/kamalmostafa/hershey-fonts), [Relief SingleLine](https://github.com/isdat-type/Relief-SingleLine) | Plotter/vector paths; licensing differs between glyph data and software. | Useful importer experiments, not default instructional models. Plotting order is not automatically handwriting order. |
-| [LipiTk datasets](https://lipitk.sourceforge.net/hpl-datasets.htm) | Online Indic handwriting data is described. | Research lead only until downloads, labels and dataset redistribution terms are established. Toolkit licensing is not a data license. |
+| Source                                                                                                                                | Verified usefulness                                                                                                                                                                                            | Chosen role / constraint                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [KanjiVG format](https://kanjivg.tagaini.net/svg-format.html), [repository](https://github.com/KanjiVG/kanjivg)                       | Ordered pen centerlines in a 109×109 frame; CC BY-SA 3.0. Inspected revision `55b5ba92a7cad78a62ef04db4be6f9562d949b7f` has 6,704 base character files, plus variants.                                         | **Preferred Japanese source.** Compile paths into native centerline primitives and grading samples. Do not put an open centerline directly into the legacy filled-outline field. Manifest selected modern kana/kanji explicitly.                           |
+| [AnimCJK](https://github.com/parsimonhi/animCJK), [licensing](https://github.com/parsimonhi/animCJK/blob/master/licenses/COPYING.txt) | Revision `ec5e17cca76c87587790bcbce5ea0b4d4fb753d6`: 7,007 Japanese files, 177 kana, 535 Korean Hanja; no modern Hangul syllable files in its Korean directory.                                                | Optional later filled/calligraphic Japanese pack. Licenses vary by file family. The graphics-prefixed export and kana SVG terms must not be casually conflated.                                                                                            |
+| [UJIpenchars2](https://archive.ics.uci.edu/dataset/177/uji%2Bpen%2Bcharacters%2Bversion%2B2)                                          | Observed ordered strokes for 52 ASCII letters, 10 digits, Spanish additions and other symbols; 11,640 samples from 60 writers; UCI lists CC BY 4.0.                                                            | Useful English/Spanish reference and evaluation corpus. Observed adult handwriting is not an authoritative model for teaching children. Split evaluation by writer.                                                                                        |
+| [letterpaths](https://github.com/RobinL/letterpaths)                                                                                  | MIT path/tracing library; pinned `fb5a1d0ebe88e462fcc89c50921d7732a44eeeab` has 52 explicit print JSONs (26 uppercase + 26 lowercase), plus 52 lowercase cursive entry variants.                               | Import/compare both print cases with glyphed.js and observed writing in WI-001. Digits/punctuation are absent; source style remains subject to formation review.                                                                                           |
+| [Playwrite](https://github.com/TypeTogether/Playwrite)                                                                                | Educational regional letterform/font project, OFL.                                                                                                                                                             | Style/reference candidate. Font contours still need ordered pen trajectories. Imported/derived assets retain applicable notices and terms.                                                                                                                 |
+| [Hangeul stroke diagrams](https://github.com/MagisterAdamus/hangeul-stroke-order)                                                     | 35 of 40 letter diagrams, CC BY-SA 4.0; inspected revision `935483f7e93d24aa2ec990bca1b43664307768d2`.                                                                                                         | Reference or explicit derivative pack. Separate arrows/numbers from glyphs; these are not grading medians or a syllable allograph library. Use as a reference; first curate existing recorded/candidate Korean geometry and author only demonstrated gaps. |
+| [Geʾez handwriting fonts](https://github.com/raeytype/geez-handwriting-fonts)                                                         | Educational font variants with directional annotations, OFL.                                                                                                                                                   | Promising Ethiopic reference for a later pack; inventory and temporal paths still need work.                                                                                                                                                               |
+| [Omniglot](https://github.com/brendenlake/omniglot)                                                                                   | Both raw archives downloaded and parsed: 32,460 XY/time recordings across 50 alphabet collections, with explicit pen breaks. Korean 40 classes/800 recordings; class IDs need Unicode mapping. Repository MIT. | **Import now for broad candidate models and replay.** Curate copied-symbol stroke order; do not assume all classes are native instructional forms.                                                                                                         |
+| [Calliar](https://github.com/ARBML/Calliar)                                                                                           | 2,500 Arabic path annotations; repository MIT. Authors traced existing calligraphy images with imposed dot-order conventions.                                                                                  | Useful supplied geometry; separate image-traced order from spontaneous handwriting and inspect original-image provenance.                                                                                                                                  |
+| [Hershey](https://github.com/kamalmostafa/hershey-fonts), [Relief SingleLine](https://github.com/isdat-type/Relief-SingleLine)        | Plotter/vector paths; licensing differs between glyph data and software.                                                                                                                                       | Useful importer experiments, not default instructional models. Plotting order is not automatically handwriting order.                                                                                                                                      |
+| [LipiTk datasets](https://lipitk.sourceforge.net/hpl-datasets.htm)                                                                    | Online Indic handwriting data is described.                                                                                                                                                                    | Research lead only until downloads, labels and dataset redistribution terms are established. Toolkit licensing is not a data license.                                                                                                                      |
 
 Additional sources verified in the broader pass materially change the initial acquisition plan:
 
-| Source | Inspected evidence | Immediate role |
-| --- | --- | --- |
-| [glyphed.js](https://github.com/a-elhaag/glyphed.js) |52 letter +10 digit files, three ordered monoline SVG variants each; ISC. | English import/selection before new authoring. |
-| [Tegaki/Tomoe](https://github.com/tegaki/tegaki) |6,646 ordered XML records/6,421 Unicode labels; model-source LGPL route with provenance. | Japanese alternative/variation corpus; preserve repeated labels. |
-| [UCI Assamese](https://archive.ics.uci.edu/dataset/208/online+handwritten+assamese+characters+dataset) | Downloaded pen-down/up XY archive; publisher8,235 samples/183 classes/45 writers, CC BY4. | First additional Indic raw importer and candidate corpus. |
-| [POH-Db](https://github.com/SLTLabAUT/POH-Db) |9,308 InkML files; real Persian multi-stroke samples inspected; AGPL3 repository. | Existing Persian run/segmentation data; retain applicable source terms. |
-| [Qt ink fixtures](https://github.com/qt/qtvirtualkeyboard/tree/dev/tests/auto/inputpanel/data/inputpanel) |11 Unicode-mapped XYT/stroke files;62 ASCII alphanumerics,27 Hebrew letters/final forms, and partial other scripts; GPL3-only or Qt commercial. | Mapped prototypes/tests under the appropriate distribution terms. |
-| [GCompris templates](https://github.com/KDE/gcompris/blob/master/src/activities/drawletters/drawletters_dataset.js) |26 uppercase point sequences with stroke groups; companion10 digits; GPL3-or-later. | Existing instructional models for comparison or an appropriately licensed pack. |
+| Source                                                                                                              | Inspected evidence                                                                                                                              | Immediate role                                                                  |
+| ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| [glyphed.js](https://github.com/a-elhaag/glyphed.js)                                                                | 52 letter +10 digit files, three ordered monoline SVG variants each; ISC.                                                                       | English import/selection before new authoring.                                  |
+| [Tegaki/Tomoe](https://github.com/tegaki/tegaki)                                                                    | 6,646 ordered XML records/6,421 Unicode labels; model-source LGPL route with provenance.                                                        | Japanese alternative/variation corpus; preserve repeated labels.                |
+| [UCI Assamese](https://archive.ics.uci.edu/dataset/208/online+handwritten+assamese+characters+dataset)              | Downloaded pen-down/up XY archive; publisher8,235 samples/183 classes/45 writers, CC BY4.                                                       | First additional Indic raw importer and candidate corpus.                       |
+| [POH-Db](https://github.com/SLTLabAUT/POH-Db)                                                                       | 9,308 InkML files; real Persian multi-stroke samples inspected; AGPL3 repository.                                                               | Existing Persian run/segmentation data; retain applicable source terms.         |
+| [Qt ink fixtures](https://github.com/qt/qtvirtualkeyboard/tree/dev/tests/auto/inputpanel/data/inputpanel)           | 11 Unicode-mapped XYT/stroke files;62 ASCII alphanumerics,27 Hebrew letters/final forms, and partial other scripts; GPL3-only or Qt commercial. | Mapped prototypes/tests under the appropriate distribution terms.               |
+| [GCompris templates](https://github.com/KDE/gcompris/blob/master/src/activities/drawletters/drawletters_dataset.js) | 26 uppercase point sequences with stroke groups; companion10 digits; GPL3-or-later.                                                             | Existing instructional models for comparison or an appropriately licensed pack. |
 
 Research-only or acquisition routes also contain real trajectories: IAM/DeepWriting/UNIPEN, TUAT Japanese, HP Indic, ISI Bangla and Online-KHATT. Keep their access/terms distinct from technical existence. Font-inferred Korean/Tibetan paths are separately useful editable candidates. The linked source assessment records sample-level evidence and limitations.
 
@@ -87,14 +87,14 @@ Research-only or acquisition routes also contain real trajectories: IAM/DeepWrit
 
 ## Expansion Roadmap
 
-| Wave | Deliverable | Why this order / release boundary |
-| --- | --- | --- |
-| 0 | Risk spike: A/a/i/j/O, あ/ぬ/が/ぱ, ㄱ/ㅇ/가/고/한. | Prove dots, loops, render/motor separation, Japanese import and Korean layouts before mass conversion. |
-| 1 | Shared foundations plus English print, Japanese kana/80 kanji, Korean jamo/reviewed pilot blocks. | All three requested languages get a useful initial vertical slice. Work on the three data packs can run in parallel after the contracts stabilize. |
-| 2 | Korean contextual composer; selected Latin-language inventories; expanded Japanese kanji. | Highest reuse. Reach all modern Hangul code points mechanically, then promote only validated coverage. Expand Japanese toward the [2,136 Jōyō inventory](https://www.bunka.go.jp/seisaku/kokugo_nihongo/kokugo_shisaku/joyokanjihyo_sakuin/pdf/3-1.pdf). |
-| 3 | Greek and Cyrillic print first; Hebrew, Armenian, Georgian and Ethiopic as reviewed packs become available. | Much unit-level machinery is reusable, but each script needs its own glyph/style review. Russian coverage does not imply all Cyrillic languages. |
-| 4 | Latin cursive, connected Arabic; then additional Arabic-script styles/locales. | Requires word/run plans, joins, context-dependent forms, delayed marks and source-span mapping. Urdu Nastaliq is not a trivial Arabic alphabet extension. |
-| 5 | One complex-cluster pilot, then individual Indic and Southeast Asian packs. | Start Devanagari; extend by validated capability to Bengali, Gujarati, Gurmukhi, Tamil, Telugu, Kannada, Malayalam, Odia, Sinhala; separately Thai, Lao, Khmer, Myanmar and Tibetan. This is a conditional expansion portfolio, not a promise that one generic pack teaches all these scripts. |
+| Wave | Deliverable                                                                                                 | Why this order / release boundary                                                                                                                                                                                                                                                              |
+| ---- | ----------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0    | Risk spike: A/a/i/j/O, あ/ぬ/が/ぱ, ㄱ/ㅇ/가/고/한.                                                         | Prove dots, loops, render/motor separation, Japanese import and Korean layouts before mass conversion.                                                                                                                                                                                         |
+| 1    | Shared foundations plus English print, Japanese kana/80 kanji, Korean jamo/reviewed pilot blocks.           | All three requested languages get a useful initial vertical slice. Work on the three data packs can run in parallel after the contracts stabilize.                                                                                                                                             |
+| 2    | Korean contextual composer; selected Latin-language inventories; expanded Japanese kanji.                   | Highest reuse. Reach all modern Hangul code points mechanically, then promote only validated coverage. Expand Japanese toward the [2,136 Jōyō inventory](https://www.bunka.go.jp/seisaku/kokugo_nihongo/kokugo_shisaku/joyokanjihyo_sakuin/pdf/3-1.pdf).                                       |
+| 3    | Greek and Cyrillic print first; Hebrew, Armenian, Georgian and Ethiopic as reviewed packs become available. | Much unit-level machinery is reusable, but each script needs its own glyph/style review. Russian coverage does not imply all Cyrillic languages.                                                                                                                                               |
+| 4    | Latin cursive, connected Arabic; then additional Arabic-script styles/locales.                              | Requires word/run plans, joins, context-dependent forms, delayed marks and source-span mapping. Urdu Nastaliq is not a trivial Arabic alphabet extension.                                                                                                                                      |
+| 5    | One complex-cluster pilot, then individual Indic and Southeast Asian packs.                                 | Start Devanagari; extend by validated capability to Bengali, Gujarati, Gurmukhi, Tamil, Telugu, Kannada, Malayalam, Odia, Sinhala; separately Thai, Lao, Khmer, Myanmar and Tibetan. This is a conditional expansion portfolio, not a promise that one generic pack teaches all these scripts. |
 
 Latin candidates include Spanish, French, German, Portuguese, Italian, Dutch, Swedish, Danish, Norwegian, Finnish, Icelandic, Estonian, Latvian, Lithuanian, Polish, Czech, Slovak, Slovenian, Croatian, Romanian, Hungarian, Turkish, Vietnamese, Indonesian, Malay, Swahili, Filipino, Afrikaans, Catalan, Galician, Basque, Welsh and Irish. This is a candidate list, not current coverage. Audit each exact locale/style inventory; letters such as ß, æ, œ, ø, ł, đ and dotless ı cannot be supplied by generic accent placement. Vietnamese needs stacked-mark review.
 
@@ -117,16 +117,16 @@ Use [CLDR exemplar sets](https://sites.google.com/unicode.org/cldr/translation/c
 
 ## Decision Log
 
-| Decision | Selected approach | Alternatives rejected / rationale |
-| --- | --- | --- |
-| D1 Engine reuse | Add adapters/providers/plan matching around current rendering and lifecycle. | Separate engine per language duplicates fixes; a full rewrite has no demonstrated need. |
-| D2 Japanese data | KanjiVG centerlines first; monoline presentation. | Direct AnimCJK JSON repack miscounts some kana motor strokes. Filled brush style is optional later work. |
-| D3 English data | Import and compare glyphed.js, letterpaths and observed UJI samples first; curate a coherent manuscript model and author residual gaps. | Starting by redrawing all 62 items ignores existing ordered geometry. Select one-storey a/g by default, with explicit alternative assets later; do not call the style universally standard. |
-| D4 Korean delivery | Import/map/curate existing Korean recordings and candidate geometry; add missing contextual forms before a composer. | Stretching isolated jamo or deriving pen order from Unicode is insufficient. Never hand-author 11,172 unrelated files if reviewed component rules can generate them. |
-| D5 Data format | Versioned motor strokes + visual segments, explicit metrics, primitive type and finite plans. | Keeping one legacy array index as both visual piece and teaching step prevents correct overlap/dot/variant support. |
-| D6 Coverage strategy | Script/style packs plus locale inventories and capability reports. | A single `language: 'xx'` flag invites incorrect cross-locale fallback and unsupported claims. |
-| D7 Distribution | Optional packs with pinned manifests, local/offline support and separate notices. | A monolithic worldwide dataset slows every consumer and obscures provenance. Separate packaging is not a license exemption. |
-| D8 Rollout | Additive APIs and explicit opt-in v2/pack selection. | No early breaking change to `create`, `setCharacter`, or legacy callbacks; no automatic switch to new grading. |
+| Decision             | Selected approach                                                                                                                       | Alternatives rejected / rationale                                                                                                                                                           |
+| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1 Engine reuse      | Add adapters/providers/plan matching around current rendering and lifecycle.                                                            | Separate engine per language duplicates fixes; a full rewrite has no demonstrated need.                                                                                                     |
+| D2 Japanese data     | KanjiVG centerlines first; monoline presentation.                                                                                       | Direct AnimCJK JSON repack miscounts some kana motor strokes. Filled brush style is optional later work.                                                                                    |
+| D3 English data      | Import and compare glyphed.js, letterpaths and observed UJI samples first; curate a coherent manuscript model and author residual gaps. | Starting by redrawing all 62 items ignores existing ordered geometry. Select one-storey a/g by default, with explicit alternative assets later; do not call the style universally standard. |
+| D4 Korean delivery   | Import/map/curate existing Korean recordings and candidate geometry; add missing contextual forms before a composer.                    | Stretching isolated jamo or deriving pen order from Unicode is insufficient. Never hand-author 11,172 unrelated files if reviewed component rules can generate them.                        |
+| D5 Data format       | Versioned motor strokes + visual segments, explicit metrics, primitive type and finite plans.                                           | Keeping one legacy array index as both visual piece and teaching step prevents correct overlap/dot/variant support.                                                                         |
+| D6 Coverage strategy | Script/style packs plus locale inventories and capability reports.                                                                      | A single `language: 'xx'` flag invites incorrect cross-locale fallback and unsupported claims.                                                                                              |
+| D7 Distribution      | Optional packs with pinned manifests, local/offline support and separate notices.                                                       | A monolithic worldwide dataset slows every consumer and obscures provenance. Separate packaging is not a license exemption.                                                                 |
+| D8 Rollout           | Additive APIs and explicit opt-in v2/pack selection.                                                                                    | No early breaking change to `create`, `setCharacter`, or legacy callbacks; no automatic switch to new grading.                                                                              |
 
 ## Open Questions
 
@@ -159,21 +159,30 @@ Proposed v2 shape (contract sketch; WI-002 makes it precise):
 ```ts
 type WritingUnitV2 = {
   schemaVersion: 2;
-  id: string; text: string; script: string; style: string; variant: string;
+  id: string;
+  text: string;
+  script: string;
+  style: string;
+  variant: string;
   coordinates: {
-    em: number; yAxis: 'up' | 'down';
+    em: number;
+    yAxis: 'up' | 'down';
     bounds: [number, number, number, number]; // minX, minY, width, height
-    baseline?: number; xHeight?: number; advance?: number;
+    baseline?: number;
+    xHeight?: number;
+    advance?: number;
   };
   motorStrokes: Array<
-    { id: string; kind: 'curve'; trajectory: [number, number][] } |
-    { id: string; kind: 'dot'; center: [number, number]; radius: number }
+    | { id: string; kind: 'curve'; trajectory: [number, number][] }
+    | { id: string; kind: 'dot'; center: [number, number]; radius: number }
   >;
   visualSegments: Array<{
-    id: string; motorStrokeId: string;
-    shape: { kind: 'centerline'; path: string; width: number } |
-           { kind: 'outline'; path: string } |
-           { kind: 'dot'; center: [number, number]; radius: number };
+    id: string;
+    motorStrokeId: string;
+    shape:
+      | { kind: 'centerline'; path: string; width: number }
+      | { kind: 'outline'; path: string }
+      | { kind: 'dot'; center: [number, number]; radius: number };
     // Optional rendering-only reveal geometry for split filled outlines.
     reveal?: { path: string; width: number; start: number; end: number };
   }>;
@@ -181,7 +190,8 @@ type WritingUnitV2 = {
     id: string;
     steps: Array<{ strokeId: string; direction: 'forward' | 'either' }>;
   }>;
-  defaultPlanId: string; gradingProfileId: string;
+  defaultPlanId: string;
+  gradingProfileId: string;
 };
 ```
 
@@ -196,7 +206,10 @@ Retain all current entry points and v1 loader signatures. Proposed additive meth
 ```ts
 const writer = new Scribing(element, { width: 320, height: 320 });
 await writer.setUnit({
-  text: 'a', provider: latinPrintPack, style: 'scribing-print-v1', variant: 'one-storey',
+  text: 'a',
+  provider: latinPrintPack,
+  style: 'scribing-print-v1',
+  variant: 'one-storey',
 });
 await writer.quizUnit({ planId: 'recommended', acceptApprovedPlans: true });
 const unit = await writer.getUnitData();
@@ -397,18 +410,18 @@ Invariants: no change to legacy grade decisions or callback sequences; identical
 
 ## Gap-to-Work-Item Map
 
-| Gap | Work Items |
-| --- | --- |
-| Uncertain source quality, coverage or terms | WI-001, WI-006, each pack WI |
-| Legacy outline/index model and fixed metrics | WI-002, WI-003 |
-| Dots, order variants, style-aware tolerances | WI-004, WI-011 |
-| Unicode, locale selection and misleading coverage | WI-005, WI-010, WI-012 |
-| English source selection, curation and residual gaps | WI-007 |
-| Japanese source conversion and expansion | WI-008, WI-013 |
-| Korean contextual shapes/composition | WI-009 |
-| Validation on real handwriting, devices and packed consumers | WI-010, WI-011 |
-| Broader alphabets and complex/connected writing | WI-012–WI-016 |
-| Pronunciation, dictionaries, full courses, OCR | Explicit non-goals; separate product work |
+| Gap                                                          | Work Items                                |
+| ------------------------------------------------------------ | ----------------------------------------- |
+| Uncertain source quality, coverage or terms                  | WI-001, WI-006, each pack WI              |
+| Legacy outline/index model and fixed metrics                 | WI-002, WI-003                            |
+| Dots, order variants, style-aware tolerances                 | WI-004, WI-011                            |
+| Unicode, locale selection and misleading coverage            | WI-005, WI-010, WI-012                    |
+| English source selection, curation and residual gaps         | WI-007                                    |
+| Japanese source conversion and expansion                     | WI-008, WI-013                            |
+| Korean contextual shapes/composition                         | WI-009                                    |
+| Validation on real handwriting, devices and packed consumers | WI-010, WI-011                            |
+| Broader alphabets and complex/connected writing              | WI-012–WI-016                             |
+| Pronunciation, dictionaries, full courses, OCR               | Explicit non-goals; separate product work |
 
 ## Ordering, Staffing and Effort
 
@@ -470,25 +483,25 @@ Run targeted unit/importer tests after each WI; run the full current gate after 
 
 For each WI collect: commit/diff reference, named tests and results, fixture/source digests, failures corrected, and a short acceptance-to-evidence map. Add these specific artifacts:
 
-| WI | Required evidence |
-| --- | --- |
-| 001 | Pinned source inventory, license/selection notes, risky-glyph proof and reviewer/model decisions. |
-| 002 | v1 characterization comparison, schema failures, cancellation/API consumer results. |
-| 003 | SVG/Canvas intermediate frames, coordinate round trips, path-subset parity. |
-| 004 | Dot/curve/plan traces and deterministic accepted/rejected results, bounded candidate diagnostics. |
-| 005 | Unicode normalization/segmentation fixtures, coverage report, identity/cache collision tests. |
-| 006 | Two identical rebuild digests, source records/notices, import/curation round-trip record. |
-| 007 | English inventory/forms specification, item review records, human evaluation manifest. |
-| 008 | Japanese source/import exceptions, motor-count checks, tricky-kana frames. |
+| WI   | Required evidence                                                                                                                                                          |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001  | Pinned source inventory, license/selection notes, risky-glyph proof and reviewer/model decisions.                                                                          |
+| 002  | v1 characterization comparison, schema failures, cancellation/API consumer results.                                                                                        |
+| 003  | SVG/Canvas intermediate frames, coordinate round trips, path-subset parity.                                                                                                |
+| 004  | Dot/curve/plan traces and deterministic accepted/rejected results, bounded candidate diagnostics.                                                                          |
+| 005  | Unicode normalization/segmentation fixtures, coverage report, identity/cache collision tests.                                                                              |
+| 006  | Two identical rebuild digests, source records/notices, import/curation round-trip record.                                                                                  |
+| 007  | English inventory/forms specification, item review records, human evaluation manifest.                                                                                     |
+| 008  | Japanese source/import exceptions, motor-count checks, tricky-kana frames.                                                                                                 |
 | 009A | 40-letter inventory, named block pilot, reviewed sourced or authored block comparisons and applicable real-input evidence; sufficient for the initial Korean release gate. |
-| 009B | Later composer release only: 11,172 round-trip/geometry report, allograph-class matrix and generated/reviewed coverage split. |
-| 010 | Offline network evidence, 320px and desktop captures, real touch/stylus exercise results. |
-| 011 | Full logs, actual packed consumers, writer-disjoint corpus metrics with denominators, device benchmarks. |
-| 012 | Per-locale inventory/composition exceptions, canonical-equivalence and reviewed-mark evidence. |
-| 013 | Jōyō manifest diff, quarantined items, subset integrity and review progress. |
-| 014 | Each script's complete declared inventory, locale/style distinctions and reviewer evidence. |
-| 015 | Authored run/word fixtures, joins/delayed marks/bidi source spans and physical-input review. |
-| 016 | Script capability/class matrices, representative cluster/word traces and source terms. |
+| 009B | Later composer release only: 11,172 round-trip/geometry report, allograph-class matrix and generated/reviewed coverage split.                                              |
+| 010  | Offline network evidence, 320px and desktop captures, real touch/stylus exercise results.                                                                                  |
+| 011  | Full logs, actual packed consumers, writer-disjoint corpus metrics with denominators, device benchmarks.                                                                   |
+| 012  | Per-locale inventory/composition exceptions, canonical-equivalence and reviewed-mark evidence.                                                                             |
+| 013  | Jōyō manifest diff, quarantined items, subset integrity and review progress.                                                                                               |
+| 014  | Each script's complete declared inventory, locale/style distinctions and reviewer evidence.                                                                                |
+| 015  | Authored run/word fixtures, joins/delayed marks/bidi source spans and physical-input review.                                                                               |
+| 016  | Script capability/class matrices, representative cluster/word traces and source terms.                                                                                     |
 
 Do not mark a WI complete from an animation screenshot, aggregate test count, source-file count or a generated manifest alone. The source/model and real-input evidence must match the claim being enabled.
 

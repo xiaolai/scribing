@@ -1,44 +1,108 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Scribing · Multilingual practice</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-<main>
-  <nav><a href="../">Chinese demo</a> · <a href="../../docs/multilingual.md">API and data notes</a></nav>
-  <h1>Multilingual practice</h1>
-  <p>Explore supplied writing models and recorded observations. These packs are technical previews; their stroke order has not been certified as a native teaching curriculum.</p>
-  <div class="controls">
-    <label>View<select id="view" aria-describedby="view-help"><option value="models">Textbook &amp; vector models</option><option value="sources">Source samples</option></select></label>
-    <label>Collection<select id="pack"></select></label>
-    <label>Writing unit<select id="unit" disabled></select></label>
-    <label>Stroke-order plan<select id="plan" disabled></select></label>
-    <label>Matching tolerance<select id="tolerance" aria-describedby="tolerance-help"><option value="1">Precise (1)</option><option value="1.5">Forgiving (1.5)</option><option value="2">Relaxed (2)</option></select></label>
-    <label>Renderer<select id="renderer"><option value="svg">SVG</option><option value="canvas">Canvas</option></select></label>
-  </div>
-  <p id="view-help"></p>
-  <form id="lookup"><label>Find text or source ID<input id="text" autocomplete="off" aria-describedby="lookup-help"></label><button id="find" disabled>Find</button></form>
-  <p id="lookup-help">Uses this pack’s explicit IDs and aliases. Unmapped recordings retain source-class IDs.</p>
-  <p id="tolerance-help">Practice compares your strokes with this source model, not general handwriting recognition. A more forgiving setting allows more shape variation. Recorded models start at Forgiving.</p>
-  <p id="source"></p>
-  <p id="status" role="status" aria-live="polite" aria-atomic="true">Loading local pack index…</p>
-  <div class="actions">
-    <button id="animate" disabled>Animate</button>
-    <button id="guided" disabled>Guided practice</button>
-    <button id="practice" disabled>Independent practice</button>
-    <button id="show" disabled>Show model</button>
-    <button id="stop" disabled>Stop practice</button>
-    <button id="retry">Reload source</button>
-  </div>
-  <label class="alternative"><input id="alternatives" type="checkbox"> Accept other supplied stroke-order plans</label>
-  <div id="writing-area" aria-label="Writing practice area" aria-busy="true"></div>
-  <p>Use a mouse, touch, or pen. Guided practice shows the model and next-stroke guidance. Independent practice gives feedback after each stroke.</p>
-  <details><summary>What is being shown?</summary><p id="details"></p></details>
-</main>
-<script src="../../dist/scribing.js"></script>
-<script src="demo.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Scribing · Fonts and practice</title>
+    <link rel="stylesheet" href="fonts.css" />
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="../">Chinese demo</a> · <a href="../../docs/fonts.md">Font API</a>
+      </nav>
+      <h1>Write with real fonts</h1>
+      <p>
+        Choose a script and a typeface, watch a guide draw that exact font, then trace it
+        or copy it from memory.
+      </p>
+      <label class="mode"
+        >Practice view<select id="mode">
+          <option value="fonts">Formal fonts</option>
+          <option value="ordered">Ordered models and source samples</option>
+        </select></label
+      >
+      <section id="font-view">
+        <div class="controls">
+          <label>Language / script<select id="font-script"></select></label>
+          <label>Typeface<select id="font-family"></select></label>
+          <label>Sample character<select id="font-sample"></select></label>
+          <label
+            >Renderer<select id="font-renderer">
+              <option value="svg">SVG</option>
+              <option value="canvas">Canvas</option>
+            </select></label
+          >
+        </div>
+        <form id="font-form">
+          <label
+            >Your text<input
+              id="font-text"
+              value="A"
+              autocomplete="off"
+              aria-describedby="font-help" /></label
+          ><button type="submit">Use text</button>
+        </form>
+        <p id="font-help">
+          Up to 32 Unicode characters in the selected script. Font outlines describe
+          shapes; they do not prescribe handwriting stroke order.
+        </p>
+        <details>
+          <summary>Use your own font</summary>
+          <label
+            >Local TTF or OTF file<input
+              type="file"
+              id="font-file"
+              accept=".ttf,.otf" /></label
+          ><button id="font-reset" type="button">Return to bundled typeface</button>
+          <p>
+            Single font files up to 32 MiB. Your file stays on this device. It must
+            contain the text you enter.
+          </p>
+        </details>
+        <p id="font-note"></p>
+        <p id="font-status" role="status" aria-live="polite">
+          Loading local font catalog…
+        </p>
+        <div class="actions">
+          <button id="font-animate" disabled>Prepare guide</button
+          ><button id="font-stop" disabled>Stop</button
+          ><label
+            >Speed<select id="font-speed">
+              <option value="0.5">Slow</option>
+              <option value="1" selected>Normal</option>
+              <option value="2">Fast</option>
+            </select></label
+          ><button id="font-trace" disabled>Trace</button
+          ><button id="font-copy" disabled>Copy from memory</button
+          ><button id="font-reference" disabled aria-pressed="true">Hide reference</button
+          ><button id="font-check" disabled>Compare shape</button
+          ><button id="font-replay" disabled>Replay my ink</button
+          ><button id="font-clear" disabled>Clear ink</button>
+        </div>
+        <p id="font-animation-note" role="status"></p>
+        <button id="font-retry-guide" type="button" hidden>Retry</button>
+        <div id="font-area" aria-label="Font practice area" aria-busy="true"></div>
+        <p id="font-result" role="status">
+          Trace follows the visible reference. Copy from memory hides it.
+        </p>
+        <details>
+          <summary>Font and source coverage</summary>
+          <div id="font-coverage"></div>
+        </details>
+      </section>
+      <section id="ordered-view" hidden>
+        <p>
+          These supplied stroke models and recordings are separate from font outlines.
+        </p>
+        <iframe
+          id="ordered-frame"
+          title="Ordered writing models and source samples"
+        ></iframe>
+      </section>
+    </main>
+    <script id="font-runtime-imports" type="importmap">{"imports":{"../../extras/fonts/animation.mjs":"../../extras/fonts/animation.mjs?v=a6b6bc463015","../../extras/fonts/progress.mjs":"../../extras/fonts/progress.mjs?v=1b7e070342df","../../extras/fonts/skeleton.mjs":"../../extras/fonts/skeleton.mjs?v=88e9a189afc8","../../extras/fonts/path-geometry.mjs":"../../extras/fonts/path-geometry.mjs?v=9d8fceba4516","../../extras/fonts/yield-work.mjs":"../../extras/fonts/yield-work.mjs?v=1e980ae3241f","../../extras/fonts/provider.mjs":"../../extras/fonts/provider.mjs?v=1cb4a550627a"}}</script>
+    <script src="../../dist/scribing.js?v=abffa68a4498"></script>
+    <script type="module" src="fonts.mjs?v=c064a9e67212"></script>
+  </body>
 </html>

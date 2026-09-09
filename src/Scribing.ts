@@ -1,3 +1,5 @@
+import FontWriter from './fonts/FontWriter';
+import { FontWriterOptions } from './fonts/types';
 import RenderState from './RenderState';
 import parseCharData from './parseCharData';
 import Positioner from './Positioner';
@@ -41,6 +43,8 @@ import {
 // Export type interfaces
 export * from './typings/types';
 export * from './units/types';
+export * from './fonts/types';
+export type { default as FontWriter } from './fonts/FontWriter';
 
 export default class Scribing {
   _options: ParsedScribingOptions;
@@ -85,25 +89,21 @@ export default class Scribing {
     return writer;
   }
 
+  static createFontWriter(element: string | HTMLElement, options: FontWriterOptions) {
+    return new FontWriter(element, options);
+  }
+
   static createDataProvider(pack: WritingDataPack) {
     return createDataProvider(pack);
   }
-
-  /** Singleton instance of LoadingManager. Only set in `loadCharacterData` */
-  static _loadingManager: LoadingManager | null = null;
-  /** Singleton loading options. Only set in `loadCharacterData` */
-  static _loadingOptions: Partial<ScribingOptions> | null = null;
 
   static loadCharacterData(
     character: string,
     options: Partial<LoadingManagerOptions> = {},
   ) {
-    // Static requests are independent consumers, not successive updates to a writer.
-    const loadingManager = new LoadingManager({ ...defaultOptions, ...options });
-
-    Scribing._loadingManager = loadingManager;
-    Scribing._loadingOptions = options;
-    return loadingManager.loadCharData(character);
+    // Static requests are independent consumers, not successive updates to a writer,
+    // so each call gets its own manager and none is retained after it settles.
+    return new LoadingManager({ ...defaultOptions, ...options }).loadCharData(character);
   }
 
   static getScalingTransform(width: number, height: number, padding = 0) {
@@ -702,7 +702,7 @@ export default class Scribing {
       mergedOptions.strokeAnimationSpeed = 500 / options.strokeAnimationDuration;
     }
     if (options.strokeHighlightDuration && !options.strokeHighlightSpeed) {
-      mergedOptions.strokeHighlightSpeed = 500 / mergedOptions.strokeHighlightDuration;
+      mergedOptions.strokeHighlightSpeed = 500 / options.strokeHighlightDuration;
     }
 
     if (!options.highlightCompleteColor) {
@@ -737,8 +737,10 @@ export default class Scribing {
       throw Error('Failed to load character data. Call setCharacter and try again.');
     }
 
+    // A superseded, failed or destroyed writer resolves with undefined rather than
+    // running `func`; the return type is explicit so the empty path is not accidental.
     if (this._withDataPromise) {
-      return this._withDataPromise.then(() => {
+      return this._withDataPromise.then((): T | undefined => {
         if (
           !this._destroyed &&
           generation === this._characterGeneration &&
@@ -748,10 +750,12 @@ export default class Scribing {
         ) {
           return func();
         }
+        return undefined;
       });
     }
-    return Promise.resolve().then(() => {
+    return Promise.resolve().then((): T | undefined => {
       if (!this._destroyed && generation === this._characterGeneration) return func();
+      return undefined;
     });
   }
 

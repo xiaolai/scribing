@@ -4987,122 +4987,71 @@
       "outcomes": [
         {
           "path": "strokes_background/Korean/character01/0643_01.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_03.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_04.txt",
-          "reasons": [
-            "outside-target",
-            "outside-target"
-          ]
+          "reasons": ["outside-target", "outside-target"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_05.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_06.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_07.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_08.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_09.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_12.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_13.txt",
-          "reasons": [
-            "outside-target",
-            "correct"
-          ]
+          "reasons": ["outside-target", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_14.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_15.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_16.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_17.txt",
-          "reasons": [
-            "wrong-shape",
-            "correct"
-          ]
+          "reasons": ["wrong-shape", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_18.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_19.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_20.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         }
       ]
     },
@@ -5128,122 +5077,71 @@
       "outcomes": [
         {
           "path": "strokes_background/Korean/character01/0643_01.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_03.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_04.txt",
-          "reasons": [
-            "outside-target",
-            "outside-target"
-          ]
+          "reasons": ["outside-target", "outside-target"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_05.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_06.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_07.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_08.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_09.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_12.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_13.txt",
-          "reasons": [
-            "outside-target",
-            "correct"
-          ]
+          "reasons": ["outside-target", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_14.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_15.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_16.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_17.txt",
-          "reasons": [
-            "wrong-shape",
-            "correct"
-          ]
+          "reasons": ["wrong-shape", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_18.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_19.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_20.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         }
       ]
     },
@@ -5269,122 +5167,71 @@
       "outcomes": [
         {
           "path": "strokes_background/Korean/character01/0643_01.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_03.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_04.txt",
-          "reasons": [
-            "outside-target",
-            "outside-target"
-          ]
+          "reasons": ["outside-target", "outside-target"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_05.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_06.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_07.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_08.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_09.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_12.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_13.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_14.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_15.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_16.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_17.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_18.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_19.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_20.txt",
-          "reasons": [
-            "wrong-shape",
-            "correct"
-          ]
+          "reasons": ["wrong-shape", "correct"]
         }
       ]
     },
@@ -5410,122 +5257,71 @@
       "outcomes": [
         {
           "path": "strokes_background/Korean/character01/0643_01.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_03.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_04.txt",
-          "reasons": [
-            "outside-target",
-            "outside-target"
-          ]
+          "reasons": ["outside-target", "outside-target"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_05.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_06.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_07.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_08.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_09.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_12.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_13.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_14.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_15.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_16.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_17.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_18.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_19.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_20.txt",
-          "reasons": [
-            "wrong-shape",
-            "correct"
-          ]
+          "reasons": ["wrong-shape", "correct"]
         }
       ]
     },
@@ -5549,122 +5345,71 @@
       "outcomes": [
         {
           "path": "strokes_background/Korean/character01/0643_01.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_03.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_04.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_05.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_06.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_07.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_08.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_09.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_12.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_13.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_14.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_15.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_16.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_17.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_18.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_19.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_20.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         }
       ]
     },
@@ -5688,122 +5433,71 @@
       "outcomes": [
         {
           "path": "strokes_background/Korean/character01/0643_01.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_03.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_04.txt",
-          "reasons": [
-            "wrong-shape",
-            "wrong-shape"
-          ]
+          "reasons": ["wrong-shape", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_05.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_06.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_07.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_08.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_09.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_12.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_13.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_14.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_15.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_16.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_17.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_18.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_19.txt",
-          "reasons": [
-            "correct",
-            "wrong-shape"
-          ]
+          "reasons": ["correct", "wrong-shape"]
         },
         {
           "path": "strokes_background/Korean/character01/0643_20.txt",
-          "reasons": [
-            "correct",
-            "correct"
-          ]
+          "reasons": ["correct", "correct"]
         }
       ]
     }

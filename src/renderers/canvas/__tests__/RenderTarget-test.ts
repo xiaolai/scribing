@@ -23,7 +23,7 @@ describe('RenderTarget', () => {
     document.body.innerHTML = '<canvas id="target"></canvas>';
     const target = RenderTarget.init('target', '400', '300');
     target.getBoundingClientRect = () =>
-      ({ left: 10, top: 20, width: 200, height: 100 } as DOMRect);
+      ({ left: 10, top: 20, width: 200, height: 100 }) as DOMRect;
     expect(
       target._getMousePoint(new MouseEvent('mousemove', { clientX: 110, clientY: 70 })),
     ).toEqual({ x: 200, y: 150 });

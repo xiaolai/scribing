@@ -5,10 +5,10 @@ import parseCharData from '../../../parseCharData';
 const char = parseCharData('人', ren);
 
 describe('CharacterRenderer', () => {
-  let ctx;
+  let ctx: CanvasRenderingContext2D;
 
   beforeEach(() => {
-    ctx = document.createElement('canvas').getContext('2d');
+    ctx = document.createElement('canvas').getContext('2d')!;
   });
 
   it('renders the strokes of the character', () => {

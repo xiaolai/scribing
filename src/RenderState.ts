@@ -170,11 +170,21 @@ export default class RenderState {
     }
 
     const mutations = mutationChain._mutations;
+    // An empty chain has nothing to loop over. Without this, `_loop` reset the index
+    // to 0 and then dereferenced a mutation that does not exist.
+    if (mutations.length === 0) {
+      mutationChain._isActive = false;
+      this._mutationChains = this._mutationChains.filter(
+        (chain) => chain !== mutationChain,
+      );
+      mutationChain._resolve({ canceled: false });
+      return;
+    }
     if (mutationChain._index >= mutations.length) {
       if (mutationChain._loop) {
-        mutationChain._index = 0; // eslint-disable-line no-param-reassign
+        mutationChain._index = 0;
       } else {
-        mutationChain._isActive = false; // eslint-disable-line no-param-reassign
+        mutationChain._isActive = false;
         this._mutationChains = this._mutationChains.filter(
           (chain) => chain !== mutationChain,
         );
@@ -188,7 +198,7 @@ export default class RenderState {
 
     activeMutation.run(this).then(() => {
       if (mutationChain._isActive) {
-        mutationChain._index++; // eslint-disable-line no-param-reassign
+        mutationChain._index++;
         this._run(mutationChain);
       }
     });

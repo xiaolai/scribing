@@ -39,7 +39,7 @@ export type OnCompleteFunction = (res: { canceled: boolean }) => void;
 
 /** Creates a render target (e.g. svg, canvas) */
 export type RenderTargetInitFunction<
-  TElement extends HTMLElement | SVGElement | SVGSVGElement | HTMLCanvasElement
+  TElement extends HTMLElement | SVGElement | SVGSVGElement | HTMLCanvasElement,
 > = (
   elmOrId: string | TElement,
   width?: string | number | null,

@@ -1,7 +1,7 @@
-var writer;
-var isCharVisible = false;
-var isOutlineVisible = true;
-var loadGeneration = 0;
+let writer;
+let isCharVisible = false;
+let isOutlineVisible = true;
+let loadGeneration = 0;
 
 function setStatus(message, loading, ready) {
   document.querySelector('#status').textContent = message;
@@ -12,13 +12,17 @@ function setStatus(message, loading, ready) {
 }
 
 function syncToggleButtons() {
-  document.querySelector('.js-toggle').setAttribute('aria-pressed', String(isCharVisible));
-  document.querySelector('.js-toggle-hint').setAttribute('aria-pressed', String(isOutlineVisible));
+  document
+    .querySelector('.js-toggle')
+    .setAttribute('aria-pressed', String(isCharVisible));
+  document
+    .querySelector('.js-toggle-hint')
+    .setAttribute('aria-pressed', String(isOutlineVisible));
 }
 
 function updateCharacter() {
-  var input = document.querySelector('.js-char');
-  var character = input.value.trim();
+  const input = document.querySelector('.js-char');
+  const character = input.value.trim();
   // HTML maxlength counts UTF-16 code units, so validate Unicode code points here.
   if (Array.from(character).length !== 1 || /^[\uD800-\uDFFF]$/.test(character)) {
     input.setCustomValidity('Enter exactly one character.');
@@ -28,7 +32,7 @@ function updateCharacter() {
   input.setCustomValidity('');
   input.value = character;
   window.location.hash = encodeURIComponent(character);
-  var generation = ++loadGeneration;
+  const generation = ++loadGeneration;
   setStatus('Loading ' + character + '…', true, false);
 
   if (!writer) {
@@ -43,25 +47,34 @@ function updateCharacter() {
     document.querySelector('#target svg').setAttribute('viewBox', '0 0 400 400');
     window.writer = writer;
   }
-  return writer.setCharacter(character).then(function () {
-    if (generation !== loadGeneration) return;
-    isCharVisible = false;
-    isOutlineVisible = true;
-    writer.hideCharacter({ duration: 0 });
-    writer.showOutline({ duration: 0 });
-    syncToggleButtons();
-    setStatus('Ready to practice ' + character + '.', false, true);
-  }).catch(function () {
-    if (generation !== loadGeneration) return;
-    setStatus('Could not load ' + character + '. Check your connection or try another Chinese character.', false, false);
-  });
+  return writer
+    .setCharacter(character)
+    .then(function () {
+      if (generation !== loadGeneration) return;
+      isCharVisible = false;
+      isOutlineVisible = true;
+      writer.hideCharacter({ duration: 0 });
+      writer.showOutline({ duration: 0 });
+      syncToggleButtons();
+      setStatus('Ready to practice ' + character + '.', false, true);
+    })
+    .catch(function () {
+      if (generation !== loadGeneration) return;
+      setStatus(
+        'Could not load ' +
+          character +
+          '. Check your connection or try another Chinese character.',
+        false,
+        false,
+      );
+    });
 }
 
 window.onload = function () {
   try {
-    var char = decodeURIComponent(window.location.hash.slice(1));
+    const char = decodeURIComponent(window.location.hash.slice(1));
     if (char) document.querySelector('.js-char').value = char;
-  } catch (_) {
+  } catch {
     // A malformed URL fragment should not prevent the default character loading.
   }
 
@@ -83,7 +96,7 @@ window.onload = function () {
     syncToggleButtons();
   });
   document.querySelector('.js-animate').addEventListener('click', function () {
-    var generation = loadGeneration;
+    const generation = loadGeneration;
     isCharVisible = true;
     syncToggleButtons();
     writer.animateCharacter().then(function (result) {
@@ -93,7 +106,7 @@ window.onload = function () {
     });
   });
   document.querySelector('.js-quiz').addEventListener('click', function () {
-    var generation = loadGeneration;
+    const generation = loadGeneration;
     writer.quiz({
       showOutline: true,
       onComplete: function () {

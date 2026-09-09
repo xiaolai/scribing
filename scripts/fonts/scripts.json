@@ -1,0 +1,2277 @@
+[
+  {
+    "id": "english",
+    "name": "English / Latin",
+    "script": "Latn",
+    "language": "en",
+    "unicodeScripts": [
+      "Latin"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSans",
+      "NotoSerif"
+    ],
+    "examples": [
+      {
+        "text": "ag",
+        "label": "Contextual text"
+      },
+      {
+        "text": "Hello",
+        "label": "Contextual text"
+      },
+      {
+        "text": "a",
+        "label": "Character"
+      },
+      {
+        "text": "g",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "chinese-simplified",
+    "name": "Chinese (Simplified)",
+    "script": "Hani",
+    "language": "zh-Hans",
+    "unicodeScripts": [
+      "Han"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCJKsc",
+      "NotoSerifCJKsc"
+    ],
+    "examples": [
+      {
+        "text": "永",
+        "label": "Character"
+      },
+      {
+        "text": "汉字",
+        "label": "Contextual text"
+      },
+      {
+        "text": "骨",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "chinese-traditional",
+    "name": "Chinese (Traditional)",
+    "script": "Hani",
+    "language": "zh-Hant",
+    "unicodeScripts": [
+      "Han"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCJKtc",
+      "NotoSerifCJKtc"
+    ],
+    "examples": [
+      {
+        "text": "永",
+        "label": "Character"
+      },
+      {
+        "text": "漢字",
+        "label": "Contextual text"
+      },
+      {
+        "text": "骨",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "japanese",
+    "name": "Japanese",
+    "script": "Jpan",
+    "language": "ja",
+    "unicodeScripts": [
+      "Han",
+      "Hiragana",
+      "Katakana"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCJKjp",
+      "NotoSerifCJKjp"
+    ],
+    "examples": [
+      {
+        "text": "あ",
+        "label": "Character"
+      },
+      {
+        "text": "カ",
+        "label": "Character"
+      },
+      {
+        "text": "漢字",
+        "label": "Contextual text"
+      },
+      {
+        "text": "骨",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "korean",
+    "name": "Korean",
+    "script": "Hang",
+    "language": "ko",
+    "unicodeScripts": [
+      "Hangul"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCJKkr",
+      "NotoSerifCJKkr"
+    ],
+    "examples": [
+      {
+        "text": "한",
+        "label": "Character"
+      },
+      {
+        "text": "글",
+        "label": "Character"
+      },
+      {
+        "text": "가",
+        "label": "Character"
+      },
+      {
+        "text": "ㄱ",
+        "label": "Character"
+      },
+      {
+        "text": "ㅏ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "arabic",
+    "name": "Arabic",
+    "script": "Arab",
+    "language": "ar",
+    "unicodeScripts": [
+      "Arabic"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansArabic",
+      "NotoNaskhArabic"
+    ],
+    "examples": [
+      {
+        "text": "ب",
+        "label": "Character"
+      },
+      {
+        "text": "سلام",
+        "label": "Contextual text"
+      },
+      {
+        "text": "بِ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "jawi",
+    "name": "Malay (Jawi)",
+    "script": "Arab",
+    "language": "ms-Arab",
+    "unicodeScripts": [
+      "Arabic"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansArabic",
+      "NotoNaskhArabic"
+    ],
+    "examples": [
+      {
+        "text": "ڤ",
+        "label": "Character"
+      },
+      {
+        "text": "چ",
+        "label": "Character"
+      },
+      {
+        "text": "ڠ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "urdu",
+    "name": "Urdu",
+    "script": "Arab",
+    "language": "ur",
+    "unicodeScripts": [
+      "Arabic"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoNastaliqUrdu",
+      "NotoNaskhArabic"
+    ],
+    "examples": [
+      {
+        "text": "پ",
+        "label": "Character"
+      },
+      {
+        "text": "ٹ",
+        "label": "Character"
+      },
+      {
+        "text": "اردو",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "armenian",
+    "name": "Armenian",
+    "script": "Armn",
+    "language": "hy",
+    "unicodeScripts": [
+      "Armenian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansArmenian",
+      "NotoSerifArmenian"
+    ],
+    "examples": [
+      {
+        "text": "Ա",
+        "label": "Character"
+      },
+      {
+        "text": "ա",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "avestan",
+    "name": "Avestan",
+    "script": "Avst",
+    "language": "ae",
+    "unicodeScripts": [
+      "Avestan"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansAvestan"
+    ],
+    "examples": []
+  },
+  {
+    "id": "balinese",
+    "name": "Balinese",
+    "script": "Bali",
+    "language": "ban",
+    "unicodeScripts": [
+      "Balinese"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBalinese",
+      "NotoSerifBalinese"
+    ],
+    "examples": [
+      {
+        "text": "ᬓ",
+        "label": "Character"
+      },
+      {
+        "text": "ᬓᬶ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "bengali",
+    "name": "Bengali",
+    "script": "Beng",
+    "language": "bn",
+    "unicodeScripts": [
+      "Bengali"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBengali",
+      "NotoSerifBengali"
+    ],
+    "examples": [
+      {
+        "text": "ক",
+        "label": "Character"
+      },
+      {
+        "text": "কি",
+        "label": "Contextual text"
+      },
+      {
+        "text": "ক্ষ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "braille",
+    "name": "Braille patterns",
+    "script": "Brai",
+    "language": "und-Brai",
+    "unicodeScripts": [
+      "Braille"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSymbols2"
+    ],
+    "examples": [
+      {
+        "text": "⠁",
+        "label": "Character"
+      },
+      {
+        "text": "⠃",
+        "label": "Character"
+      },
+      {
+        "text": "⠉",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "burmese",
+    "name": "Burmese / Myanmar",
+    "script": "Mymr",
+    "language": "my",
+    "unicodeScripts": [
+      "Myanmar"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansMyanmar",
+      "NotoSerifMyanmar"
+    ],
+    "examples": [
+      {
+        "text": "က",
+        "label": "Character"
+      },
+      {
+        "text": "ကိ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "canadian-aboriginal",
+    "name": "Canadian Aboriginal syllabics",
+    "script": "Cans",
+    "language": "iu",
+    "unicodeScripts": [
+      "Canadian_Aboriginal"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCanadianAboriginal"
+    ],
+    "examples": [
+      {
+        "text": "ᐃ",
+        "label": "Character"
+      },
+      {
+        "text": "ᐅ",
+        "label": "Character"
+      },
+      {
+        "text": "ᐊ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "cyrillic",
+    "name": "Cyrillic",
+    "script": "Cyrl",
+    "language": "ru",
+    "unicodeScripts": [
+      "Cyrillic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSans",
+      "NotoSerif"
+    ],
+    "examples": [
+      {
+        "text": "А",
+        "label": "Character"
+      },
+      {
+        "text": "а",
+        "label": "Character"
+      },
+      {
+        "text": "Б",
+        "label": "Character"
+      },
+      {
+        "text": "Ж",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "church-slavonic",
+    "name": "Church Slavonic / Cyrillic",
+    "script": "Cyrl",
+    "language": "cu",
+    "unicodeScripts": [
+      "Cyrillic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSans",
+      "NotoSerif"
+    ],
+    "examples": [
+      {
+        "text": "Ѣ",
+        "label": "Character"
+      },
+      {
+        "text": "ѣ",
+        "label": "Character"
+      },
+      {
+        "text": "Ѧ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "devanagari",
+    "name": "Devanagari",
+    "script": "Deva",
+    "language": "hi",
+    "unicodeScripts": [
+      "Devanagari"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansDevanagari",
+      "NotoSerifDevanagari"
+    ],
+    "examples": [
+      {
+        "text": "क",
+        "label": "Character"
+      },
+      {
+        "text": "कि",
+        "label": "Contextual text"
+      },
+      {
+        "text": "क्ष",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "sanskrit",
+    "name": "Sanskrit / Devanagari",
+    "script": "Deva",
+    "language": "sa",
+    "unicodeScripts": [
+      "Devanagari"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansDevanagari",
+      "NotoSerifDevanagari"
+    ],
+    "examples": [
+      {
+        "text": "क",
+        "label": "Character"
+      },
+      {
+        "text": "क्ष",
+        "label": "Contextual text"
+      },
+      {
+        "text": "संस्कृतम्",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "aramaic",
+    "name": "Imperial Aramaic",
+    "script": "Armi",
+    "language": "arc",
+    "unicodeScripts": [
+      "Imperial_Aramaic"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansImperialAramaic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "ethiopic",
+    "name": "Ethiopic / Geʽez",
+    "script": "Ethi",
+    "language": "gez",
+    "unicodeScripts": [
+      "Ethiopic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansEthiopic",
+      "NotoSerifEthiopic"
+    ],
+    "examples": [
+      {
+        "text": "ሀ",
+        "label": "Character"
+      },
+      {
+        "text": "ሁ",
+        "label": "Character"
+      },
+      {
+        "text": "ሂ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "georgian",
+    "name": "Georgian / Mkhedruli",
+    "script": "Geor",
+    "language": "ka",
+    "unicodeScripts": [
+      "Georgian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGeorgian",
+      "NotoSerifGeorgian"
+    ],
+    "examples": [
+      {
+        "text": "ა",
+        "label": "Character"
+      },
+      {
+        "text": "ბ",
+        "label": "Character"
+      },
+      {
+        "text": "გ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "georgian-asomtavruli",
+    "name": "Georgian / Asomtavruli",
+    "script": "Geor",
+    "language": "ka",
+    "unicodeScripts": [
+      "Georgian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGeorgian",
+      "NotoSerifGeorgian"
+    ],
+    "examples": [
+      {
+        "text": "Ⴀ",
+        "label": "Character"
+      },
+      {
+        "text": "Ⴁ",
+        "label": "Character"
+      },
+      {
+        "text": "Ⴂ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "glagolitic",
+    "name": "Glagolitic",
+    "script": "Glag",
+    "language": "cu-Glag",
+    "unicodeScripts": [
+      "Glagolitic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGlagolitic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "grantha",
+    "name": "Grantha",
+    "script": "Gran",
+    "language": "sa-Gran",
+    "unicodeScripts": [
+      "Grantha"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGrantha",
+      "NotoSerifGrantha"
+    ],
+    "examples": []
+  },
+  {
+    "id": "greek",
+    "name": "Greek",
+    "script": "Grek",
+    "language": "el",
+    "unicodeScripts": [
+      "Greek"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSans",
+      "NotoSerif"
+    ],
+    "examples": [
+      {
+        "text": "Α",
+        "label": "Character"
+      },
+      {
+        "text": "α",
+        "label": "Character"
+      },
+      {
+        "text": "β",
+        "label": "Character"
+      },
+      {
+        "text": "Ω",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "gujarati",
+    "name": "Gujarati",
+    "script": "Gujr",
+    "language": "gu",
+    "unicodeScripts": [
+      "Gujarati"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGujarati",
+      "NotoSerifGujarati"
+    ],
+    "examples": [
+      {
+        "text": "ક",
+        "label": "Character"
+      },
+      {
+        "text": "કિ",
+        "label": "Contextual text"
+      },
+      {
+        "text": "ક્ષ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "gurmukhi",
+    "name": "Gurmukhi",
+    "script": "Guru",
+    "language": "pa",
+    "unicodeScripts": [
+      "Gurmukhi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGurmukhi",
+      "NotoSerifGurmukhi"
+    ],
+    "examples": [
+      {
+        "text": "ਕ",
+        "label": "Character"
+      },
+      {
+        "text": "ਕਿ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "hebrew",
+    "name": "Hebrew",
+    "script": "Hebr",
+    "language": "he",
+    "unicodeScripts": [
+      "Hebrew"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansHebrew",
+      "NotoSerifHebrew"
+    ],
+    "examples": [
+      {
+        "text": "א",
+        "label": "Character"
+      },
+      {
+        "text": "שלום",
+        "label": "Contextual text"
+      },
+      {
+        "text": "שָׁ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "hiragana",
+    "name": "Japanese / Hiragana",
+    "script": "Hira",
+    "language": "ja",
+    "unicodeScripts": [
+      "Hiragana"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCJKjp",
+      "NotoSerifCJKjp"
+    ],
+    "examples": [
+      {
+        "text": "あ",
+        "label": "Character"
+      },
+      {
+        "text": "い",
+        "label": "Character"
+      },
+      {
+        "text": "う",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "katakana",
+    "name": "Japanese / Katakana",
+    "script": "Kana",
+    "language": "ja",
+    "unicodeScripts": [
+      "Katakana"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCJKjp",
+      "NotoSerifCJKjp"
+    ],
+    "examples": [
+      {
+        "text": "ア",
+        "label": "Character"
+      },
+      {
+        "text": "イ",
+        "label": "Character"
+      },
+      {
+        "text": "ウ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "kannada",
+    "name": "Kannada",
+    "script": "Knda",
+    "language": "kn",
+    "unicodeScripts": [
+      "Kannada"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansKannada",
+      "NotoSerifKannada"
+    ],
+    "examples": [
+      {
+        "text": "ಕ",
+        "label": "Character"
+      },
+      {
+        "text": "ಕಿ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "malayalam",
+    "name": "Malayalam",
+    "script": "Mlym",
+    "language": "ml",
+    "unicodeScripts": [
+      "Malayalam"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansMalayalam",
+      "NotoSerifMalayalam"
+    ],
+    "examples": [
+      {
+        "text": "ക",
+        "label": "Character"
+      },
+      {
+        "text": "കി",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "meetei-mayek",
+    "name": "Meetei Mayek / Manipuri",
+    "script": "Mtei",
+    "language": "mni",
+    "unicodeScripts": [
+      "Meetei_Mayek"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansMeeteiMayek"
+    ],
+    "examples": [
+      {
+        "text": "ꯀ",
+        "label": "Character"
+      },
+      {
+        "text": "ꯁ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "mongolian",
+    "name": "Mongolian",
+    "script": "Mong",
+    "language": "mn-Mong",
+    "unicodeScripts": [
+      "Mongolian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansMongolian"
+    ],
+    "examples": [
+      {
+        "text": "ᠠ",
+        "label": "Character"
+      },
+      {
+        "text": "ᠡ",
+        "label": "Character"
+      },
+      {
+        "text": "ᠮᠣᠩᠭᠣᠯ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "nko",
+    "name": "N’Ko",
+    "script": "Nkoo",
+    "language": "nqo",
+    "unicodeScripts": [
+      "Nko"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansNKo"
+    ],
+    "examples": [
+      {
+        "text": "ߊ",
+        "label": "Character"
+      },
+      {
+        "text": "ߋ",
+        "label": "Character"
+      },
+      {
+        "text": "ߌ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "odia",
+    "name": "Odia",
+    "script": "Orya",
+    "language": "or",
+    "unicodeScripts": [
+      "Oriya"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOriya",
+      "NotoSerifOriya"
+    ],
+    "examples": [
+      {
+        "text": "କ",
+        "label": "Character"
+      },
+      {
+        "text": "କି",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "runic",
+    "name": "Runic / Anglo-Saxon futhorc",
+    "script": "Runr",
+    "language": "ang-Runr",
+    "unicodeScripts": [
+      "Runic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansRunic"
+    ],
+    "examples": [
+      {
+        "text": "ᚠ",
+        "label": "Character"
+      },
+      {
+        "text": "ᚢ",
+        "label": "Character"
+      },
+      {
+        "text": "ᚦ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "syloti-nagri",
+    "name": "Syloti Nagri / Sylheti",
+    "script": "Sylo",
+    "language": "syl",
+    "unicodeScripts": [
+      "Syloti_Nagri"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSylotiNagri"
+    ],
+    "examples": [
+      {
+        "text": "ꠀ",
+        "label": "Character"
+      },
+      {
+        "text": "ꠁ",
+        "label": "Character"
+      },
+      {
+        "text": "ꠂ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "syriac",
+    "name": "Syriac",
+    "script": "Syrc",
+    "language": "syr",
+    "unicodeScripts": [
+      "Syriac"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansSyriac"
+    ],
+    "examples": [
+      {
+        "text": "ܐ",
+        "label": "Character"
+      },
+      {
+        "text": "ܒ",
+        "label": "Character"
+      },
+      {
+        "text": "ܫܠܡܐ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "tagalog",
+    "name": "Tagalog / Baybayin",
+    "script": "Tglg",
+    "language": "tl-Tglg",
+    "unicodeScripts": [
+      "Tagalog"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTagalog"
+    ],
+    "examples": [
+      {
+        "text": "ᜀ",
+        "label": "Character"
+      },
+      {
+        "text": "ᜁ",
+        "label": "Character"
+      },
+      {
+        "text": "ᜂ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "tibetan",
+    "name": "Tibetan",
+    "script": "Tibt",
+    "language": "bo",
+    "unicodeScripts": [
+      "Tibetan"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSerifTibetan"
+    ],
+    "examples": [
+      {
+        "text": "ཀ",
+        "label": "Character"
+      },
+      {
+        "text": "ཀི",
+        "label": "Contextual text"
+      },
+      {
+        "text": "བོད",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "tifinagh",
+    "name": "Tifinagh",
+    "script": "Tfng",
+    "language": "zgh",
+    "unicodeScripts": [
+      "Tifinagh"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTifinagh"
+    ],
+    "examples": [
+      {
+        "text": "ⴰ",
+        "label": "Character"
+      },
+      {
+        "text": "ⴱ",
+        "label": "Character"
+      },
+      {
+        "text": "ⴳ",
+        "label": "Character"
+      }
+    ]
+  },
+  {
+    "id": "thai",
+    "name": "Thai",
+    "script": "Thai",
+    "language": "th",
+    "unicodeScripts": [
+      "Thai"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansThai",
+      "NotoSerifThai"
+    ],
+    "examples": [
+      {
+        "text": "ก",
+        "label": "Character"
+      },
+      {
+        "text": "กิ",
+        "label": "Contextual text"
+      },
+      {
+        "text": "ไทย",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "lao",
+    "name": "Lao",
+    "script": "Laoo",
+    "language": "lo",
+    "unicodeScripts": [
+      "Lao"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansLao",
+      "NotoSerifLao"
+    ],
+    "examples": [
+      {
+        "text": "ກ",
+        "label": "Character"
+      },
+      {
+        "text": "ກິ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "khmer",
+    "name": "Khmer",
+    "script": "Khmr",
+    "language": "km",
+    "unicodeScripts": [
+      "Khmer"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansKhmer",
+      "NotoSerifKhmer"
+    ],
+    "examples": [
+      {
+        "text": "ក",
+        "label": "Character"
+      },
+      {
+        "text": "កិ",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "tamil",
+    "name": "Tamil",
+    "script": "Taml",
+    "language": "ta",
+    "unicodeScripts": [
+      "Tamil"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTamil",
+      "NotoSerifTamil"
+    ],
+    "examples": [
+      {
+        "text": "க",
+        "label": "Character"
+      },
+      {
+        "text": "கி",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "telugu",
+    "name": "Telugu",
+    "script": "Telu",
+    "language": "te",
+    "unicodeScripts": [
+      "Telugu"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTelugu",
+      "NotoSerifTelugu"
+    ],
+    "examples": [
+      {
+        "text": "క",
+        "label": "Character"
+      },
+      {
+        "text": "కి",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "sinhala",
+    "name": "Sinhala",
+    "script": "Sinh",
+    "language": "si",
+    "unicodeScripts": [
+      "Sinhala"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSinhala",
+      "NotoSerifSinhala"
+    ],
+    "examples": [
+      {
+        "text": "ක",
+        "label": "Character"
+      },
+      {
+        "text": "කි",
+        "label": "Contextual text"
+      }
+    ]
+  },
+  {
+    "id": "adlam",
+    "name": "Adlam",
+    "script": "Adlm",
+    "language": "ff-Adlm",
+    "unicodeScripts": [
+      "Adlam"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansAdlam"
+    ],
+    "examples": []
+  },
+  {
+    "id": "ahom",
+    "name": "Ahom",
+    "script": "Ahom",
+    "language": "aho",
+    "unicodeScripts": [
+      "Ahom"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSerifAhom"
+    ],
+    "examples": []
+  },
+  {
+    "id": "bamum",
+    "name": "Bamum",
+    "script": "Bamu",
+    "language": "bax",
+    "unicodeScripts": [
+      "Bamum"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBamum"
+    ],
+    "examples": []
+  },
+  {
+    "id": "bassa-vah",
+    "name": "Bassa Vah",
+    "script": "Bass",
+    "language": "bsq",
+    "unicodeScripts": [
+      "Bassa_Vah"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBassaVah"
+    ],
+    "examples": []
+  },
+  {
+    "id": "batak",
+    "name": "Batak",
+    "script": "Batk",
+    "language": "bbc",
+    "unicodeScripts": [
+      "Batak"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBatak"
+    ],
+    "examples": []
+  },
+  {
+    "id": "bhaiksuki",
+    "name": "Bhaiksuki",
+    "script": "Bhks",
+    "language": "sa-Bhks",
+    "unicodeScripts": [
+      "Bhaiksuki"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBhaiksuki"
+    ],
+    "examples": []
+  },
+  {
+    "id": "brahmi",
+    "name": "Brahmi",
+    "script": "Brah",
+    "language": "und-Brah",
+    "unicodeScripts": [
+      "Brahmi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBrahmi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "buginese",
+    "name": "Buginese",
+    "script": "Bugi",
+    "language": "bug",
+    "unicodeScripts": [
+      "Buginese"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBuginese"
+    ],
+    "examples": []
+  },
+  {
+    "id": "buhid",
+    "name": "Buhid",
+    "script": "Buhd",
+    "language": "bku",
+    "unicodeScripts": [
+      "Buhid"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansBuhid"
+    ],
+    "examples": []
+  },
+  {
+    "id": "carian",
+    "name": "Carian",
+    "script": "Cari",
+    "language": "xcr",
+    "unicodeScripts": [
+      "Carian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCarian"
+    ],
+    "examples": []
+  },
+  {
+    "id": "caucasian-albanian",
+    "name": "Caucasian Albanian",
+    "script": "Aghb",
+    "language": "xag",
+    "unicodeScripts": [
+      "Caucasian_Albanian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCaucasianAlbanian"
+    ],
+    "examples": []
+  },
+  {
+    "id": "chakma",
+    "name": "Chakma",
+    "script": "Cakm",
+    "language": "ccp",
+    "unicodeScripts": [
+      "Chakma"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansChakma"
+    ],
+    "examples": []
+  },
+  {
+    "id": "cham",
+    "name": "Cham",
+    "script": "Cham",
+    "language": "cjm",
+    "unicodeScripts": [
+      "Cham"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCham"
+    ],
+    "examples": []
+  },
+  {
+    "id": "cherokee",
+    "name": "Cherokee",
+    "script": "Cher",
+    "language": "chr",
+    "unicodeScripts": [
+      "Cherokee"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCherokee"
+    ],
+    "examples": []
+  },
+  {
+    "id": "coptic",
+    "name": "Coptic",
+    "script": "Copt",
+    "language": "cop",
+    "unicodeScripts": [
+      "Coptic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCoptic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "cuneiform",
+    "name": "Cuneiform",
+    "script": "Xsux",
+    "language": "akk",
+    "unicodeScripts": [
+      "Cuneiform"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansCuneiform"
+    ],
+    "examples": []
+  },
+  {
+    "id": "cypriot",
+    "name": "Cypriot syllabary",
+    "script": "Cprt",
+    "language": "grc-Cprt",
+    "unicodeScripts": [
+      "Cypriot"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansCypriot"
+    ],
+    "examples": []
+  },
+  {
+    "id": "deseret",
+    "name": "Deseret",
+    "script": "Dsrt",
+    "language": "en-Dsrt",
+    "unicodeScripts": [
+      "Deseret"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansDeseret"
+    ],
+    "examples": []
+  },
+  {
+    "id": "dogra",
+    "name": "Dogra",
+    "script": "Dogr",
+    "language": "doi-Dogr",
+    "unicodeScripts": [
+      "Dogra"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSerifDogra"
+    ],
+    "examples": []
+  },
+  {
+    "id": "egyptian-hieroglyphs",
+    "name": "Egyptian hieroglyphs",
+    "script": "Egyp",
+    "language": "egy",
+    "unicodeScripts": [
+      "Egyptian_Hieroglyphs"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansEgyptianHieroglyphs"
+    ],
+    "examples": []
+  },
+  {
+    "id": "gothic",
+    "name": "Gothic",
+    "script": "Goth",
+    "language": "got",
+    "unicodeScripts": [
+      "Gothic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGothic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "gunjala-gondi",
+    "name": "Gunjala Gondi",
+    "script": "Gong",
+    "language": "gon-Gong",
+    "unicodeScripts": [
+      "Gunjala_Gondi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansGunjalaGondi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "hanifi-rohingya",
+    "name": "Hanifi Rohingya",
+    "script": "Rohg",
+    "language": "rhg",
+    "unicodeScripts": [
+      "Hanifi_Rohingya"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansHanifiRohingya"
+    ],
+    "examples": []
+  },
+  {
+    "id": "hanunoo",
+    "name": "Hanunoo",
+    "script": "Hano",
+    "language": "hnn",
+    "unicodeScripts": [
+      "Hanunoo"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansHanunoo"
+    ],
+    "examples": []
+  },
+  {
+    "id": "javanese",
+    "name": "Javanese",
+    "script": "Java",
+    "language": "jv-Java",
+    "unicodeScripts": [
+      "Javanese"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansJavanese"
+    ],
+    "examples": []
+  },
+  {
+    "id": "kaithi",
+    "name": "Kaithi",
+    "script": "Kthi",
+    "language": "bho-Kthi",
+    "unicodeScripts": [
+      "Kaithi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansKaithi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "kayah-li",
+    "name": "Kayah Li",
+    "script": "Kali",
+    "language": "eky",
+    "unicodeScripts": [
+      "Kayah_Li"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansKayahLi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "kharoshthi",
+    "name": "Kharoshthi",
+    "script": "Khar",
+    "language": "pra-Khar",
+    "unicodeScripts": [
+      "Kharoshthi"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansKharoshthi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "khojki",
+    "name": "Khojki",
+    "script": "Khoj",
+    "language": "sd-Khoj",
+    "unicodeScripts": [
+      "Khojki"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansKhojki",
+      "NotoSerifKhojki"
+    ],
+    "examples": []
+  },
+  {
+    "id": "khudawadi",
+    "name": "Khudawadi",
+    "script": "Sind",
+    "language": "sd-Sind",
+    "unicodeScripts": [
+      "Khudawadi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansKhudawadi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "lepcha",
+    "name": "Lepcha",
+    "script": "Lepc",
+    "language": "lep",
+    "unicodeScripts": [
+      "Lepcha"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansLepcha"
+    ],
+    "examples": []
+  },
+  {
+    "id": "limbu",
+    "name": "Limbu",
+    "script": "Limb",
+    "language": "lif",
+    "unicodeScripts": [
+      "Limbu"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansLimbu"
+    ],
+    "examples": []
+  },
+  {
+    "id": "linear-a",
+    "name": "Linear A",
+    "script": "Lina",
+    "language": "und-Lina",
+    "unicodeScripts": [
+      "Linear_A"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansLinearA"
+    ],
+    "examples": []
+  },
+  {
+    "id": "linear-b",
+    "name": "Linear B",
+    "script": "Linb",
+    "language": "gmy",
+    "unicodeScripts": [
+      "Linear_B"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansLinearB"
+    ],
+    "examples": []
+  },
+  {
+    "id": "lisu",
+    "name": "Lisu",
+    "script": "Lisu",
+    "language": "lis",
+    "unicodeScripts": [
+      "Lisu"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansLisu"
+    ],
+    "examples": []
+  },
+  {
+    "id": "mandaic",
+    "name": "Mandaic",
+    "script": "Mand",
+    "language": "mid",
+    "unicodeScripts": [
+      "Mandaic"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansMandaic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "masaram-gondi",
+    "name": "Masaram Gondi",
+    "script": "Gonm",
+    "language": "gon-Gonm",
+    "unicodeScripts": [
+      "Masaram_Gondi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansMasaramGondi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "miao",
+    "name": "Miao",
+    "script": "Plrd",
+    "language": "hmd",
+    "unicodeScripts": [
+      "Miao"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansMiao"
+    ],
+    "examples": []
+  },
+  {
+    "id": "modi",
+    "name": "Modi",
+    "script": "Modi",
+    "language": "mr-Modi",
+    "unicodeScripts": [
+      "Modi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansModi"
+    ],
+    "examples": []
+  },
+  {
+    "id": "new-tai-lue",
+    "name": "New Tai Lue",
+    "script": "Talu",
+    "language": "khb",
+    "unicodeScripts": [
+      "New_Tai_Lue"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansNewTaiLue"
+    ],
+    "examples": []
+  },
+  {
+    "id": "newa",
+    "name": "Newa",
+    "script": "Newa",
+    "language": "new",
+    "unicodeScripts": [
+      "Newa"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansNewa"
+    ],
+    "examples": []
+  },
+  {
+    "id": "ogham",
+    "name": "Ogham",
+    "script": "Ogam",
+    "language": "sga-Ogam",
+    "unicodeScripts": [
+      "Ogham"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOgham"
+    ],
+    "examples": []
+  },
+  {
+    "id": "ol-chiki",
+    "name": "Ol Chiki",
+    "script": "Olck",
+    "language": "sat",
+    "unicodeScripts": [
+      "Ol_Chiki"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOlChiki"
+    ],
+    "examples": []
+  },
+  {
+    "id": "old-hungarian",
+    "name": "Old Hungarian",
+    "script": "Hung",
+    "language": "hu-Hung",
+    "unicodeScripts": [
+      "Old_Hungarian"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansOldHungarian"
+    ],
+    "examples": []
+  },
+  {
+    "id": "old-italic",
+    "name": "Old Italic",
+    "script": "Ital",
+    "language": "ett",
+    "unicodeScripts": [
+      "Old_Italic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOldItalic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "old-persian",
+    "name": "Old Persian",
+    "script": "Xpeo",
+    "language": "peo",
+    "unicodeScripts": [
+      "Old_Persian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOldPersian"
+    ],
+    "examples": []
+  },
+  {
+    "id": "old-turkic",
+    "name": "Old Turkic",
+    "script": "Orkh",
+    "language": "otk",
+    "unicodeScripts": [
+      "Old_Turkic"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansOldTurkic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "osage",
+    "name": "Osage",
+    "script": "Osge",
+    "language": "osa",
+    "unicodeScripts": [
+      "Osage"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOsage"
+    ],
+    "examples": []
+  },
+  {
+    "id": "osmanya",
+    "name": "Osmanya",
+    "script": "Osma",
+    "language": "so-Osma",
+    "unicodeScripts": [
+      "Osmanya"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansOsmanya"
+    ],
+    "examples": []
+  },
+  {
+    "id": "pahawh-hmong",
+    "name": "Pahawh Hmong",
+    "script": "Hmng",
+    "language": "mww-Hmng",
+    "unicodeScripts": [
+      "Pahawh_Hmong"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansPahawhHmong"
+    ],
+    "examples": []
+  },
+  {
+    "id": "phags-pa",
+    "name": "Phags-pa",
+    "script": "Phag",
+    "language": "und-Phag",
+    "unicodeScripts": [
+      "Phags_Pa"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansPhagsPa"
+    ],
+    "examples": []
+  },
+  {
+    "id": "phoenician",
+    "name": "Phoenician",
+    "script": "Phnx",
+    "language": "phn",
+    "unicodeScripts": [
+      "Phoenician"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansPhoenician"
+    ],
+    "examples": []
+  },
+  {
+    "id": "rejang",
+    "name": "Rejang",
+    "script": "Rjng",
+    "language": "rej",
+    "unicodeScripts": [
+      "Rejang"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansRejang"
+    ],
+    "examples": []
+  },
+  {
+    "id": "samaritan",
+    "name": "Samaritan",
+    "script": "Samr",
+    "language": "smp",
+    "unicodeScripts": [
+      "Samaritan"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansSamaritan"
+    ],
+    "examples": []
+  },
+  {
+    "id": "saurashtra",
+    "name": "Saurashtra",
+    "script": "Saur",
+    "language": "saz",
+    "unicodeScripts": [
+      "Saurashtra"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSaurashtra"
+    ],
+    "examples": []
+  },
+  {
+    "id": "sharada",
+    "name": "Sharada",
+    "script": "Shrd",
+    "language": "sa-Shrd",
+    "unicodeScripts": [
+      "Sharada"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSharada"
+    ],
+    "examples": []
+  },
+  {
+    "id": "shavian",
+    "name": "Shavian",
+    "script": "Shaw",
+    "language": "en-Shaw",
+    "unicodeScripts": [
+      "Shavian"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansShavian"
+    ],
+    "examples": []
+  },
+  {
+    "id": "siddham",
+    "name": "Siddham",
+    "script": "Sidd",
+    "language": "sa-Sidd",
+    "unicodeScripts": [
+      "Siddham"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSiddham"
+    ],
+    "examples": []
+  },
+  {
+    "id": "sora-sompeng",
+    "name": "Sora Sompeng",
+    "script": "Sora",
+    "language": "srb",
+    "unicodeScripts": [
+      "Sora_Sompeng"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSoraSompeng"
+    ],
+    "examples": []
+  },
+  {
+    "id": "sundanese",
+    "name": "Sundanese",
+    "script": "Sund",
+    "language": "su-Sund",
+    "unicodeScripts": [
+      "Sundanese"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansSundanese"
+    ],
+    "examples": []
+  },
+  {
+    "id": "tagbanwa",
+    "name": "Tagbanwa",
+    "script": "Tagb",
+    "language": "tbw",
+    "unicodeScripts": [
+      "Tagbanwa"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTagbanwa"
+    ],
+    "examples": []
+  },
+  {
+    "id": "tai-le",
+    "name": "Tai Le",
+    "script": "Tale",
+    "language": "tdd",
+    "unicodeScripts": [
+      "Tai_Le"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTaiLe"
+    ],
+    "examples": []
+  },
+  {
+    "id": "tai-tham",
+    "name": "Tai Tham",
+    "script": "Lana",
+    "language": "nod",
+    "unicodeScripts": [
+      "Tai_Tham"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTaiTham"
+    ],
+    "examples": []
+  },
+  {
+    "id": "tai-viet",
+    "name": "Tai Viet",
+    "script": "Tavt",
+    "language": "blt",
+    "unicodeScripts": [
+      "Tai_Viet"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTaiViet"
+    ],
+    "examples": []
+  },
+  {
+    "id": "takri",
+    "name": "Takri",
+    "script": "Takr",
+    "language": "doi-Takr",
+    "unicodeScripts": [
+      "Takri"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTakri"
+    ],
+    "examples": []
+  },
+  {
+    "id": "thaana",
+    "name": "Thaana",
+    "script": "Thaa",
+    "language": "dv",
+    "unicodeScripts": [
+      "Thaana"
+    ],
+    "direction": "rtl",
+    "fontIds": [
+      "NotoSansThaana"
+    ],
+    "examples": []
+  },
+  {
+    "id": "tirhuta",
+    "name": "Tirhuta",
+    "script": "Tirh",
+    "language": "mai-Tirh",
+    "unicodeScripts": [
+      "Tirhuta"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansTirhuta"
+    ],
+    "examples": []
+  },
+  {
+    "id": "ugaritic",
+    "name": "Ugaritic",
+    "script": "Ugar",
+    "language": "uga",
+    "unicodeScripts": [
+      "Ugaritic"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansUgaritic"
+    ],
+    "examples": []
+  },
+  {
+    "id": "vai",
+    "name": "Vai",
+    "script": "Vaii",
+    "language": "vai",
+    "unicodeScripts": [
+      "Vai"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansVai"
+    ],
+    "examples": []
+  },
+  {
+    "id": "warang-citi",
+    "name": "Warang Citi",
+    "script": "Wara",
+    "language": "hoc",
+    "unicodeScripts": [
+      "Warang_Citi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansWarangCiti"
+    ],
+    "examples": []
+  },
+  {
+    "id": "yi",
+    "name": "Yi",
+    "script": "Yiii",
+    "language": "ii",
+    "unicodeScripts": [
+      "Yi"
+    ],
+    "direction": "ltr",
+    "fontIds": [
+      "NotoSansYi"
+    ],
+    "examples": []
+  }
+]

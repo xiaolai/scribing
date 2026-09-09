@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "file": "fonts/catalog.json",
+      "sha256": "d5fcbb70457754f464df780146214879e1b0e077b948de7fd5f34939bfbc5f57"
+    },
+    {
+      "file": "fonts/script-ranges.json",
+      "sha256": "1ebbe9818075bf14ddb724b8472a1e08431b7f82d3ea26735eb50fe1feac87db"
+    },
+    {
+      "file": "scripts/fonts/scripts.json",
+      "sha256": "b6e1d843c8a9bfe8a1e571292ea0979b6ccd5e94289f0d78fdae89802927533d"
+    },
+    {
+      "file": "scripts/fonts/build-catalog.py",
+      "sha256": "dc54228899eb34f91b09cba27162eb2c55dda539ab6b0ad18d125b2178a7157b"
+    },
+    {
+      "file": "scripts/fonts/requirements.txt",
+      "sha256": "6c63e0c1f84339758b25536b8046168a1c6c07e429c0c2d94e8cae6518b8f34c"
+    }
+  ]
+}

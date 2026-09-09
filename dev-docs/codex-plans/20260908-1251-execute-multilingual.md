@@ -1,8 +1,8 @@
 ---
-title: "Execute multilingual Scribing with existing stroke data"
-mode: "full-plan"
-status: "Complete — technical preview scope"
-baseline: "9ff4bec3"
+title: 'Execute multilingual Scribing with existing stroke data'
+mode: 'full-plan'
+status: 'Complete — technical preview scope'
+baseline: '9ff4bec3'
 ---
 
 ## Outcomes
@@ -61,6 +61,7 @@ Additive API, opt-in data, no rewrite of Chinese assets. Existing create/setChar
 ## Work Items
 
 ### WI-001: Contract and executable source fixtures
+
 - Goal: Freeze integration boundaries and source pins after architect debate.
 - Tests (first): v2 fixture schema, expected A/i/あ/ぬ/Korean motor boundaries; importer source inventories.
 - Acceptance (measurable): Shared TypeScript contract and independently sourced fixtures; source counts and Korean mapping provenance recorded.
@@ -71,8 +72,9 @@ Additive API, opt-in data, no rewrite of Chinese assets. Existing create/setChar
 - Priority / estimate: P0 / S.
 
 ### WI-002: Validation, canonical compilation and unit grading
+
 - Goal: Pure bounded compiler and independently testable plan/dot/curve grading.
-- Tests (first): src/units/__tests__ schema/compile/matcher/plan/UnitQuiz tests including malformed limits, genuine taps, reversed loops, wrong order and incompatible variants.
+- Tests (first): src/units/**tests** schema/compile/matcher/plan/UnitQuiz tests including malformed limits, genuine taps, reversed loops, wrong order and incompatible variants.
 - Acceptance (measurable): One-point dots work; transform round trips align; finite complete plans eliminate consistently; no old callback can advance a new session; limits reject malformed/oversized data.
 - Touched areas: src/units/* except root-owned types/provider; new UnitQuiz.
 - Dependencies: WI-001; shared RenderState and options interface.
@@ -81,6 +83,7 @@ Additive API, opt-in data, no rewrite of Chinese assets. Existing create/setChar
 - Priority / estimate: P0 / L.
 
 ### WI-003: Shared models, bounds and SVG/Canvas primitives
+
 - Goal: Render unit centerlines/dots/segments through existing state and target infrastructure.
 - Tests (first): optional bounds/legacy snapshots, SVG and Canvas intermediate progress, dots and multi-segment motor stroke tests.
 - Acceptance (measurable): Both renderers show same compiled geometry; motor count unaffected by visual segmentation; resize preserves input alignment; legacy snapshots/tests remain unchanged.
@@ -91,8 +94,9 @@ Additive API, opt-in data, no rewrite of Chinese assets. Existing create/setChar
 - Priority / estimate: P0 / M.
 
 ### WI-004: Scribing API and provider lifecycle
+
 - Goal: Integrate unit mode with existing facade and independent async requests.
-- Tests (first): src/__tests__/UnitLifecycle-test.ts; direct/provider data, abort, failure recovery, legacy/unit switching, resize, destruction and callback restart.
+- Tests (first): src/**tests**/UnitLifecycle-test.ts; direct/provider data, abort, failure recovery, legacy/unit switching, resize, destruction and callback restart.
 - Acceptance (measurable): setUnit/getUnitData/quizUnit work; unit and legacy loads supersede safely in both directions; no background stale state or unhandled rejection; old API consumer tests pass.
 - Touched areas: Scribing.ts, src/units/provider.ts, shared controller typing, public type exports.
 - Dependencies: WI-001–WI-003.
@@ -101,16 +105,18 @@ Additive API, opt-in data, no rewrite of Chinese assets. Existing create/setChar
 - Priority / estimate: P0 / M.
 
 ### WI-005: Reproducible data imports and useful breadth
+
 - Goal: Compile supplied sources into optional packs and raw observations with licenses/coverage.
 - Tests (first): Node test-runner tests for SVG/JSON/Omniglot/Tomoe/InkML/UNIPEN adapters, deterministic output, source/notice hashes and actual emitted inventories.
 - Acceptance (measurable): English52 print letters+10digits+available punctuation, Japanese92basic kana+source additions/kanji, Korean40 mapped letters, and broader source-class previews emit valid units and exact manifests. Required source paths are pinned; raw observations preserve stroke boundaries/optional time, and empty/invalid samples are quarantined. Author only residual gaps. Pack downloads remain optional and core bundle includes no datasets.
-- Touched areas: scripts/data/*, packs/*, data licenses and explicit source/mapping/selection reports.
+- Touched areas: scripts/data/_, packs/_, data licenses and explicit source/mapping/selection reports.
 - Dependencies: WI-001 contract; WI-002 validator; available pinned sources.
 - Risks + mitigations: Unfamiliar copying/heuristic order; expose provenance and technical-preview status. Never claim all scripts are reviewed curricula.
 - Rollback: Pin/withdraw one pack while retaining others.
 - Priority / estimate: P0 / L.
 
 ### WI-006: Practice/replay example, documentation and packaging
+
 - Goal: Make the feature usable offline and inspectable across sources/variants.
 - Tests (first): browser smoke for SVG/Canvas/dot/resize/switch; extracted tarball consumer compilation/loading; Node test discovery verifies external suites run.
 - Acceptance (measurable): Responsive UI selects pack/unit/style, animates, guides practice, reports unsupported/error states, exposes source/status and supports replay. All emitted units load offline. Document API and exact coverage; optional packs have notices. CI discovers importer tests and validates packed consumers.
@@ -121,6 +127,7 @@ Additive API, opt-in data, no rewrite of Chinese assets. Existing create/setChar
 - Priority / estimate: P0 / M.
 
 ### WI-007: Root audit, regression fixes and measured completion
+
 - Goal: Audit all integrations, fix defects in loops, and record actual evidence/limitations.
 - Tests (first): targeted regressions for each reproduced issue; full existing gates plus data/pack/browser/benchmark checks.
 - Acceptance (measurable): No known actionable integration defects remain in implemented scope. All advertised inventories validate; SVG/Canvas actual drawing exercised; no stale requests/listeners on repeated sessions. Benchmarks report real device/runtime and p95 without claiming physical-device or native-review tests not performed.
@@ -150,15 +157,15 @@ Record source pins/manifest counts, test outputs, benchmark runtime/results, bro
 
 All seven work items are complete within the technical-preview scope. See `dev-docs/research/20260908-multilingual-implementation-audit.md` for findings, measurements and remaining content work.
 
-| Work item | Evidence |
-| --- | --- |
-| WI-001 | Public v2 contract; locked source snapshots and Korean mapping; actual English/Japanese/Korean format fixtures. |
-| WI-002 | Validator/compiler/geometry limits; unit/source grading suites; true taps, closed-loop direction, alternative-plan consistency and callback reentrancy. |
-| WI-003 | Shared SVG/Canvas unit geometry tests; preserved 15 legacy snapshots; root inspected rendered English/Korean/kana sheets. |
-| WI-004 | UnitLifecycle, FacadeSafety and provider suites; cancellation, failure recovery, immutable requests/data, switching and destroy. |
-| WI-005 | 147 packs / 8,628 units / 32,460 raw recordings. All units validate and compile; maximum 456 compiled points and 30 motor strokes. Source locks/notices checked; generated outputs reproduce byte for byte. |
-| WI-006 | Local multilingual demo, API docs, real Chromium mouse drawing at 960/320 pixels with both renderers; package CJS/ESM/browser/TypeScript consumers; new CI gates. |
-| WI-007 | Root reviewed source/rendering/data/integration, reproduced defects and fixed them with regressions. Final runtime suite: 324 tests, 29 suites, 15 snapshots; importer/CLI/compression suite: 15 tests. Types, ESLint, build, package, legacy demo, data integrity, reproducibility and multilingual browser gates pass. |
+| Work item | Evidence                                                                                                                                                                                                                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| WI-001    | Public v2 contract; locked source snapshots and Korean mapping; actual English/Japanese/Korean format fixtures.                                                                                                                                                                                                          |
+| WI-002    | Validator/compiler/geometry limits; unit/source grading suites; true taps, closed-loop direction, alternative-plan consistency and callback reentrancy.                                                                                                                                                                  |
+| WI-003    | Shared SVG/Canvas unit geometry tests; preserved 15 legacy snapshots; root inspected rendered English/Korean/kana sheets.                                                                                                                                                                                                |
+| WI-004    | UnitLifecycle, FacadeSafety and provider suites; cancellation, failure recovery, immutable requests/data, switching and destroy.                                                                                                                                                                                         |
+| WI-005    | 147 packs / 8,628 units / 32,460 raw recordings. All units validate and compile; maximum 456 compiled points and 30 motor strokes. Source locks/notices checked; generated outputs reproduce byte for byte.                                                                                                              |
+| WI-006    | Local multilingual demo, API docs, real Chromium mouse drawing at 960/320 pixels with both renderers; package CJS/ESM/browser/TypeScript consumers; new CI gates.                                                                                                                                                        |
+| WI-007    | Root reviewed source/rendering/data/integration, reproduced defects and fixed them with regressions. Final runtime suite: 324 tests, 29 suites, 15 snapshots; importer/CLI/compression suite: 15 tests. Types, ESLint, build, package, legacy demo, data integrity, reproducibility and multilingual browser gates pass. |
 
 The audit did not perform a human handwriting study, native curriculum certification, physical stylus/touch-device validation, or publication. Broader source classes remain explicitly unmapped where Unicode labels have not been established. Korean coverage is standalone jamo; contextual syllable models are future content work. These are documented expansion limits, not reported as completed features.
 

@@ -7,7 +7,7 @@ import parseCharData from '../../../parseCharData';
 const char = parseCharData('人', ren);
 
 describe('CharacterRenderer', () => {
-  let target;
+  let target: RenderTarget;
 
   beforeEach(() => {
     document.body.innerHTML = '<div id="target"></div>';
@@ -36,12 +36,12 @@ describe('CharacterRenderer', () => {
     charRenderer.mount(target);
     charRenderer.render(props);
 
-    const subCanvas = target.svg.childNodes[1];
+    const subCanvas = target.svg.childNodes[1] as SVGGElement;
     expect(subCanvas.nodeName).toBe('g');
     expect(subCanvas.style.opacity).toBe('0.7');
     // 2 strokes of 人
     expect(subCanvas.childNodes.length).toBe(2);
-    subCanvas.childNodes.forEach((node) => {
+    (Array.from(subCanvas.childNodes) as SVGElement[]).forEach((node) => {
       expect(node.nodeName).toBe('path');
       expect(node.getAttribute('stroke')).toBe('rgba(120,17,101,0.3)');
     });
@@ -75,12 +75,12 @@ describe('CharacterRenderer', () => {
     charRenderer.render(props1);
     charRenderer.render(props2);
 
-    const subCanvas = target.svg.childNodes[1];
+    const subCanvas = target.svg.childNodes[1] as SVGGElement;
     expect(subCanvas.nodeName).toBe('g');
     expect(subCanvas.style.opacity).toBe('0.9');
     // 2 strokes of 人
     expect(subCanvas.childNodes.length).toBe(2);
-    subCanvas.childNodes.forEach((node) => {
+    (Array.from(subCanvas.childNodes) as SVGElement[]).forEach((node) => {
       expect(node.nodeName).toBe('path');
       expect(node.getAttribute('stroke')).toBe('rgba(255,255,0,0.1)');
     });
@@ -112,7 +112,7 @@ describe('CharacterRenderer', () => {
     const charRenderer = new CharacterRenderer(char);
     charRenderer.mount(target);
     charRenderer.render(props1);
-    const subCanvas = target.svg.childNodes[1];
+    const subCanvas = target.svg.childNodes[1] as SVGGElement;
 
     expect(subCanvas.style.opacity).toBe('0');
     expect(subCanvas.style.display).toBe('none');

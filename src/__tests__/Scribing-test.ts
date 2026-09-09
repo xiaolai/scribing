@@ -93,9 +93,15 @@ describe('Scribing', () => {
     it('can optionally use a canvas for rendering instead of SVG', async () => {
       document.body.innerHTML = '<div id="target"></div>';
 
+      // Explicit dimensions: jsdom reports a zero-sized bounding rect, and this test is
+      // about the canvas renderer, not about how a zero-sized target degrades.
+      // Positioner-test covers that case directly.
       const writer = Scribing.create('target', '人', {
         charDataLoader,
         renderer: 'canvas',
+        width: 200,
+        height: 200,
+        padding: 10,
       });
 
       await writer._withDataPromise;
@@ -164,12 +170,8 @@ describe('Scribing', () => {
       });
       await writer.setCharacter('人');
       writer.updateDimensions({ width: 300, height: 350, padding: 20 });
-      expect(document.querySelector('#target svg')?.attributes['width'].value).toBe(
-        '300',
-      );
-      expect(document.querySelector('#target svg')?.attributes['height'].value).toBe(
-        '350',
-      );
+      expect(document.querySelector('#target svg')?.getAttribute('width')).toBe('300');
+      expect(document.querySelector('#target svg')?.getAttribute('height')).toBe('350');
       expect(writer._positioner?.width).toBe(300);
       expect(writer._positioner?.height).toBe(350);
       expect(writer._positioner?.padding).toBe(20);
@@ -185,10 +187,8 @@ describe('Scribing', () => {
         renderer: 'canvas',
       });
       writer.updateDimensions({ width: 300, height: 350, padding: 20 });
-      expect(document.querySelector('#target canvas')?.attributes['width'].value).toBe(
-        '300',
-      );
-      expect(document.querySelector('#target canvas')?.attributes['height'].value).toBe(
+      expect(document.querySelector('#target canvas')?.getAttribute('width')).toBe('300');
+      expect(document.querySelector('#target canvas')?.getAttribute('height')).toBe(
         '350',
       );
     });
@@ -488,8 +488,9 @@ describe('Scribing', () => {
       });
       try {
         await writer._withDataPromise;
-        // eslint-disable-next-line no-empty
-      } catch (err) {}
+      } catch {
+        // Expected: the writer was destroyed mid-flight.
+      }
 
       await expect(writer.getCharacterData()).rejects.toThrow(
         new Error('Failed to load character data. Call setCharacter and try again.'),
@@ -705,8 +706,8 @@ describe('Scribing', () => {
       clock.tick(50);
       await resolvePromises();
 
-      const pausedDisplayPortion = writer._renderState!.state.character.main.strokes[1]
-        .displayPortion;
+      const pausedDisplayPortion =
+        writer._renderState!.state.character.main.strokes[1].displayPortion;
       expect(pausedDisplayPortion).toBeGreaterThan(0);
       expect(pausedDisplayPortion).toBeLessThan(1);
       expect(isResolved).toBe(false);
@@ -728,8 +729,8 @@ describe('Scribing', () => {
       clock.tick(50);
       await resolvePromises();
 
-      const newDisplayPortion = writer._renderState!.state.character.main.strokes[1]
-        .displayPortion;
+      const newDisplayPortion =
+        writer._renderState!.state.character.main.strokes[1].displayPortion;
       expect(newDisplayPortion).not.toBe(pausedDisplayPortion);
       expect(newDisplayPortion).toBeGreaterThan(0);
       expect(newDisplayPortion).toBeLessThan(1);
@@ -958,10 +959,12 @@ describe('Scribing', () => {
     });
   });
 
-  ([
-    { methodLabel: 'Character', stateLabel: 'main' },
-    { methodLabel: 'Outline', stateLabel: 'outline' },
-  ] as const).forEach(({ methodLabel, stateLabel }) => {
+  (
+    [
+      { methodLabel: 'Character', stateLabel: 'main' },
+      { methodLabel: 'Outline', stateLabel: 'outline' },
+    ] as const
+  ).forEach(({ methodLabel, stateLabel }) => {
     const hideMethod = methodLabel === 'Character' ? 'hideCharacter' : 'hideOutline';
     const showMethod = methodLabel === 'Character' ? 'showCharacter' : 'showOutline';
 
@@ -1319,7 +1322,7 @@ describe('Scribing', () => {
         clientY: 127,
       });
       const svg = document.querySelector('#target svg')!;
-      svg.getBoundingClientRect = () => ({ left: 50, top: 60 } as any);
+      svg.getBoundingClientRect = () => ({ left: 50, top: 60 }) as any;
       const canceled = !svg!.dispatchEvent(evt);
       expect(canceled).toBe(true);
       expect(writer._quiz!.startUserStroke).toHaveBeenCalledTimes(1);
@@ -1338,7 +1341,7 @@ describe('Scribing', () => {
         ],
       } as any);
       const svg = document.querySelector('#target svg')!;
-      svg!.getBoundingClientRect = () => ({ left: 50, top: 60 } as any);
+      svg!.getBoundingClientRect = () => ({ left: 50, top: 60 }) as any;
       const canceled = !svg!.dispatchEvent(evt);
       expect(canceled).toBe(true);
       expect(writer._quiz!.startUserStroke).toHaveBeenCalledTimes(1);
@@ -1353,7 +1356,7 @@ describe('Scribing', () => {
         clientY: 127,
       });
       const svg = document.querySelector('#target svg')!;
-      svg!.getBoundingClientRect = () => ({ left: 50, top: 60 } as any);
+      svg!.getBoundingClientRect = () => ({ left: 50, top: 60 }) as any;
       const canceled = !svg!.dispatchEvent(evt);
       expect(canceled).toBe(true);
       expect(writer._quiz!.continueUserStroke).toHaveBeenCalledTimes(1);
@@ -1372,7 +1375,7 @@ describe('Scribing', () => {
         ],
       } as any);
       const svg = document.querySelector('#target svg')!;
-      svg!.getBoundingClientRect = () => ({ left: 50, top: 60 } as any);
+      svg!.getBoundingClientRect = () => ({ left: 50, top: 60 }) as any;
       const canceled = !svg!.dispatchEvent(evt);
       expect(canceled).toBe(true);
       expect(writer._quiz!.continueUserStroke).toHaveBeenCalledTimes(1);

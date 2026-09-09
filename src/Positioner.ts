@@ -10,6 +10,9 @@ const [from, to] = CHARACTER_BOUNDS;
 const preScaledWidth = to.x - from.x;
 const preScaledHeight = to.y - from.y;
 
+/** Floor for the drawable area, so `scale` is never zero and stays invertible. */
+const MIN_EFFECTIVE_SIZE = 1e-6;
+
 export type PositionerOptions = {
   bounds?: UnitBounds;
   /** Default: 0 */
@@ -38,12 +41,12 @@ export default class Positioner {
     const origin = bounds ? { x: bounds[0], y: bounds[1] } : from;
     const sourceWidth = bounds ? bounds[2] : preScaledWidth;
     const sourceHeight = bounds ? bounds[3] : preScaledHeight;
-    const effectiveWidth = bounds
-      ? Math.max(1e-6, width - 2 * padding)
-      : width - 2 * padding;
-    const effectiveHeight = bounds
-      ? Math.max(1e-6, height - 2 * padding)
-      : height - 2 * padding;
+    // Clamp on both paths. An element that is not laid out reports a zero-sized
+    // bounding rect, which produced scale 0 and made convertExternalPoint divide by
+    // zero, silently mapping every pointer coordinate to Infinity or NaN. Previously
+    // only the writing-unit path was clamped.
+    const effectiveWidth = Math.max(MIN_EFFECTIVE_SIZE, width - 2 * padding);
+    const effectiveHeight = Math.max(MIN_EFFECTIVE_SIZE, height - 2 * padding);
     const scaleX = effectiveWidth / sourceWidth;
     const scaleY = effectiveHeight / sourceHeight;
 

@@ -1,0 +1,34 @@
+# Paths are anchored with a leading slash. A bare `fonts` would match any directory
+# segment named fonts, which silently excluded extras/fonts as well.
+/dist
+/coverage
+/work
+/node_modules
+/packs
+/fonts
+/_site
+/cdn
+
+# Generated from src/fonts/pathGeometry.ts by scripts/fonts/build-geometry.cjs, then
+# byte-compared by scripts/fonts/check-assets.mjs. Formatting it would break that gate.
+/extras/fonts/path-geometry.mjs
+
+# Unchanged upstream HarfBuzzJS runtime, hash-pinned in its own manifest.
+/extras/fonts/vendor
+
+# Hash-pinned inputs to the derived font catalog. fonts/catalog.lock.json records a
+# SHA-256 for each, and scripts/fonts/check-assets.mjs asserts it, so reformatting
+# these breaks the drift gate.
+/scripts/fonts/scripts.json
+/fonts/catalog.json
+/fonts/script-ranges.json
+/scripts/fonts/build-catalog.py
+/scripts/fonts/requirements.txt
+
+# scripts/fonts/stamp-demo.cjs rewrites the import map and script versions in this
+# file, and scripts/fonts/check-assets.mjs asserts its exact bytes. Prettier and the
+# stamper would otherwise take turns rewriting each other's output.
+/demo/multilingual/index.html
+
+# Written by Jest in its own format.
+**/__snapshots__

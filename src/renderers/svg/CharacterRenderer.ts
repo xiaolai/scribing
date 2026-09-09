@@ -1,4 +1,3 @@
-import { isMsBrowser } from '../../utils';
 import StrokeRenderer from './StrokeRenderer';
 import SVGRenderTarget from './RenderTarget';
 import Character from '../../models/Character';
@@ -38,15 +37,13 @@ export default class CharacterRenderer {
     const { opacity, strokes, strokeColor, radicalColor = null } = props;
     if (opacity !== this._oldProps?.opacity) {
       this._group.style.opacity = opacity.toString();
-      // MS browsers seem to have a bug where if SVG is set to display:none, it sometimes breaks.
-      // More info: https://github.com/chanind/hanzi-writer/issues/164
-      // this is just a perf improvement, so disable for MS browsers
-      if (!isMsBrowser) {
-        if (opacity === 0) {
-          this._group.style.display = 'none';
-        } else if (this._oldProps?.opacity === 0) {
-          this._group.style.removeProperty('display');
-        }
+      // Skip painting a fully transparent group. This was previously disabled for
+      // Internet Explorer and legacy Edge, which broke on display:none inside SVG
+      // (chanind/hanzi-writer#164). Those engines are below the supported floor.
+      if (opacity === 0) {
+        this._group.style.display = 'none';
+      } else if (this._oldProps?.opacity === 0) {
+        this._group.style.removeProperty('display');
       }
     }
     const colorsChanged =

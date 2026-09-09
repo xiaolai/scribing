@@ -11,22 +11,24 @@ The default **Textbook & vector models** view opens clean English print, with Ko
 ## Load a pack
 
 ```js
-const pack = await fetch('/packs/generated/english-textbook.json')
-  .then(response => {
-    if (!response.ok) throw new Error('Writing pack unavailable');
-    return response.json();
-  });
+const pack = await fetch('/packs/generated/english-textbook.json').then((response) => {
+  if (!response.ok) throw new Error('Writing pack unavailable');
+  return response.json();
+});
 const provider = Scribing.createDataProvider(pack);
 const writer = new Scribing('writing-target', {
-  width: 360, height: 360, padding: 24, renderer: 'svg',
+  width: 360,
+  height: 360,
+  padding: 24,
+  renderer: 'svg',
 });
 await writer.setUnit({ id: 'i', provider });
 await writer.animateCharacter();
 await writer.quizUnit({
   guided: true,
   leniency: 1.5, // optional; core default is 1, valid range 0.25–3
-  onMistake: event => console.log(event.reason),
-  onComplete: result => console.log(result.totalMistakes),
+  onMistake: (event) => console.log(event.reason),
+  onComplete: (result) => console.log(result.totalMistakes),
 });
 ```
 
@@ -45,7 +47,9 @@ A narrow comparison used 17 other Korean ㅏ recordings with the same two-stroke
 ```js
 await writer.setUnit({
   schemaVersion: 2,
-  id: 'dot-example', text: '.', style: 'Example dot',
+  id: 'dot-example',
+  text: '.',
+  style: 'Example dot',
   coordinates: { em: 100, yAxis: 'down', bounds: [0, 0, 100, 100] },
   motorStrokes: [{ id: 'dot', kind: 'dot', center: [50, 70], radius: 4 }],
   plans: [{ id: 'default', steps: [{ strokeId: 'dot' }] }],
@@ -61,15 +65,15 @@ A plan references every motor stroke once and may specify `forward` or `either` 
 
 Exact emitted IDs, counts and hashes live in `packs/generated/catalog.json`; per-pack manifests and notices accompany each JSON file.
 
-| Collection | Supplied coverage | Interpretation and terms |
-| --- | --- | --- |
-| Scribing English textbook print | 52 uppercase/lowercase English letters | Original clean print geometry with defined stroke plans; MIT. A uses three strokes, with both legs drawn top-down. Not a certified curriculum. |
-| Scribing Korean textbook print | 40 standalone jamo | Original clean print geometry with defined stroke plans; MIT. No syllable composition or certified curriculum claim. |
-| letterpaths print | 52 uppercase/lowercase English letters | Supplied print geometry with explicit marks; MIT, Robin Linacre. |
-| glyphed.js | 83 characters, each with 3 variants: 52 letters, 10 digits, 21 punctuation symbols | Authored monoline geometry; ISC, Anas. Variant count is not character count. |
-| KanjiVG | 6,447 CJK characters (including the 80-item grade-one subset), 184 kana, 68 ASCII characters and 5 symbols | Ordered centerlines; CC BY-SA 3.0. Latin and symbol extras are separate packs, not counted as Japanese kanji. Source coverage is not a claim of complete modern curriculum coverage. |
-| Korean Omniglot | 40 mapped standalone letter classes | Recorded copied-symbol observations with visually derived mappings. This does not supply all modern syllables or a validated contextual composer. |
-| Other Omniglot collections | Source-class previews across the remaining alphabet collections | Recorded observations, repository MIT notice. Unmapped classes retain source IDs; a collection name is not verified Unicode or language coverage. |
+| Collection                      | Supplied coverage                                                                                          | Interpretation and terms                                                                                                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Scribing English textbook print | 52 uppercase/lowercase English letters                                                                     | Original clean print geometry with defined stroke plans; MIT. A uses three strokes, with both legs drawn top-down. Not a certified curriculum.                                       |
+| Scribing Korean textbook print  | 40 standalone jamo                                                                                         | Original clean print geometry with defined stroke plans; MIT. No syllable composition or certified curriculum claim.                                                                 |
+| letterpaths print               | 52 uppercase/lowercase English letters                                                                     | Supplied print geometry with explicit marks; MIT, Robin Linacre.                                                                                                                     |
+| glyphed.js                      | 83 characters, each with 3 variants: 52 letters, 10 digits, 21 punctuation symbols                         | Authored monoline geometry; ISC, Anas. Variant count is not character count.                                                                                                         |
+| KanjiVG                         | 6,447 CJK characters (including the 80-item grade-one subset), 184 kana, 68 ASCII characters and 5 symbols | Ordered centerlines; CC BY-SA 3.0. Latin and symbol extras are separate packs, not counted as Japanese kanji. Source coverage is not a claim of complete modern curriculum coverage. |
+| Korean Omniglot                 | 40 mapped standalone letter classes                                                                        | Recorded copied-symbol observations with visually derived mappings. This does not supply all modern syllables or a validated contextual composer.                                    |
+| Other Omniglot collections      | Source-class previews across the remaining alphabet collections                                            | Recorded observations, repository MIT notice. Unmapped classes retain source IDs; a collection name is not verified Unicode or language coverage.                                    |
 
 Omniglot participants copied displayed symbols, which could be unfamiliar to them. Preserve that distinction when showing or grading recorded order. The raw observation files retain source paths, hashes, pen breaks and timestamps where supplied; a selected model is not all 20 observations of that class. Imported font geometry, authored templates and observations must not be relabelled as recorded native teaching demonstrations.
 

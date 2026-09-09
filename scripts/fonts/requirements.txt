@@ -1,0 +1,2 @@
+# Maintenance-only catalog generation. Runtime/checks do not install Python packages.
+fonttools==4.62.1

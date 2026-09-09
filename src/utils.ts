@@ -11,22 +11,13 @@ export const requestAnimationFrame =
 export const cancelAnimationFrame =
   globalObj.cancelAnimationFrame?.bind(globalObj) || clearTimeout;
 
-// Object.assign polyfill, because IE :/
-export const _assign = function (target: any, ...overrides: any[]) {
-  const overrideTarget = Object(target);
-  overrides.forEach((override) => {
-    if (override != null) {
-      for (const key in override) {
-        if (Object.prototype.hasOwnProperty.call(override, key)) {
-          overrideTarget[key] = override[key];
-        }
-      }
-    }
-  });
-  return overrideTarget;
-};
-
-export const assign = Object.assign || _assign;
+/**
+ * Normalize a caught value to an Error without discarding an existing one.
+ * Identity is preserved for real Errors, so callers can still compare by reference.
+ */
+export function toError(value: unknown): Error {
+  return value instanceof Error ? value : new Error(String(value));
+}
 
 export function arrLast<TValue>(arr: Array<TValue>) {
   return arr[arr.length - 1];
@@ -129,8 +120,7 @@ export function colorStringToVals(colorString: string): ColorObject {
       r: parseInt(rgbMatch[1], 10),
       g: parseInt(rgbMatch[2], 10),
       b: parseInt(rgbMatch[3], 10),
-      // @ts-expect-error ts-migrate(2554) FIXME: Expected 1 arguments, but got 2.
-      a: parseFloat(rgbMatch[4] || 1, 10),
+      a: rgbMatch[4] === undefined ? 1 : parseFloat(rgbMatch[4]),
     };
   }
   throw new Error(`Invalid color: ${colorString}`);
@@ -157,10 +147,4 @@ export function objRepeatCb<T>(times: number, cb: (i: number) => T) {
   return obj;
 }
 
-const ua = globalObj.navigator?.userAgent || '';
-
-export const isMsBrowser =
-  ua.indexOf('MSIE ') > 0 || ua.indexOf('Trident/') > 0 || ua.indexOf('Edge/') > 0;
-
-// eslint-disable-next-line @typescript-eslint/no-empty-function
 export const noop = () => {};

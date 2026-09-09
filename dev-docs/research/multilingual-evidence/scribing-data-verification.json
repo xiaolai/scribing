@@ -1,1 +1,9 @@
-{"packs":147,"units":8628,"rawSamples":32460,"sourceLocks":53,"maxCompiledPoints":456,"maxMotorStrokes":30,"integrity":"verified"}
+{
+  "packs": 147,
+  "units": 8628,
+  "rawSamples": 32460,
+  "sourceLocks": 53,
+  "maxCompiledPoints": 456,
+  "maxMotorStrokes": 30,
+  "integrity": "verified"
+}

@@ -4,7 +4,14 @@ import { CompiledMotorStroke, UnitDirection, UnitFeedbackReason } from './types'
 const distance = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y);
 const pathLength = (points: Point[]) =>
   points.reduce((sum, p, i) => sum + (i ? distance(points[i - 1], p) : 0), 0);
-const sample = (points: Point[], count = 32): Point[] => {
+/**
+ * Number of arc-length-spaced points every stroke is resampled to before comparison.
+ * Both the drawn stroke and the target use it, so forward and reverse comparisons can
+ * index each other directly.
+ */
+const SAMPLE_COUNT = 32;
+
+const sample = (points: Point[], count = SAMPLE_COUNT): Point[] => {
   const total = pathLength(points);
   if (!total) return Array.from({ length: count }, () => points[0]);
   const result = [points[0]];
@@ -53,10 +60,13 @@ export function gradeStroke(
   if (length < target.length * 0.45 || input.length < 2) return 'too-short';
   if (length > target.length * 2.2) return 'wrong-shape';
   const drawn = sample(input);
+  const last = drawn.length - 1;
   const forward = drawn.map((p, i) => distance(p, target!.points[i]));
-  const backward = drawn.map((p, i) => distance(p, target!.points[31 - i]));
+  const backward = drawn.map((p, i) => distance(p, target!.points[last - i]));
+  // Endpoints get a tighter budget than the mean, and no single sample may drift
+  // more than twice the tolerance, so a stroke cannot pass on average alone.
   const matches = (errors: number[]) =>
-    Math.max(errors[0], errors[31]) <= tolerance * 1.5 &&
+    Math.max(errors[0], errors[last]) <= tolerance * 1.5 &&
     errors.reduce((a, b) => a + b, 0) / errors.length <= tolerance &&
     Math.max(...errors) <= tolerance * 2;
   if (matches(forward)) return 'correct';

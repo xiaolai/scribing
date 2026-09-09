@@ -7,8 +7,10 @@ import SVGRenderTarget from './RenderTarget';
 import ScribingRendererBase from '../ScribingRendererBase';
 import { RenderStateObject } from '../../RenderState';
 
-export default class ScribingRenderer
-  implements ScribingRendererBase<SVGElement | SVGSVGElement, SVGRenderTarget> {
+export default class ScribingRenderer implements ScribingRendererBase<
+  SVGElement | SVGSVGElement,
+  SVGRenderTarget
+> {
   _character: Character;
   _positioner: Positioner;
   _mainCharRenderer: CharacterRenderer;

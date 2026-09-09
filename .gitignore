@@ -1,10 +1,20 @@
+node_modules
+dist
+coverage
+_site
+cdn
 npm-debug.log
 scratchpad.txt
-node_modules
-coverage
 .DS_Store
 .sass-cache
 .vscode
-cdn
-dist
-_site
+
+# Local investigation and generated audit scratch files
+work/
+
+# Font binaries only: ~169 MB of unchanged upstream Noto files, deliberately kept
+# out of git history. Restore them with `yarn fetch-fonts`, which verifies every
+# byte length and SHA-256 against fonts/assets.lock.json before writing.
+# Everything else under fonts/ is tracked: the lockfiles, catalogs, Unicode data,
+# licence notices and the motor inventories.
+fonts/assets/

@@ -1,10 +1,10 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`renderUserStroke renders a user stroke path 1`] = `
-Array [
-  Object {
-    "props": Object {},
-    "transform": Array [
+[
+  {
+    "props": {},
+    "transform": [
       1,
       0,
       0,
@@ -14,11 +14,11 @@ Array [
     ],
     "type": "save",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "value": 0.7,
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -28,11 +28,11 @@ Array [
     ],
     "type": "globalAlpha",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "value": 2,
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -42,11 +42,11 @@ Array [
     ],
     "type": "lineWidth",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "value": "rgba(12, 101, 20, 0.3)",
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -56,11 +56,11 @@ Array [
     ],
     "type": "strokeStyle",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "value": "round",
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -70,11 +70,11 @@ Array [
     ],
     "type": "lineCap",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "value": "round",
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -84,9 +84,9 @@ Array [
     ],
     "type": "lineJoin",
   },
-  Object {
-    "props": Object {},
-    "transform": Array [
+  {
+    "props": {},
+    "transform": [
       1,
       0,
       0,
@@ -96,12 +96,12 @@ Array [
     ],
     "type": "beginPath",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "x": 0,
       "y": 0,
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -111,12 +111,12 @@ Array [
     ],
     "type": "moveTo",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "x": 17,
       "y": 3,
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -126,12 +126,12 @@ Array [
     ],
     "type": "lineTo",
   },
-  Object {
-    "props": Object {
+  {
+    "props": {
       "x": 9,
       "y": 18,
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -141,12 +141,12 @@ Array [
     ],
     "type": "lineTo",
   },
-  Object {
-    "props": Object {
-      "path": Array [
-        Object {
-          "props": Object {},
-          "transform": Array [
+  {
+    "props": {
+      "path": [
+        {
+          "props": {},
+          "transform": [
             1,
             0,
             0,
@@ -156,12 +156,12 @@ Array [
           ],
           "type": "beginPath",
         },
-        Object {
-          "props": Object {
+        {
+          "props": {
             "x": 0,
             "y": 0,
           },
-          "transform": Array [
+          "transform": [
             1,
             0,
             0,
@@ -171,12 +171,12 @@ Array [
           ],
           "type": "moveTo",
         },
-        Object {
-          "props": Object {
+        {
+          "props": {
             "x": 17,
             "y": 3,
           },
-          "transform": Array [
+          "transform": [
             1,
             0,
             0,
@@ -186,12 +186,12 @@ Array [
           ],
           "type": "lineTo",
         },
-        Object {
-          "props": Object {
+        {
+          "props": {
             "x": 9,
             "y": 18,
           },
-          "transform": Array [
+          "transform": [
             1,
             0,
             0,
@@ -203,7 +203,7 @@ Array [
         },
       ],
     },
-    "transform": Array [
+    "transform": [
       1,
       0,
       0,
@@ -213,9 +213,9 @@ Array [
     ],
     "type": "stroke",
   },
-  Object {
-    "props": Object {},
-    "transform": Array [
+  {
+    "props": {},
+    "transform": [
       1,
       0,
       0,

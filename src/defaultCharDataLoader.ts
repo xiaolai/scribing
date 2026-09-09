@@ -1,6 +1,9 @@
 import { CharacterJson } from './typings/types';
 
 const VERSION = '2.0.1';
+/** Abandon a stalled request instead of leaving the caller's promise pending forever. */
+const REQUEST_TIMEOUT_MS = 20000;
+
 const getCharDataUrl = (char: string) =>
   `https://cdn.jsdelivr.net/npm/hanzi-writer-data@${VERSION}/${encodeURIComponent(
     char,
@@ -18,6 +21,9 @@ const defaultCharDataLoader = (
     xhr.overrideMimeType('application/json');
   }
   xhr.open('GET', getCharDataUrl(char), true);
+  // Without this the `ontimeout` handler below could never fire: XMLHttpRequest
+  // defaults to no timeout, so a stalled connection never settled.
+  xhr.timeout = REQUEST_TIMEOUT_MS;
   let settled = false;
   const fail = (error?: any, context?: any) => {
     if (settled) return;

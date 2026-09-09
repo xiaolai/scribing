@@ -24,9 +24,9 @@ export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
       if (nodeType === 'CANVAS') {
         return element as HTMLCanvasElement;
       }
-      const canvas = document.createElement('canvas');
-      element.appendChild(canvas);
-      return canvas;
+      const created = document.createElement('canvas');
+      element.appendChild(created);
+      return created;
     })();
 
     canvas.setAttribute('width', width);
@@ -37,7 +37,7 @@ export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
     return target;
   }
 
-  destroy() {
+  override destroy() {
     this.getContext()?.clearRect(0, 0, this.node.width, this.node.height);
     super.destroy();
   }
@@ -50,11 +50,11 @@ export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
     };
   }
 
-  _getMousePoint(evt: MouseEvent) {
+  override _getMousePoint(evt: MouseEvent) {
     return this._scalePoint(super._getMousePoint(evt));
   }
 
-  _getTouchPoint(evt: TouchEvent) {
+  override _getTouchPoint(evt: TouchEvent) {
     return this._scalePoint(super._getTouchPoint(evt));
   }
 

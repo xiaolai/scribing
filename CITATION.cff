@@ -1,14 +1,14 @@
 cff-version: 1.2.0
-message: "If you use this software, please cite it as below."
+message: 'If you use this software, please cite it as below.'
 type: software
-title: "Scribing"
+title: 'Scribing'
 authors:
-  - name: "Xiaolai"
-  - family-names: "Chanin"
-    given-names: "David"
-    orcid: "https://orcid.org/0009-0004-6619-5469"
-repository-code: "https://github.com/xiaolai/scribing"
-abstract: "Scribing is a fork of Hanzi Writer for stroke-order animations and handwriting practice, with additional writing systems planned."
+  - name: 'Xiaolai'
+  - family-names: 'Chanin'
+    given-names: 'David'
+    orcid: 'https://orcid.org/0009-0004-6619-5469'
+repository-code: 'https://github.com/xiaolai/scribing'
+abstract: 'Scribing is a fork of Hanzi Writer for stroke-order animations and handwriting practice, with additional writing systems planned.'
 keywords:
   - chinese
   - hanzi

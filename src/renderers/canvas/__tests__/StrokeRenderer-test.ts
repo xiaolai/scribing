@@ -5,10 +5,10 @@ import parseCharData from '../../../parseCharData';
 const char = parseCharData('一', yi);
 
 describe('StrokeRenderer', () => {
-  let ctx;
+  let ctx: CanvasRenderingContext2D;
 
   beforeEach(() => {
-    ctx = document.createElement('canvas').getContext('2d');
+    ctx = document.createElement('canvas').getContext('2d')!;
   });
 
   it('renders a path and clipPath', () => {

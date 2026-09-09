@@ -56,12 +56,12 @@ export default function strokeMatches(
   let closestMatchDist = avgDist;
 
   for (let i = 0; i < laterStrokes.length; i++) {
-    const { isMatch, avgDist } = getMatchData(points, laterStrokes[i], {
+    const later = getMatchData(points, laterStrokes[i], {
       ...options,
       checkBackwards: false,
     });
-    if (isMatch && avgDist < closestMatchDist) {
-      closestMatchDist = avgDist;
+    if (later.isMatch && later.avgDist < closestMatchDist) {
+      closestMatchDist = later.avgDist;
     }
   }
   // if there's a better match, rather that returning false automatically, try reducing leniency instead
@@ -69,11 +69,11 @@ export default function strokeMatches(
   if (closestMatchDist < avgDist) {
     // adjust leniency between 0.3 and 0.6 depending on how much of a better match the new match is
     const leniencyAdjustment = (0.6 * (closestMatchDist + avgDist)) / (2 * avgDist);
-    const { isMatch, meta } = getMatchData(points, strokes[strokeNum], {
+    const stricter = getMatchData(points, strokes[strokeNum], {
       ...options,
       leniency: (options.leniency || 1) * leniencyAdjustment,
     });
-    return { isMatch, meta };
+    return { isMatch: stricter.isMatch, meta: stricter.meta };
   }
 
   return { isMatch, meta };

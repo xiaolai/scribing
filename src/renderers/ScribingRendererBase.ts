@@ -5,7 +5,7 @@ import RenderTargetBase from './RenderTargetBase';
 
 export default interface ScribingRendererBase<
   TElementType extends HTMLElement | HTMLCanvasElement | SVGElement | SVGSVGElement,
-  TRenderTarget extends RenderTargetBase<TElementType>
+  TRenderTarget extends RenderTargetBase<TElementType>,
 > {
   _character: Character;
   _positioner: Positioner;

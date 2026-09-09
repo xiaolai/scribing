@@ -1,5 +1,6 @@
 import { WritingDataPack, WritingDataProvider } from './types';
 import validateUnit from './validateUnit';
+import { readPlainObject } from '../validation/plainStructure';
 
 const own = (value: Record<string, unknown>, key: string) =>
   Object.prototype.hasOwnProperty.call(value, key);
@@ -13,27 +14,18 @@ const normalized = (value: string) => {
 };
 
 // Inspect own descriptors before reading values or serializing caller objects.
+// `toJSON` is rejected by name: it would let the pack rewrite itself during the
+// structural snapshot below, after validation has already passed.
 const plainRecord = (value: unknown) => {
-  if (
-    !value ||
-    typeof value !== 'object' ||
-    Array.isArray(value) ||
-    [Object.prototype, null].indexOf(Object.getPrototypeOf(value)) < 0 ||
-    Object.getOwnPropertySymbols(value).length
-  )
-    throw new Error('Invalid data pack object.');
-  Object.getOwnPropertyNames(value).forEach((key) => {
-    const descriptor = Object.getOwnPropertyDescriptor(value, key)!;
-    if (
-      !descriptor.enumerable ||
-      !Object.prototype.hasOwnProperty.call(descriptor, 'value') ||
-      key === 'toJSON'
-    ) {
+  readPlainObject(
+    value,
+    () => {
       throw new Error(
-        'Data packs must contain plain JSON values without serialization hooks.',
+        'Data packs must be plain objects of JSON values, without serialization hooks.',
       );
-    }
-  });
+    },
+    { forbid: ['toJSON'] },
+  );
 };
 
 /** An offline, immutable provider. Loading never guesses a missing language or variant. */

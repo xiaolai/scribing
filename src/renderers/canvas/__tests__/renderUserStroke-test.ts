@@ -1,10 +1,10 @@
 import renderUserStroke from '../renderUserStroke';
 
 describe('renderUserStroke', () => {
-  let ctx;
+  let ctx: CanvasRenderingContext2D;
 
   beforeEach(() => {
-    ctx = document.createElement('canvas').getContext('2d');
+    ctx = document.createElement('canvas').getContext('2d')!;
   });
 
   it('renders a user stroke path', () => {

@@ -1,10 +1,10 @@
 import { pathStringToCanvas } from '../canvasUtils';
 
 describe('canvasUtils', () => {
-  let ctx;
+  let ctx: CanvasRenderingContext2D;
 
   beforeEach(() => {
-    ctx = document.createElement('canvas').getContext('2d');
+    ctx = document.createElement('canvas').getContext('2d')!;
   });
 
   describe('pathStringToCanvas', () => {

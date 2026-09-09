@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "name": "harfbuzzjs",
+  "version": "1.6.1",
+  "repository": "https://github.com/harfbuzz/harfbuzzjs",
+  "revision": "8aa047b90387790b255b118cf45ad11691a38910",
+  "tarball": "https://registry.npmjs.org/harfbuzzjs/-/harfbuzzjs-1.6.1.tgz",
+  "integrity": "sha512-+JeJmO+HzXjDwpfCOdGSyM2bNP8WzJNFKl/8TKivbInMYDtfRIuPIDLtnBNmQzcJw6GptbhHY6o5gaH6deCMEw==",
+  "files": [
+    {
+      "file": "index.mjs",
+      "packagePath": "dist/index.mjs",
+      "sha256": "04ece1914c8720ad96257728119c1bf24088ee4ef3ab2a2ca688c9a4895d4e7e",
+      "sizeBytes": 82693
+    },
+    {
+      "file": "harfbuzz.js",
+      "packagePath": "dist/harfbuzz.js",
+      "sha256": "ba43463df44851fd58211ef8c19aa7956965390857727ae867b70dc7b3682de1",
+      "sizeBytes": 31763
+    },
+    {
+      "file": "harfbuzz.wasm",
+      "packagePath": "dist/harfbuzz.wasm",
+      "sha256": "37777ced92a2ba10279c33e1dbacf08835ddcacc215b7fcb3131e558dd01ce71",
+      "sizeBytes": 426620
+    },
+    {
+      "file": "HARFBUZZJS-LICENSE.txt",
+      "packagePath": "LICENSE",
+      "sha256": "5d09767b2cc476f08028b56d9384dc45061c5a3e90f9ad966e44addc8d26c8b1",
+      "sizeBytes": 1079
+    },
+    {
+      "file": "HARFBUZZ-COPYING.txt",
+      "source": {
+        "url": "https://raw.githubusercontent.com/harfbuzz/harfbuzz/36cb489cb02ce4b92099669ba9f9bea348eff93f/COPYING",
+        "revision": "36cb489cb02ce4b92099669ba9f9bea348eff93f"
+      },
+      "sha256": "ba8f810f2455c2f08e2d56bb49b72f37fcf68f1f4fade38977cfd7372050ad64",
+      "sizeBytes": 1971
+    }
+  ]
+}

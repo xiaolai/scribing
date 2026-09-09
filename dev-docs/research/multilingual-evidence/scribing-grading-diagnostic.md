@@ -4,10 +4,10 @@
 
 Regenerated `scribing-centerline-import-v2` packs select `0643_11.txt` for character01. The unchanged runtime grader now accepts7/17 other complete same-pen-count recordings at strict1,11/17 at1.5, and13/17 at2. Direction flexibility still changes no result. This replaces the v1 baseline0/7/13 outcomes below; the v1 analysis is retained as audit history, not a claim about current packs.
 
-| Selection | Leniency1 strokes / whole | Leniency1.5 strokes / whole | Leniency2 strokes / whole |
-|---|---|---|---|
-| v1 aspect-ratio exemplar17 | 5/34;0/17 |20/34;7/17 |29/34;13/17 |
-| v2 observed medoid11 |17/34;7/17 |26/34;11/17 |29/34;13/17 |
+| Selection                  | Leniency1 strokes / whole | Leniency1.5 strokes / whole | Leniency2 strokes / whole |
+| -------------------------- | ------------------------- | --------------------------- | ------------------------- |
+| v1 aspect-ratio exemplar17 | 5/34;0/17                 | 20/34;7/17                  | 29/34;13/17               |
+| v2 observed medoid11       | 17/34;7/17                | 26/34;11/17                 | 29/34;13/17               |
 
 The v2 source suite passes unchanged, including visually inspected01/07 positives at1.5 and recordedㅇ loop reversal. The selectedㅇ still has its long loop at motor index1; no assertion weakening or index adaptation was needed. New selected-example choice uses the source class itself, so these numbers remain descriptive generalization checks, not an independent accuracy evaluation or native curriculum validation. Raw observations were not modified.
 
@@ -25,19 +25,19 @@ The poor strict result is geometric, not direction-related. The current default 
 - Diagnostic registration: each recording is uniformly scaled to em=1024 and translated to the selected model's bounding-box center. No independent axis stretching, per-stroke alignment, rotation, order changes, pen-lift repair or reversal. This registration is more forgiving than actual on-canvas input; these results are not user-study accuracy estimates.
 
 | Leniency | Direction | Accepted strokes /34 | Accepted complete recordings /17 |
-|---|---|---:|---:|
-| 1 | forward | 5 | 0 |
-| 1 | either | 5 | 0 |
-| 1.5 | forward | 20 | 7 |
-| 1.5 | either | 20 | 7 |
-| 2 | forward | 29 | 13 |
-| 2 | either | 29 | 13 |
+| -------- | --------- | -------------------: | -------------------------------: |
+| 1        | forward   |                    5 |                                0 |
+| 1        | either    |                    5 |                                0 |
+| 1.5      | forward   |                   20 |                                7 |
+| 1.5      | either    |                   20 |                                7 |
+| 2        | forward   |                   29 |                               13 |
+| 2        | either    |                   29 |                               13 |
 
-| Leniency | Stem reasons | Horizontal reasons |
-|---|---|---|
-| 1 | 16 wrong-shape, 1 outside-target | 5 correct, 6 wrong-shape, 6 outside-target |
-| 1.5 | 11 correct, 5 wrong-shape, 1 outside-target | 9 correct, 7 wrong-shape, 1 outside-target |
-| 2 | 15 correct, 2 wrong-shape | 14 correct, 3 wrong-shape |
+| Leniency | Stem reasons                                | Horizontal reasons                         |
+| -------- | ------------------------------------------- | ------------------------------------------ |
+| 1        | 16 wrong-shape, 1 outside-target            | 5 correct, 6 wrong-shape, 6 outside-target |
+| 1.5      | 11 correct, 5 wrong-shape, 1 outside-target | 9 correct, 7 wrong-shape, 1 outside-target |
+| 2        | 15 correct, 2 wrong-shape                   | 14 correct, 3 wrong-shape                  |
 
 No wrong-direction or too-short result appears in this sample. Allowing either direction makes no difference. This class is not a clockwise/counterclockwise-loop example; recorded ㅇ and synthetic closed-loop direction are tested separately.
 
@@ -68,10 +68,10 @@ Compared all18 same-two-stroke recordings (including the original selected17), u
 The observed medoid is `0643_11.txt`, mean pair distance77.96 canonical units. Next candidates:06 at79.13,01 at79.18. Keeping its actual raw points as the model gives:
 
 | Leniency | Accepted strokes /34 | Complete recordings /17 |
-|---|---:|---:|
-| 1 | 17 | 7 |
-| 1.5 | 26 | 11 |
-| 2 | 29 | 13 |
+| -------- | -------------------: | ----------------------: |
+| 1        |                   17 |                       7 |
+| 1.5      |                   26 |                      11 |
+| 2        |                   29 |                      13 |
 
 Counts were verified against the actual TypeScript `gradeStroke` in a temporary Jest probe; probe passed and was removed. `medoid-diagnostic.py` and `scribing-medoid-evidence.json` preserve the experiment. This comparison reselects on the complete class, so it is a representativeness diagnostic, not an independent accuracy evaluation.
 

@@ -1,0 +1,168 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #222a33;
+  background: #f6f5f1;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1020px;
+  margin: auto;
+  padding: 32px 24px;
+}
+h1 {
+  font-size: clamp(30px, 5vw, 46px);
+  letter-spacing: -0.04em;
+  margin: 28px 0 8px;
+}
+p {
+  line-height: 1.55;
+  color: #4c5661;
+}
+nav {
+  font-size: 14px;
+}
+a {
+  color: #2467aa;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+select,
+input,
+button {
+  font: inherit;
+  border: 1px solid #b8c0c8;
+  border-radius: 8px;
+  background: white;
+  padding: 10px;
+  min-width: 0;
+}
+button {
+  cursor: pointer;
+  color: #1c4877;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+summary:focus-visible {
+  outline: 3px solid #508dd3;
+  outline-offset: 2px;
+}
+.mode {
+  max-width: 390px;
+  margin: 24px 0;
+}
+.controls {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1.2fr 1fr;
+  gap: 14px;
+}
+form {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  margin: 18px 0 0;
+}
+form label {
+  flex: 1;
+}
+#font-text {
+  font-size: 26px;
+  width: 100%;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin: 16px 0;
+}
+#font-area {
+  width: 100%;
+  height: 380px;
+  border: 1px solid #d2d7da;
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+}
+#font-status {
+  min-height: 24px;
+}
+#font-result {
+  min-height: 48px;
+}
+details {
+  background: #edece6;
+  border-radius: 9px;
+  padding: 14px;
+  margin: 14px 0;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+details label {
+  margin: 14px 0;
+}
+#font-coverage {
+  max-height: 400px;
+  overflow: auto;
+  font-size: 14px;
+}
+#ordered-frame {
+  width: 100%;
+  height: 1100px;
+  border: 0;
+  border-radius: 10px;
+  background: white;
+}
+[hidden] {
+  display: none !important;
+}
+@media (max-width: 640px) {
+  main {
+    padding: 20px 14px;
+  }
+  .controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  #font-area {
+    height: 320px;
+  }
+  .actions button {
+    flex: 1 1 40%;
+  }
+}
+
+.controls > * {
+  min-width: 0;
+}
+.controls select {
+  width: 100%;
+  max-width: 100%;
+}
+@media (max-width: 640px) {
+  .controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

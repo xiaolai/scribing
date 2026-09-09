@@ -1,5 +1,6 @@
 import { CharacterJson, LoadingManagerOptions } from './typings/types';
 import validateCharData from './validateCharData';
+import { toError } from './utils';
 
 type CustomError = Error & { reason: string };
 
@@ -27,7 +28,7 @@ export default class LoadingManager {
           validateCharData(data);
           this._resolve?.(data);
         } catch (error) {
-          this._reject?.(error);
+          this._reject?.(toError(error));
         }
       }
     };
@@ -47,7 +48,7 @@ export default class LoadingManager {
         Promise.resolve(returnedData).then(wrappedResolve, wrappedReject);
       }
     } catch (error) {
-      wrappedReject(error);
+      wrappedReject(toError(error));
     }
   }
 

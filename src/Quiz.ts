@@ -141,11 +141,8 @@ export default class Quiz {
       this._handleFailure(meta);
       if (generation !== this._generation || !this._isActive) return;
 
-      const {
-        showHintAfterMisses,
-        highlightColor,
-        strokeHighlightSpeed,
-      } = this._options!;
+      const { showHintAfterMisses, highlightColor, strokeHighlightSpeed } =
+        this._options!;
 
       if (
         showHintAfterMisses !== false &&

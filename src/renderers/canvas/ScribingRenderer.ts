@@ -7,8 +7,10 @@ import renderUserStroke from './renderUserStroke';
 import { RenderStateObject } from '../../RenderState';
 import { noop } from '../../utils';
 
-export default class ScribingRenderer
-  implements ScribingRendererBase<HTMLCanvasElement, CanvasRenderTarget> {
+export default class ScribingRenderer implements ScribingRendererBase<
+  HTMLCanvasElement,
+  CanvasRenderTarget
+> {
   _character: Character;
   _positioner: Positioner;
   _mainCharRenderer: CharacterRenderer;

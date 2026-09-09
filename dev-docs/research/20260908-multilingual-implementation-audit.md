@@ -6,14 +6,14 @@ This is a working multilingual technical preview. It preserves the Chinese API a
 
 ## Delivered coverage
 
-| Source | Actual coverage |
-| --- | --- |
-| letterpaths print | 52 uppercase/lowercase English letters. |
-| glyphed.js | 83 characters × 3 variants = 249 models; 52 letters, 10 digits, 21 punctuation marks. |
-| KanjiVG | 6,447 CJK characters, 184 kana, 68 ASCII characters and 5 symbols; separated by repertoire. |
-| Korean Omniglot | 40 mapped standalone jamo classes. |
-| Other Omniglot | 1,583 source-class models across 49 other collections; Unicode mappings are not invented. |
-| Total | 8,628 models in 147 optional packs; 32,460 original recordings retained separately. |
+| Source            | Actual coverage                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------- |
+| letterpaths print | 52 uppercase/lowercase English letters.                                                     |
+| glyphed.js        | 83 characters × 3 variants = 249 models; 52 letters, 10 digits, 21 punctuation marks.       |
+| KanjiVG           | 6,447 CJK characters, 184 kana, 68 ASCII characters and 5 symbols; separated by repertoire. |
+| Korean Omniglot   | 40 mapped standalone jamo classes.                                                          |
+| Other Omniglot    | 1,583 source-class models across 49 other collections; Unicode mappings are not invented.   |
+| Total             | 8,628 models in 147 optional packs; 32,460 original recordings retained separately.         |
 
 The pack count is not a language count. Some collections are historical or constructed scripts. Existing Chinese data remains available through the legacy loader; none of the new datasets is embedded in the core npm package.
 
@@ -51,17 +51,17 @@ The same collection participated in exemplar selection, so this is a representat
 
 All gates pass on the final implementation:
 
-| Gate | Result |
-| --- | --- |
-| Engine tests | 324 tests / 29 suites / 15 unchanged snapshots; Node 22.23.1 and the default runtime. |
-| Importer/CLI/compression tests | 15 tests on Node 22.23.1 and Node 26.8.1. |
-| Types/lint | Full development and browser-only production TypeScript projects; ESLint passes. |
-| Build/package | CJS, ESM, browser globals and extracted TypeScript consumers; notices retained and datasets excluded from core tarball. |
-| Data integrity | 147 packs, all 8,628 units validate and compile; 53 source locks; 32,460 original recordings. Maximum compiled curve: 456 points; maximum motor count: 30. |
-| Reproducibility | All 492 generated files reproduce byte for byte on Node 22.23.1 and Node 26.8.1. |
-| Browser | 21 checks in Chromium 151.0.7922.34; real mouse replay in SVG/Canvas at 960 and 320 pixels; zero external requests and zero page errors. |
-| Legacy demo | Unicode/loading/retry/reuse, real-bundle SVG sizing and visibility pass. |
-| Plan/source review | Root inspected implementation and rendered English/Korean/kana samples; plan structure and diff checks pass. |
+| Gate                           | Result                                                                                                                                                     |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Engine tests                   | 324 tests / 29 suites / 15 unchanged snapshots; Node 22.23.1 and the default runtime.                                                                      |
+| Importer/CLI/compression tests | 15 tests on Node 22.23.1 and Node 26.8.1.                                                                                                                  |
+| Types/lint                     | Full development and browser-only production TypeScript projects; ESLint passes.                                                                           |
+| Build/package                  | CJS, ESM, browser globals and extracted TypeScript consumers; notices retained and datasets excluded from core tarball.                                    |
+| Data integrity                 | 147 packs, all 8,628 units validate and compile; 53 source locks; 32,460 original recordings. Maximum compiled curve: 456 points; maximum motor count: 30. |
+| Reproducibility                | All 492 generated files reproduce byte for byte on Node 22.23.1 and Node 26.8.1.                                                                           |
+| Browser                        | 21 checks in Chromium 151.0.7922.34; real mouse replay in SVG/Canvas at 960 and 320 pixels; zero external requests and zero page errors.                   |
+| Legacy demo                    | Unicode/loading/retry/reuse, real-bundle SVG sizing and visibility pass.                                                                                   |
+| Plan/source review             | Root inspected implementation and rendered English/Korean/kana samples; plan structure and diff checks pass.                                               |
 
 The final browser benchmark used 5 warmups, 40 compile-and-mount samples and 80 direct full-gesture calls on the supplied English `i` model. Observed p95: **0.70 ms** compile/mount and **0.80 ms** gesture calls. This measures synthetic desktop source replay, not physical-device latency or human accuracy. The minified browser bundle is approximately 17.3 KB gzip and contains no writing datasets.
 

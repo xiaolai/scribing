@@ -68,9 +68,12 @@ export const hideUserStroke = (
 };
 
 export const removeAllUserStrokes = (userStrokeIds: Array<number>): GenericMutation[] => {
-  return userStrokeIds?.map(userStrokeId =>
-    new Mutation(`userStrokes.${userStrokeId}`, null, { force: true })
-  ) || [];
+  return (
+    userStrokeIds?.map(
+      (userStrokeId) =>
+        new Mutation(`userStrokes.${userStrokeId}`, null, { force: true }),
+    ) || []
+  );
 };
 
 export const highlightCompleteChar = (

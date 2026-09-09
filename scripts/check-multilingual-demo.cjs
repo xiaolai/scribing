@@ -7,17 +7,29 @@ const crypto = require('crypto');
 const path = require('path');
 const { chromium } = require('playwright');
 const root = path.resolve(__dirname, '..');
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json' };
+const mime = {
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.css': 'text/css',
+  '.json': 'application/json',
+};
 const server = http.createServer((request, response) => {
   const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
   let file = path.resolve(root, `.${pathname}`);
-  if (file !== root && !file.startsWith(root + path.sep)) { response.writeHead(403).end(); return; }
+  if (file !== root && !file.startsWith(root + path.sep)) {
+    response.writeHead(403).end();
+    return;
+  }
   try {
     if (fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
     const content = fs.readFileSync(file);
-    response.writeHead(200, { 'Content-Type': mime[path.extname(file)] || 'application/octet-stream' });
+    response.writeHead(200, {
+      'Content-Type': mime[path.extname(file)] || 'application/octet-stream',
+    });
     response.end(content);
-  } catch { response.writeHead(404).end('Not found'); }
+  } catch {
+    response.writeHead(404).end('Not found');
+  }
 });
 
 (async () => {
@@ -26,11 +38,11 @@ const server = http.createServer((request, response) => {
   const external = [];
   const checks = [];
   try {
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
     const origin = `http://127.0.0.1:${server.address().port}`;
     browser = await chromium.launch({ headless: true });
     const context = await browser.newContext({ viewport: { width: 960, height: 1100 } });
-    await context.route('**/*', route => {
+    await context.route('**/*', (route) => {
       if (new URL(route.request().url()).origin !== origin) {
         external.push(route.request().url());
         return route.abort();
@@ -38,45 +50,70 @@ const server = http.createServer((request, response) => {
       return route.continue();
     });
     const page = await context.newPage();
-    page.on('pageerror', error => errors.push(error.message));
+    page.on('pageerror', (error) => errors.push(error.message));
     page.setDefaultTimeout(15000);
-    await page.goto(`${origin}/demo/multilingual/`);
+    await page.goto(`${origin}/demo/multilingual/ordered.html`);
     const ready = async () => {
-      try { await page.waitForFunction(() => document.getElementById('status').textContent.startsWith('Ready:')); }
-      catch (error) { throw new Error(`Demo not ready (${await page.locator('#pack').inputValue()}): ${await page.locator('#status').textContent()}`); }
+      try {
+        await page.waitForFunction(() =>
+          document.getElementById('status').textContent.startsWith('Ready:'),
+        );
+      } catch (cause) {
+        throw new Error(
+          `Demo not ready (${await page.locator('#pack').inputValue()}): ${await page.locator('#status').textContent()}`,
+          { cause },
+        );
+      }
     };
     await ready();
     await page.evaluate(() => {
       const animate = Scribing.prototype.animateCharacter;
-      Scribing.prototype.animateCharacter = async function(options) {
+      Scribing.prototype.animateCharacter = async function (options) {
         const result = await animate.call(this, options);
         window.__lastAnimationPlan = options && options.planId;
         return result;
       };
       const original = Scribing.prototype.quizUnit;
-      Scribing.prototype.quizUnit = async function(options) {
+      Scribing.prototype.quizUnit = async function (options) {
         window.__lastQuizWriter = this;
         const result = await original.call(this, options);
         window.__lastQuizLeniency = this._unitQuiz && this._unitQuiz._options.leniency;
         return result;
       };
     });
-    const catalog = JSON.parse(fs.readFileSync(path.join(root, 'packs/generated/catalog.json'), 'utf8'));
-    const primary = ['english-textbook', 'korean-textbook', 'english-letterpaths-print', 'english-glyphed', 'japanese-kana', 'japanese-grade-1', 'korean-omniglot'];
-    const broad = catalog.packs.find(entry => entry.id.startsWith('omniglot-'));
+    const catalog = JSON.parse(
+      fs.readFileSync(path.join(root, 'packs/generated/catalog.json'), 'utf8'),
+    );
+    const primary = [
+      'english-textbook',
+      'korean-textbook',
+      'english-letterpaths-print',
+      'english-glyphed',
+      'japanese-kana',
+      'japanese-grade-1',
+      'korean-omniglot',
+    ];
+    const broad = catalog.packs.find((entry) => entry.id.startsWith('omniglot-'));
     assert(broad, 'An unmapped source collection must be available');
     assert.equal(await page.locator('#view').inputValue(), 'models');
     assert.equal(await page.locator('#pack').inputValue(), 'english-textbook');
     assert.equal(await page.locator('#unit option').count(), 52);
     assert.match(await page.locator('#details').textContent(), /Original clean print/);
     assert.match(await page.locator('#pack option:checked').textContent(), /English/i);
-    assert.equal(await page.locator('#pack option[value="english-letterpaths-print"]').count(), 0);
+    assert.equal(
+      await page.locator('#pack option[value="english-letterpaths-print"]').count(),
+      0,
+    );
     assert.equal(await page.locator('#pack option[value="japanese-kana"]').count(), 1);
-    checks.push('clean English default, readable names, Japanese models available, sources separated');
+    checks.push(
+      'clean English default, readable names, Japanese models available, sources separated',
+    );
     async function selectPack(id) {
-      const entry = catalog.packs.find(item => item.id === id);
-      const view = ['textbook', 'vector'].includes(entry.presentation) ? 'models' : 'sources';
-      if (await page.locator('#view').inputValue() !== view) {
+      const entry = catalog.packs.find((item) => item.id === id);
+      const view = ['textbook', 'vector'].includes(entry.presentation)
+        ? 'models'
+        : 'sources';
+      if ((await page.locator('#view').inputValue()) !== view) {
         await page.selectOption('#view', view);
         await ready();
       }
@@ -91,18 +128,34 @@ const server = http.createServer((request, response) => {
     }
     for (const id of [...primary, broad.id]) {
       await selectPack(id);
-      assert.equal(await page.locator('#tolerance').inputValue(), id === 'korean-omniglot' || id === broad.id ? '1.5' : '1');
+      assert.equal(
+        await page.locator('#tolerance').inputValue(),
+        id === 'korean-omniglot' || id === broad.id ? '1.5' : '1',
+      );
       checks.push(`loaded ${id}`);
     }
     assert.match(await page.locator('#details').textContent(), /recorded observation/i);
-    const availableSources = await page.locator('#pack option').evaluateAll(nodes => nodes.map(node => node.value));
-    assert.deepEqual(availableSources.sort(), catalog.packs.filter(entry => !['textbook', 'vector'].includes(entry.presentation)).map(entry => entry.id).sort());
-    assert.match(await page.locator('#view-help').textContent(), /rough recorded observations/);
+    const availableSources = await page
+      .locator('#pack option')
+      .evaluateAll((nodes) => nodes.map((node) => node.value));
+    assert.deepEqual(
+      availableSources.sort(),
+      catalog.packs
+        .filter((entry) => !['textbook', 'vector'].includes(entry.presentation))
+        .map((entry) => entry.id)
+        .sort(),
+    );
+    assert.match(
+      await page.locator('#view-help').textContent(),
+      /rough recorded observations/,
+    );
     checks.push('all source collections accessible with explicit observation context');
     // Unsupported lookups must leave recovery controls usable and never create markup.
     await page.fill('#text', '<img src=x onerror=alert(1)>');
     await page.click('#find');
-    await page.waitForFunction(() => /unavailable/.test(document.getElementById('status').textContent));
+    await page.waitForFunction(() =>
+      /unavailable/.test(document.getElementById('status').textContent),
+    );
     assert.equal(await page.locator('img').count(), 0);
     await selectPack('english-letterpaths-print');
     await selectUnit('i');
@@ -113,7 +166,10 @@ const server = http.createServer((request, response) => {
     assert.match(await page.locator('#status').textContent(), /Relaxed \(2\) matching/);
     await page.selectOption('#tolerance', '1');
     assert.match(await page.locator('#status').textContent(), /Practice stopped/);
-    assert(await page.evaluate(() => !window.__lastQuizWriter._unitQuiz), 'Tolerance changes cancel active practice');
+    assert(
+      await page.evaluate(() => !window.__lastQuizWriter._unitQuiz),
+      'Tolerance changes cancel active practice',
+    );
     await page.evaluate(() => {
       document.getElementById('guided').click();
       const tolerance = document.getElementById('tolerance');
@@ -122,10 +178,17 @@ const server = http.createServer((request, response) => {
     });
     await page.waitForFunction(() => !window.__lastQuizWriter._unitQuiz);
     assert.match(await page.locator('#status').textContent(), /Practice stopped/);
-    checks.push('source tolerance defaults, actual quiz leniency, active and queued cancellation');
+    checks.push(
+      'source tolerance defaults, actual quiz leniency, active and queued cancellation',
+    );
     await page.click('#animate');
-    await page.waitForFunction(() => window.__lastAnimationPlan === document.getElementById('plan').value);
-    assert.match(await page.locator('#status').textContent(), /Animating selected stroke plan/);
+    await page.waitForFunction(
+      () => window.__lastAnimationPlan === document.getElementById('plan').value,
+    );
+    assert.match(
+      await page.locator('#status').textContent(),
+      /Animating selected stroke plan/,
+    );
     checks.push('selected stroke plan passed to actual animation');
 
     // Switching views must invalidate both active and microtask-queued quizzes.
@@ -135,28 +198,45 @@ const server = http.createServer((request, response) => {
         await page.click('#guided');
         await page.waitForFunction(() => !!window.__lastQuizWriter._unitQuiz);
       }
-      await page.evaluate(queued => {
-        if (queued) document.getElementById('guided').click();
+      await page.evaluate((wasQueued) => {
+        if (wasQueued) document.getElementById('guided').click();
         window.__departedWriter = window.__lastQuizWriter;
         const view = document.getElementById('view');
         view.value = 'sources';
         view.dispatchEvent(new Event('change'));
       }, queued);
       await ready();
-      assert(await page.evaluate(() => window.__departedWriter._destroyed && !window.__departedWriter._unitQuiz));
+      assert(
+        await page.evaluate(
+          () => window.__departedWriter._destroyed && !window.__departedWriter._unitQuiz,
+        ),
+      );
     }
     // Hold a source response while switching back: a late response cannot replace clean models.
     await selectPack('english-textbook');
-    const sourceEntry = catalog.packs.find(entry => entry.presentation === 'source');
+    const sourceEntry = catalog.packs.find((entry) => entry.presentation === 'source');
     let releaseResponse;
     let responseStarted;
-    const started = new Promise(resolve => { responseStarted = resolve; });
-    const held = new Promise(resolve => { releaseResponse = resolve; });
+    const started = new Promise((resolve) => {
+      responseStarted = resolve;
+    });
+    const held = new Promise((resolve) => {
+      releaseResponse = resolve;
+    });
     const pattern = '**/packs/generated/' + sourceEntry.file;
-    await page.route(pattern, async route => {
+    await page.route(pattern, async (route) => {
       responseStarted();
       await held;
-      await route.fulfill({ status: 200, contentType: 'application/json', body: fs.readFileSync(path.join(root, 'packs/generated', sourceEntry.file), 'utf8') }).catch(() => {});
+      await route
+        .fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: fs.readFileSync(
+            path.join(root, 'packs/generated', sourceEntry.file),
+            'utf8',
+          ),
+        })
+        .catch(() => {});
     });
     await page.selectOption('#view', 'sources');
     await page.selectOption('#pack', sourceEntry.id);
@@ -167,14 +247,20 @@ const server = http.createServer((request, response) => {
     await page.unrouteAll({ behavior: 'wait' });
     assert.equal(await page.locator('#pack').inputValue(), 'english-textbook');
     assert.equal(await page.locator('#unit option').count(), 52);
-    checks.push('view changes cancel active and queued practice and stale source responses');
+    checks.push(
+      'view changes cancel active and queued practice and stale source responses',
+    );
 
     // A separate writer compiles source geometry to obtain exact source-to-pixel positions.
     // Completion is still driven exclusively through real mouse events on the demo target.
     async function geometry() {
       return page.evaluate(async () => {
-        const catalog = await (await fetch('../../packs/generated/catalog.json')).json();
-        const entry = catalog.packs.find(item => item.id === document.getElementById('pack').value);
+        const packCatalog = await (
+          await fetch('../../packs/generated/catalog.json')
+        ).json();
+        const entry = packCatalog.packs.find(
+          (item) => item.id === document.getElementById('pack').value,
+        );
         const pack = await (await fetch('../../packs/generated/' + entry.file)).json();
         const unit = pack.units[document.getElementById('unit').value];
         const holder = document.createElement('div');
@@ -188,18 +274,34 @@ const server = http.createServer((request, response) => {
           const p = probe._positioner;
           const box = area.getBoundingClientRect();
           const compiled = probe._character.unit;
-          const plan = compiled.plans.find(item => item.id === document.getElementById('plan').value);
-          return plan.steps.map(step => {
+          const plan = compiled.plans.find(
+            (item) => item.id === document.getElementById('plan').value,
+          );
+          return plan.steps.map((step) => {
             const stroke = compiled.strokes[step.strokeIndex];
             // Keep actual points, sampled at bounded index spacing for browser event cost.
             const count = Math.min(100, stroke.points.length);
-            const points = Array.from({ length: count }, (_, i) => stroke.points[count === 1 ? 0 : Math.round(i * (stroke.points.length - 1) / (count - 1))]);
-            return { kind: stroke.kind, points: points.map(point => ({
-              x: box.left + point.x * p.scale + p.xOffset,
-              y: box.top + p.height - p.yOffset - point.y * p.scale,
-            })) };
+            const points = Array.from(
+              { length: count },
+              (_, i) =>
+                stroke.points[
+                  count === 1
+                    ? 0
+                    : Math.round((i * (stroke.points.length - 1)) / (count - 1))
+                ],
+            );
+            return {
+              kind: stroke.kind,
+              points: points.map((point) => ({
+                x: box.left + point.x * p.scale + p.xOffset,
+                y: box.top + p.height - p.yOffset - point.y * p.scale,
+              })),
+            };
           });
-        } finally { probe.destroy(); holder.remove(); }
+        } finally {
+          probe.destroy();
+          holder.remove();
+        }
       });
     }
     async function draw(stroke) {
@@ -214,19 +316,38 @@ const server = http.createServer((request, response) => {
       for (const renderer of ['svg', 'canvas']) {
         await page.selectOption('#renderer', renderer);
         await ready();
-        for (const [packId, id, strokeCount] of [['english-textbook', 'A', 3], ['english-textbook', 'i', 2], ['korean-textbook', 'ㅏ', 2], ['english-letterpaths-print', 'i', 2], ['japanese-kana', 'あ', 3], ['japanese-kana', 'ぬ', 2]]) {
+        for (const [packId, id, strokeCount] of [
+          ['english-textbook', 'A', 3],
+          ['english-textbook', 'i', 2],
+          ['korean-textbook', 'ㅏ', 2],
+          ['english-letterpaths-print', 'i', 2],
+          ['japanese-kana', 'あ', 3],
+          ['japanese-kana', 'ぬ', 2],
+        ]) {
           await selectPack(packId);
           await selectUnit(id);
           await page.locator('#writing-area').scrollIntoViewIfNeeded();
           if (id === 'i' && renderer === 'svg') {
-            assert(await page.locator('#writing-area circle').evaluateAll(nodes => nodes.some(node => Number(node.getAttribute('r')) > 0)), 'Native dot must be visible');
+            assert(
+              await page
+                .locator('#writing-area circle')
+                .evaluateAll((nodes) =>
+                  nodes.some((node) => Number(node.getAttribute('r')) > 0),
+                ),
+              'Native dot must be visible',
+            );
           }
           if (renderer === 'canvas') {
-            assert(await page.locator('#writing-area canvas').evaluate(canvas => {
-              const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
-              for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) return true;
-              return false;
-            }), 'Canvas must contain visible ink');
+            assert(
+              await page.locator('#writing-area canvas').evaluate((canvas) => {
+                const pixels = canvas
+                  .getContext('2d')
+                  .getImageData(0, 0, canvas.width, canvas.height).data;
+                for (let i = 3; i < pixels.length; i += 4) if (pixels[i]) return true;
+                return false;
+              }),
+              'Canvas must contain visible ink',
+            );
           }
           await page.click(id === 'ぬ' ? '#practice' : '#guided');
           await page.locator('#writing-area').scrollIntoViewIfNeeded();
@@ -236,57 +357,131 @@ const server = http.createServer((request, response) => {
           if (id === 'i') {
             assert.equal(strokes[1].kind, 'dot');
             await draw(strokes[1]);
-            await page.waitForFunction(() => /wrong order/.test(document.getElementById('status').textContent));
+            await page.waitForFunction(() =>
+              /wrong order/.test(document.getElementById('status').textContent),
+            );
           }
           for (let i = 0; i < strokes.length; i++) {
             const currentStrokes = await geometry();
             await draw(currentStrokes[i]);
             if (i < strokes.length - 1) {
-              try { await page.waitForFunction(() => /Accepted/.test(document.getElementById('status').textContent)); }
-              catch { throw new Error(`${renderer}/${width}/${id}/stroke${i}: ${await page.locator('#status').textContent()}`); }
+              try {
+                await page.waitForFunction(() =>
+                  /Accepted/.test(document.getElementById('status').textContent),
+                );
+              } catch {
+                throw new Error(
+                  `${renderer}/${width}/${id}/stroke${i}: ${await page.locator('#status').textContent()}`,
+                );
+              }
             }
           }
-          await page.waitForFunction(() => document.getElementById('status').textContent.startsWith('Complete'));
-          assert.match(await page.locator('#status').textContent(), id === 'i' ? /1 mistake/ : /0 mistake/);
-          assert(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'Narrow layout must not overflow');
-          checks.push(`${renderer} ${width}px ${packId} actual mouse ${id}: ${strokeCount} strokes complete`);
+          await page.waitForFunction(() =>
+            document.getElementById('status').textContent.startsWith('Complete'),
+          );
+          assert.match(
+            await page.locator('#status').textContent(),
+            id === 'i' ? /1 mistake/ : /0 mistake/,
+          );
+          assert(
+            await page.evaluate(
+              () => document.documentElement.scrollWidth <= window.innerWidth,
+            ),
+            'Narrow layout must not overflow',
+          );
+          checks.push(
+            `${renderer} ${width}px ${packId} actual mouse ${id}: ${strokeCount} strokes complete`,
+          );
         }
       }
     }
     const benchmark = await page.evaluate(async () => {
-      const pack = await (await fetch('../../packs/generated/english-letterpaths-print.json')).json();
+      const pack = await (
+        await fetch('../../packs/generated/english-letterpaths-print.json')
+      ).json();
       const unit = pack.units.i;
       const holder = document.createElement('div');
-      holder.style.cssText = 'position:absolute;left:-10000px;top:0';document.body.appendChild(holder);
-      const writer = new Scribing(holder, { width: 400, height: 400, padding: 24, drawingFadeDuration: 0 });
-      const load = [], gesture = [];
+      holder.style.cssText = 'position:absolute;left:-10000px;top:0';
+      document.body.appendChild(holder);
+      const writer = new Scribing(holder, {
+        width: 400,
+        height: 400,
+        padding: 24,
+        drawingFadeDuration: 0,
+      });
+      const load = [],
+        gesture = [];
       try {
         for (let i = 0; i < 45; i++) {
-          let start = performance.now(); await writer.setUnit(unit);
+          let start = performance.now();
+          await writer.setUnit(unit);
           if (i >= 5) load.push(performance.now() - start);
           await writer.quizUnit();
           const quiz = writer._unitQuiz;
           const p = writer._positioner;
           for (const stroke of writer._character.unit.strokes) {
-            const points = stroke.points.map(point => ({ x: point.x * p.scale + p.xOffset, y: p.height - p.yOffset - point.y * p.scale }));
+            const points = stroke.points.map((point) => ({
+              x: point.x * p.scale + p.xOffset,
+              y: p.height - p.yOffset - point.y * p.scale,
+            }));
             start = performance.now();
             quiz.startUserStroke(points[0]);
-            points.slice(1).forEach(point => quiz.continueUserStroke(point));
+            points.slice(1).forEach((point) => quiz.continueUserStroke(point));
             quiz.endUserStroke();
             if (i >= 5) gesture.push(performance.now() - start);
           }
           if (quiz._isActive) throw new Error('Benchmark source replay did not complete');
         }
-      } finally { writer.destroy();holder.remove(); }
-      const stats = values => { values.sort((a,b)=>a-b);return { samples: values.length, p50ms: values[Math.ceil(values.length * .5)-1], p95ms: values[Math.ceil(values.length * .95)-1] }; };
-      return { userAgent: navigator.userAgent, fixture: 'letterpaths print i; supplied-model replay', warmups: 5, compileAndMount: stats(load), directGestureCalls: stats(gesture), limitation: 'Headless desktop Chromium; synthetic source replay, not physical-device or human-input validation.' };
+      } finally {
+        writer.destroy();
+        holder.remove();
+      }
+      const stats = (values) => {
+        values.sort((a, b) => a - b);
+        return {
+          samples: values.length,
+          p50ms: values[Math.ceil(values.length * 0.5) - 1],
+          p95ms: values[Math.ceil(values.length * 0.95) - 1],
+        };
+      };
+      return {
+        userAgent: navigator.userAgent,
+        fixture: 'letterpaths print i; supplied-model replay',
+        warmups: 5,
+        compileAndMount: stats(load),
+        directGestureCalls: stats(gesture),
+        limitation:
+          'Headless desktop Chromium; synthetic source replay, not physical-device or human-input validation.',
+      };
     });
     assert.deepEqual(external, [], 'No external runtime network requests');
     assert.deepEqual(errors, [], 'No uncaught browser errors');
-    const digest = file => crypto.createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex');
-    console.log(JSON.stringify({ status: 'passed', bundleSHA256: digest('dist/scribing.js'), catalogSHA256: digest('packs/generated/catalog.json'), browser: await browser.version(), checks, externalRequests: external.length, pageErrors: errors, benchmark }, null, 2));
+    const digest = (file) =>
+      crypto
+        .createHash('sha256')
+        .update(fs.readFileSync(path.join(root, file)))
+        .digest('hex');
+    console.log(
+      JSON.stringify(
+        {
+          status: 'passed',
+          bundleSHA256: digest('dist/scribing.js'),
+          catalogSHA256: digest('packs/generated/catalog.json'),
+          browser: await browser.version(),
+          checks,
+          externalRequests: external.length,
+          pageErrors: errors,
+          benchmark,
+        },
+        null,
+        2,
+      ),
+    );
   } finally {
     if (browser) await browser.close();
-    await new Promise(resolve => server.close(resolve));
+    await new Promise((resolve) => server.close(resolve));
   }
-})().catch(error => { console.error(error); process.exitCode = 1; });
+})().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

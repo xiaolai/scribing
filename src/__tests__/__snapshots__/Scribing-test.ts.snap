@@ -1,23 +1,27 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Scribing Scribing.create can optionally use a canvas for rendering instead of SVG 1`] = `
 CanvasRenderingContext2D {
   "_canvas": <canvas
-    height="100%"
-    width="100%"
+    height="200"
+    width="200"
   />,
-  "_directionStack": Array [
+  "_clipIndex": 1,
+  "_clipStack": [
+    [],
+  ],
+  "_directionStack": [
     "inherit",
   ],
-  "_drawCalls": Array [
-    Object {
-      "props": Object {
-        "height": 0,
-        "width": 0,
+  "_drawCalls": [
+    {
+      "props": {
+        "height": 200,
+        "width": 200,
         "x": 0,
         "y": 0,
       },
-      "transform": Array [
+      "transform": [
         1,
         0,
         0,
@@ -27,634 +31,634 @@ CanvasRenderingContext2D {
       ],
       "type": "clearRect",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 423.7609549522482,
               "y": 816.5651012649424,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 508,
               "y": 702,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 511,
               "y": 678,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 473,
               "y": 552,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 408,
               "y": 416,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 328,
               "y": 303,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 271,
               "y": 244,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 144,
               "y": 139,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 72,
               "y": 95,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 457.56010126946427,
               "y": 575.6393923832144,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 477,
               "y": 459,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 490,
               "y": 439,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 571,
               "y": 333,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 691,
               "y": 200,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 753,
               "y": 145,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 798,
               "y": 119,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 986,
               "y": 90,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 423.7609549522482,
               "y": 816.5651012649424,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 508,
               "y": 702,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 511,
               "y": 678,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 473,
               "y": 552,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 408,
               "y": 416,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 328,
               "y": 303,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 271,
               "y": 244,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 144,
               "y": 139,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 72,
               "y": 95,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 457.56010126946427,
               "y": 575.6393923832144,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 477,
               "y": 459,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 490,
               "y": 439,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 571,
               "y": 333,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 691,
               "y": 200,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 753,
               "y": 145,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 798,
               "y": 119,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 986,
               "y": 90,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
   ],
-  "_events": Array [
-    Object {
-      "props": Object {
-        "height": 0,
-        "width": 0,
+  "_events": [
+    {
+      "props": {
+        "height": 200,
+        "width": 200,
         "x": 0,
         "y": 0,
       },
-      "transform": Array [
+      "transform": [
         1,
         0,
         0,
@@ -664,9 +668,9 @@ CanvasRenderingContext2D {
       ],
       "type": "clearRect",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
+    {
+      "props": {},
+      "transform": [
         1,
         0,
         0,
@@ -676,23 +680,23 @@ CanvasRenderingContext2D {
       ],
       "type": "save",
     },
-    Object {
-      "props": Object {
-        "x": 20,
-        "y": -15.15625,
+    {
+      "props": {
+        "x": 10,
+        "y": 168.203125,
       },
-      "transform": Array [
+      "transform": [
         1,
         0,
         0,
         1,
-        20,
-        -15.15625,
+        10,
+        168.203125,
       ],
       "type": "translate",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "a": 1,
         "b": 0,
         "c": 0,
@@ -700,2065 +704,2065 @@ CanvasRenderingContext2D {
         "e": 0,
         "f": 0,
       },
-      "transform": Array [
+      "transform": [
         1,
         0,
         0,
         -1,
-        20,
-        -15.15625,
+        10,
+        168.203125,
       ],
       "type": "transform",
     },
-    Object {
-      "props": Object {
-        "x": -0.0390625,
-        "y": -0.0390625,
+    {
+      "props": {
+        "x": 0.17578125,
+        "y": 0.17578125,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "scale",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "save",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "fillRule": "nonzero",
-        "path": Array [],
+        "path": [],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "clip",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 1,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "globalAlpha",
     },
-    Object {
-      "props": Object {
-        "value": "#ddd",
+    {
+      "props": {
+        "value": "#dddddd",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "strokeStyle",
     },
-    Object {
-      "props": Object {
-        "value": "#ddd",
+    {
+      "props": {
+        "value": "#dddddd",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "fillStyle",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineWidth",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineCap",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineJoin",
     },
-    Object {
-      "props": Object {
-        "value": Array [
+    {
+      "props": {
+        "segments": [
           918.3825419953906,
           918.3825419953906,
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "setLineDash",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 0,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineDashOffset",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "beginPath",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 423.7609549522482,
         "y": 816.5651012649424,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "moveTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 508,
         "y": 702,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 511,
         "y": 678,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 473,
         "y": 552,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 408,
         "y": 416,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 328,
         "y": 303,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 271,
         "y": 244,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 144,
         "y": 139,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 72,
         "y": 95,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 423.7609549522482,
               "y": 816.5651012649424,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 508,
               "y": 702,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 511,
               "y": 678,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 473,
               "y": 552,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 408,
               "y": 416,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 328,
               "y": 303,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 271,
               "y": 244,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 144,
               "y": 139,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 72,
               "y": 95,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "restore",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "save",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "fillRule": "nonzero",
-        "path": Array [],
+        "path": [],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "clip",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 1,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "globalAlpha",
     },
-    Object {
-      "props": Object {
-        "value": "#ddd",
+    {
+      "props": {
+        "value": "#dddddd",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "strokeStyle",
     },
-    Object {
-      "props": Object {
-        "value": "#ddd",
+    {
+      "props": {
+        "value": "#dddddd",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "fillStyle",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineWidth",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineCap",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineJoin",
     },
-    Object {
-      "props": Object {
-        "value": Array [
+    {
+      "props": {
+        "segments": [
           779.7155627376544,
           779.7155627376544,
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "setLineDash",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 0,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineDashOffset",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "beginPath",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 457.56010126946427,
         "y": 575.6393923832144,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "moveTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 477,
         "y": 459,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 490,
         "y": 439,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 571,
         "y": 333,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 691,
         "y": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 753,
         "y": 145,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 798,
         "y": 119,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 986,
         "y": 90,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 457.56010126946427,
               "y": 575.6393923832144,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 477,
               "y": 459,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 490,
               "y": 439,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 571,
               "y": 333,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 691,
               "y": 200,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 753,
               "y": 145,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 798,
               "y": 119,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 986,
               "y": 90,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "restore",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "save",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "fillRule": "nonzero",
-        "path": Array [],
+        "path": [],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "clip",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 1,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "globalAlpha",
     },
-    Object {
-      "props": Object {
-        "value": "#555",
+    {
+      "props": {
+        "value": "#555555",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "strokeStyle",
     },
-    Object {
-      "props": Object {
-        "value": "#555",
+    {
+      "props": {
+        "value": "#555555",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "fillStyle",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineWidth",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineCap",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineJoin",
     },
-    Object {
-      "props": Object {
-        "value": Array [
+    {
+      "props": {
+        "segments": [
           918.3825419953906,
           918.3825419953906,
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "setLineDash",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 0,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineDashOffset",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "beginPath",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 423.7609549522482,
         "y": 816.5651012649424,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "moveTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 508,
         "y": 702,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 511,
         "y": 678,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 473,
         "y": 552,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 408,
         "y": 416,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 328,
         "y": 303,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 271,
         "y": 244,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 144,
         "y": 139,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 72,
         "y": 95,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 423.7609549522482,
               "y": 816.5651012649424,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 508,
               "y": 702,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 511,
               "y": 678,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 473,
               "y": 552,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 408,
               "y": 416,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 328,
               "y": 303,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 271,
               "y": 244,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 144,
               "y": 139,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 72,
               "y": 95,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "restore",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "save",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "fillRule": "nonzero",
-        "path": Array [],
+        "path": [],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "clip",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 1,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "globalAlpha",
     },
-    Object {
-      "props": Object {
-        "value": "#555",
+    {
+      "props": {
+        "value": "#555555",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "strokeStyle",
     },
-    Object {
-      "props": Object {
-        "value": "#555",
+    {
+      "props": {
+        "value": "#555555",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "fillStyle",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineWidth",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineCap",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": "round",
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineJoin",
     },
-    Object {
-      "props": Object {
-        "value": Array [
+    {
+      "props": {
+        "segments": [
           779.7155627376544,
           779.7155627376544,
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "setLineDash",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "value": 0,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineDashOffset",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "beginPath",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 457.56010126946427,
         "y": 575.6393923832144,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "moveTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 477,
         "y": 459,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 490,
         "y": 439,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 571,
         "y": 333,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 691,
         "y": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 753,
         "y": 145,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 798,
         "y": 119,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 986,
         "y": 90,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
-        "path": Array [
-          Object {
-            "props": Object {},
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+    {
+      "props": {
+        "path": [
+          {
+            "props": {},
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "beginPath",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 457.56010126946427,
               "y": 575.6393923832144,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "moveTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 477,
               "y": 459,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 490,
               "y": 439,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 571,
               "y": 333,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 691,
               "y": 200,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 753,
               "y": 145,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 798,
               "y": 119,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
-          Object {
-            "props": Object {
+          {
+            "props": {
               "x": 986,
               "y": 90,
             },
-            "transform": Array [
-              -0.0390625,
-              -0,
-              -0,
-              0.0390625,
-              20,
-              -15.15625,
+            "transform": [
+              0.17578125,
+              0,
+              0,
+              -0.17578125,
+              10,
+              168.203125,
             ],
             "type": "lineTo",
           },
         ],
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "stroke",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "restore",
     },
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+    {
+      "props": {},
+      "transform": [
+        1,
+        0,
+        0,
+        1,
+        0,
+        0,
       ],
       "type": "restore",
     },
   ],
-  "_fillStyleStack": Array [
-    "#000",
+  "_fillStyleStack": [
+    "#000000",
   ],
-  "_filterStack": Array [
+  "_filterStack": [
     "none",
   ],
-  "_fontStack": Array [
+  "_fontStack": [
     "10px sans-serif",
   ],
-  "_globalAlphaStack": Array [
+  "_globalAlphaStack": [
     1,
   ],
-  "_globalCompositeOperationStack": Array [
+  "_globalCompositeOperationStack": [
     "source-over",
   ],
-  "_imageSmoothingEnabledStack": Array [
+  "_imageSmoothingEnabledStack": [
     true,
   ],
-  "_imageSmoothingQualityStack": Array [
+  "_imageSmoothingQualityStack": [
     "low",
   ],
-  "_lineCapStack": Array [
+  "_lineCapStack": [
     "butt",
   ],
-  "_lineDashOffsetStack": Array [
+  "_lineDashOffsetStack": [
     0,
   ],
-  "_lineDashStack": Array [
-    Array [],
+  "_lineDashStack": [
+    [],
   ],
-  "_lineJoinStack": Array [
+  "_lineJoinStack": [
     "miter",
   ],
-  "_lineWidthStack": Array [
+  "_lineWidthStack": [
     1,
   ],
-  "_miterLimitStack": Array [
+  "_miterLimitStack": [
     10,
   ],
-  "_path": Array [
-    Object {
-      "props": Object {},
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+  "_path": [
+    {
+      "props": {},
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "beginPath",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 457.56010126946427,
         "y": 575.6393923832144,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "moveTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 477,
         "y": 459,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 490,
         "y": 439,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 571,
         "y": 333,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 691,
         "y": 200,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 753,
         "y": 145,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 798,
         "y": 119,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
-    Object {
-      "props": Object {
+    {
+      "props": {
         "x": 986,
         "y": 90,
       },
-      "transform": Array [
-        -0.0390625,
-        -0,
-        -0,
-        0.0390625,
-        20,
-        -15.15625,
+      "transform": [
+        0.17578125,
+        0,
+        0,
+        -0.17578125,
+        10,
+        168.203125,
       ],
       "type": "lineTo",
     },
   ],
-  "_shadowBlurStack": Array [
+  "_shadowBlurStack": [
     0,
   ],
-  "_shadowColorStack": Array [
+  "_shadowColorStack": [
     "rgba(0, 0, 0, 0)",
   ],
-  "_shadowOffsetXStack": Array [
+  "_shadowOffsetXStack": [
     0,
   ],
-  "_shadowOffsetYStack": Array [
+  "_shadowOffsetYStack": [
     0,
   ],
   "_stackIndex": 0,
-  "_strokeStyleStack": Array [
-    "#000",
+  "_strokeStyleStack": [
+    "#000000",
   ],
-  "_textAlignStack": Array [
+  "_textAlignStack": [
     "start",
   ],
-  "_textBaselineStack": Array [
+  "_textBaselineStack": [
     "alphabetic",
   ],
-  "_transformStack": Array [
-    Array [
-      -0.0390625,
-      -0,
-      -0,
-      0.0390625,
-      20,
-      -15.15625,
+  "_transformStack": [
+    [
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
     ],
   ],
   "addHitRegion": [MockFunction],
   "arc": [MockFunction],
   "arcTo": [MockFunction],
   "beginPath": [MockFunction] {
-    "calls": Array [
-      Array [],
-      Array [],
-      Array [],
-      Array [],
+    "calls": [
+      [],
+      [],
+      [],
+      [],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
@@ -2767,30 +2771,30 @@ CanvasRenderingContext2D {
   "bezierCurveTo": [MockFunction],
   "clearHitRegions": [MockFunction],
   "clearRect": [MockFunction] {
-    "calls": Array [
-      Array [
+    "calls": [
+      [
         0,
         0,
-        0,
-        0,
+        200,
+        200,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
     ],
   },
   "clip": [MockFunction] {
-    "calls": Array [
-      Array [
+    "calls": [
+      [
         Path2D {
-          "_events": Array [],
-          "_path": Array [],
+          "_events": [],
+          "_path": [],
           "_stackIndex": 0,
-          "_transformStack": Array [
-            Array [
+          "_transformStack": [
+            [
               1,
               0,
               0,
@@ -2811,13 +2815,13 @@ CanvasRenderingContext2D {
           "rect": [MockFunction],
         },
       ],
-      Array [
+      [
         Path2D {
-          "_events": Array [],
-          "_path": Array [],
+          "_events": [],
+          "_path": [],
           "_stackIndex": 0,
-          "_transformStack": Array [
-            Array [
+          "_transformStack": [
+            [
               1,
               0,
               0,
@@ -2838,13 +2842,13 @@ CanvasRenderingContext2D {
           "rect": [MockFunction],
         },
       ],
-      Array [
+      [
         Path2D {
-          "_events": Array [],
-          "_path": Array [],
+          "_events": [],
+          "_path": [],
           "_stackIndex": 0,
-          "_transformStack": Array [
-            Array [
+          "_transformStack": [
+            [
               1,
               0,
               0,
@@ -2865,13 +2869,13 @@ CanvasRenderingContext2D {
           "rect": [MockFunction],
         },
       ],
-      Array [
+      [
         Path2D {
-          "_events": Array [],
-          "_path": Array [],
+          "_events": [],
+          "_path": [],
           "_stackIndex": 0,
-          "_transformStack": Array [
-            Array [
+          "_transformStack": [
+            [
               1,
               0,
               0,
@@ -2893,20 +2897,20 @@ CanvasRenderingContext2D {
         },
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
@@ -2929,246 +2933,246 @@ CanvasRenderingContext2D {
   "isPointInPath": [MockFunction],
   "isPointInStroke": [MockFunction],
   "lineTo": [MockFunction] {
-    "calls": Array [
-      Array [
+    "calls": [
+      [
         508,
         702,
       ],
-      Array [
+      [
         511,
         678,
       ],
-      Array [
+      [
         473,
         552,
       ],
-      Array [
+      [
         408,
         416,
       ],
-      Array [
+      [
         328,
         303,
       ],
-      Array [
+      [
         271,
         244,
       ],
-      Array [
+      [
         144,
         139,
       ],
-      Array [
+      [
         72,
         95,
       ],
-      Array [
+      [
         477,
         459,
       ],
-      Array [
+      [
         490,
         439,
       ],
-      Array [
+      [
         571,
         333,
       ],
-      Array [
+      [
         691,
         200,
       ],
-      Array [
+      [
         753,
         145,
       ],
-      Array [
+      [
         798,
         119,
       ],
-      Array [
+      [
         986,
         90,
       ],
-      Array [
+      [
         508,
         702,
       ],
-      Array [
+      [
         511,
         678,
       ],
-      Array [
+      [
         473,
         552,
       ],
-      Array [
+      [
         408,
         416,
       ],
-      Array [
+      [
         328,
         303,
       ],
-      Array [
+      [
         271,
         244,
       ],
-      Array [
+      [
         144,
         139,
       ],
-      Array [
+      [
         72,
         95,
       ],
-      Array [
+      [
         477,
         459,
       ],
-      Array [
+      [
         490,
         439,
       ],
-      Array [
+      [
         571,
         333,
       ],
-      Array [
+      [
         691,
         200,
       ],
-      Array [
+      [
         753,
         145,
       ],
-      Array [
+      [
         798,
         119,
       ],
-      Array [
+      [
         986,
         90,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
@@ -3176,38 +3180,38 @@ CanvasRenderingContext2D {
   },
   "measureText": [MockFunction],
   "moveTo": [MockFunction] {
-    "calls": Array [
-      Array [
+    "calls": [
+      [
         423.7609549522482,
         816.5651012649424,
       ],
-      Array [
+      [
         457.56010126946427,
         575.6393923832144,
       ],
-      Array [
+      [
         423.7609549522482,
         816.5651012649424,
       ],
-      Array [
+      [
         457.56010126946427,
         575.6393923832144,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
@@ -3219,77 +3223,78 @@ CanvasRenderingContext2D {
   "removeHitRegion": [MockFunction],
   "resetTransform": [MockFunction],
   "restore": [MockFunction] {
-    "calls": Array [
-      Array [],
-      Array [],
-      Array [],
-      Array [],
-      Array [],
+    "calls": [
+      [],
+      [],
+      [],
+      [],
+      [],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
     ],
   },
   "rotate": [MockFunction],
+  "roundRect": [MockFunction],
   "save": [MockFunction] {
-    "calls": Array [
-      Array [],
-      Array [],
-      Array [],
-      Array [],
-      Array [],
+    "calls": [
+      [],
+      [],
+      [],
+      [],
+      [],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
     ],
   },
   "scale": [MockFunction] {
-    "calls": Array [
-      Array [
-        -0.0390625,
-        -0.0390625,
+    "calls": [
+      [
+        0.17578125,
+        0.17578125,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
@@ -3297,50 +3302,50 @@ CanvasRenderingContext2D {
   },
   "scrollPathIntoView": [MockFunction],
   "setLineDash": [MockFunction] {
-    "calls": Array [
-      Array [
-        Array [
+    "calls": [
+      [
+        [
           918.3825419953906,
           918.3825419953906,
         ],
         0,
       ],
-      Array [
-        Array [
+      [
+        [
           779.7155627376544,
           779.7155627376544,
         ],
         0,
       ],
-      Array [
-        Array [
+      [
+        [
           918.3825419953906,
           918.3825419953906,
         ],
         0,
       ],
-      Array [
-        Array [
+      [
+        [
           779.7155627376544,
           779.7155627376544,
         ],
         0,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
@@ -3348,26 +3353,26 @@ CanvasRenderingContext2D {
   },
   "setTransform": [MockFunction],
   "stroke": [MockFunction] {
-    "calls": Array [
-      Array [],
-      Array [],
-      Array [],
-      Array [],
+    "calls": [
+      [],
+      [],
+      [],
+      [],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
-      Object {
+      {
         "type": "return",
         "value": undefined,
       },
@@ -3376,8 +3381,8 @@ CanvasRenderingContext2D {
   "strokeRect": [MockFunction],
   "strokeText": [MockFunction],
   "transform": [MockFunction] {
-    "calls": Array [
-      Array [
+    "calls": [
+      [
         1,
         0,
         0,
@@ -3386,22 +3391,22 @@ CanvasRenderingContext2D {
         0,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },
     ],
   },
   "translate": [MockFunction] {
-    "calls": Array [
-      Array [
-        20,
-        -15.15625,
+    "calls": [
+      [
+        10,
+        168.203125,
       ],
     ],
-    "results": Array [
-      Object {
+    "results": [
+      {
         "type": "return",
         "value": undefined,
       },

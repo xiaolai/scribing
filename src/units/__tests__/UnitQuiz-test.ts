@@ -55,7 +55,7 @@ const setup = () => {
   const run = jest.fn(() => Promise.resolve());
   const quiz = new UnitQuiz(
     character,
-    ({ run } as unknown) as RenderState,
+    { run } as unknown as RenderState,
     { convertExternalPoint: (p: Point) => p } as Positioner,
   );
   const options = { drawingFadeDuration: 0 } as ParsedScribingOptions;

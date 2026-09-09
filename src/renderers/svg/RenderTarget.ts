@@ -18,11 +18,10 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
     const svg = (() => {
       if (nodeType === 'SVG' || nodeType === 'G') {
         return element;
-      } else {
-        const svg = createElm('svg');
-        element.appendChild(svg);
-        return svg;
       }
+      const created = createElm('svg');
+      element.appendChild(created);
+      return created;
     })() as SVGSVGElement;
 
     attrs(svg, { width, height });
@@ -36,6 +35,8 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
 
   svg: SVGSVGElement | SVGElement;
   defs: SVGElement;
+  /** False for sub-targets, which borrow the root target's <defs>. */
+  _ownsDefs = true;
   _pt: DOMPoint | undefined;
 
   constructor(svg: SVGElement | SVGSVGElement, defs: SVGElement) {
@@ -49,40 +50,50 @@ export default class RenderTarget extends RenderTargetBase<SVGSVGElement | SVGEl
     }
   }
 
-  destroy() {
+  override destroy() {
     super.destroy();
-    this.defs.remove();
+    // A sub-target shares its parent's <defs>; only the owner may remove it.
+    if (this._ownsDefs) this.defs.remove();
   }
 
   createSubRenderTarget() {
     const group = createElm('g');
     this.svg.appendChild(group);
-    return new RenderTarget(group, this.defs);
+    const sub = new RenderTarget(group, this.defs);
+    sub._ownsNode = true;
+    sub._ownsDefs = false;
+    return sub;
   }
 
-  _getMousePoint(evt: MouseEvent) {
-    if (this._pt) {
-      this._pt.x = evt.clientX;
-      this._pt.y = evt.clientY;
-      if ('getScreenCTM' in this.node) {
-        const localPt = this._pt.matrixTransform(this.node.getScreenCTM()?.inverse());
-        return { x: localPt.x, y: localPt.y };
-      }
-    }
-    return super._getMousePoint.call(this, evt);
+  /**
+   * Convert a client point into SVG user space.
+   *
+   * `getScreenCTM()` returns null for an element that is not rendered, and
+   * `DOMPoint.matrixTransform(undefined)` silently defaults to the identity matrix.
+   * Passing that through would return raw client coordinates that look valid and
+   * grade every stroke against the wrong space, so a missing or singular matrix
+   * falls back to the bounding-rect path instead.
+   */
+  private _toUserSpace(clientX: number, clientY: number) {
+    if (!this._pt || !('getScreenCTM' in this.node)) return undefined;
+    const matrix = (this.node as SVGSVGElement).getScreenCTM();
+    if (!matrix) return undefined;
+    const determinant = matrix.a * matrix.d - matrix.b * matrix.c;
+    if (!Number.isFinite(determinant) || determinant === 0) return undefined;
+    this._pt.x = clientX;
+    this._pt.y = clientY;
+    const localPt = this._pt.matrixTransform(matrix.inverse());
+    if (!Number.isFinite(localPt.x) || !Number.isFinite(localPt.y)) return undefined;
+    return { x: localPt.x, y: localPt.y };
   }
 
-  _getTouchPoint(evt: TouchEvent) {
-    if (this._pt) {
-      this._pt.x = evt.touches[0].clientX;
-      this._pt.y = evt.touches[0].clientY;
-      if ('getScreenCTM' in this.node) {
-        const localPt = this._pt.matrixTransform(
-          (this.node as SVGSVGElement).getScreenCTM()?.inverse(),
-        );
-        return { x: localPt.x, y: localPt.y };
-      }
-    }
-    return super._getTouchPoint(evt);
+  override _getMousePoint(evt: MouseEvent) {
+    return this._toUserSpace(evt.clientX, evt.clientY) ?? super._getMousePoint(evt);
+  }
+
+  override _getTouchPoint(evt: TouchEvent) {
+    const touch = evt.touches[0] ?? evt.changedTouches[0];
+    if (!touch) return super._getTouchPoint(evt);
+    return this._toUserSpace(touch.clientX, touch.clientY) ?? super._getTouchPoint(evt);
   }
 }

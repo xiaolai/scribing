@@ -1,0 +1,2226 @@
+{
+  "description": "Independent native hb-shape references; glyph IDs, UTF-16 clusters, positioned origins and advances. Vertical-only scripts use approved LTR shape then clockwise rotation, not raw TTB metrics.",
+  "native": "hb-shape (HarfBuzz) 14.4.0",
+  "cases": [
+    {
+      "scriptId": "english",
+      "fontId": "NotoSans",
+      "fontFile": "fonts/assets/NotoSans-Regular.ttf",
+      "fontSha256": "2118e60a3c88075064261fd7ba82c973a01673d3eb44d58a8a983ae0b9a465ed",
+      "text": "ag",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 68,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 561,
+          "advanceY": 0
+        },
+        {
+          "id": 74,
+          "cluster": 1,
+          "x": 561,
+          "y": 0,
+          "advanceX": 615,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSans",
+      "fontFile": "fonts/assets/NotoSans-Regular.ttf",
+      "fontSha256": "2118e60a3c88075064261fd7ba82c973a01673d3eb44d58a8a983ae0b9a465ed",
+      "text": "Hello",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 43,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 741,
+          "advanceY": 0
+        },
+        {
+          "id": 72,
+          "cluster": 1,
+          "x": 741,
+          "y": 0,
+          "advanceX": 564,
+          "advanceY": 0
+        },
+        {
+          "id": 79,
+          "cluster": 2,
+          "x": 1305,
+          "y": 0,
+          "advanceX": 258,
+          "advanceY": 0
+        },
+        {
+          "id": 79,
+          "cluster": 3,
+          "x": 1563,
+          "y": 0,
+          "advanceX": 258,
+          "advanceY": 0
+        },
+        {
+          "id": 82,
+          "cluster": 4,
+          "x": 1821,
+          "y": 0,
+          "advanceX": 605,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSans",
+      "fontFile": "fonts/assets/NotoSans-Regular.ttf",
+      "fontSha256": "2118e60a3c88075064261fd7ba82c973a01673d3eb44d58a8a983ae0b9a465ed",
+      "text": "a",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 68,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 561,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSans",
+      "fontFile": "fonts/assets/NotoSans-Regular.ttf",
+      "fontSha256": "2118e60a3c88075064261fd7ba82c973a01673d3eb44d58a8a983ae0b9a465ed",
+      "text": "é",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 171,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 564,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSans",
+      "fontFile": "fonts/assets/NotoSans-Regular.ttf",
+      "fontSha256": "2118e60a3c88075064261fd7ba82c973a01673d3eb44d58a8a983ae0b9a465ed",
+      "text": "é",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 171,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 564,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSerif",
+      "fontFile": "fonts/assets/NotoSerif-Regular.ttf",
+      "fontSha256": "048e236ec517110adbf56069acb2400f547da5317dcaed86909684917c09e980",
+      "text": "ag",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 68,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 563,
+          "advanceY": 0
+        },
+        {
+          "id": 74,
+          "cluster": 1,
+          "x": 563,
+          "y": 0,
+          "advanceX": 538,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSerif",
+      "fontFile": "fonts/assets/NotoSerif-Regular.ttf",
+      "fontSha256": "048e236ec517110adbf56069acb2400f547da5317dcaed86909684917c09e980",
+      "text": "Hello",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 43,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 793,
+          "advanceY": 0
+        },
+        {
+          "id": 72,
+          "cluster": 1,
+          "x": 793,
+          "y": 0,
+          "advanceX": 535,
+          "advanceY": 0
+        },
+        {
+          "id": 79,
+          "cluster": 2,
+          "x": 1328,
+          "y": 0,
+          "advanceX": 310,
+          "advanceY": 0
+        },
+        {
+          "id": 79,
+          "cluster": 3,
+          "x": 1638,
+          "y": 0,
+          "advanceX": 310,
+          "advanceY": 0
+        },
+        {
+          "id": 82,
+          "cluster": 4,
+          "x": 1948,
+          "y": 0,
+          "advanceX": 577,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSerif",
+      "fontFile": "fonts/assets/NotoSerif-Regular.ttf",
+      "fontSha256": "048e236ec517110adbf56069acb2400f547da5317dcaed86909684917c09e980",
+      "text": "a",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 68,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 563,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSerif",
+      "fontFile": "fonts/assets/NotoSerif-Regular.ttf",
+      "fontSha256": "048e236ec517110adbf56069acb2400f547da5317dcaed86909684917c09e980",
+      "text": "é",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 171,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 535,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "english",
+      "fontId": "NotoSerif",
+      "fontFile": "fonts/assets/NotoSerif-Regular.ttf",
+      "fontSha256": "048e236ec517110adbf56069acb2400f547da5317dcaed86909684917c09e980",
+      "text": "é",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 171,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 535,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "arabic",
+      "fontId": "NotoSansArabic",
+      "fontFile": "fonts/assets/NotoSansArabic-Regular.ttf",
+      "fontSha256": "95952171cbc85c19cbb7b22684c595b521e780134d45ea508c34ba872681731d",
+      "text": "ب",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 100,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 993,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "arabic",
+      "fontId": "NotoSansArabic",
+      "fontFile": "fonts/assets/NotoSansArabic-Regular.ttf",
+      "fontSha256": "95952171cbc85c19cbb7b22684c595b521e780134d45ea508c34ba872681731d",
+      "text": "سلام",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 770,
+          "cluster": 3,
+          "x": 0,
+          "y": 0,
+          "advanceX": 484,
+          "advanceY": 0
+        },
+        {
+          "id": 705,
+          "cluster": 1,
+          "x": 484,
+          "y": 0,
+          "advanceX": 599,
+          "advanceY": 0
+        },
+        {
+          "id": 1083,
+          "cluster": 0,
+          "x": 1083,
+          "y": 0,
+          "advanceX": 784,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "arabic",
+      "fontId": "NotoSansArabic",
+      "fontFile": "fonts/assets/NotoSansArabic-Regular.ttf",
+      "fontSha256": "95952171cbc85c19cbb7b22684c595b521e780134d45ea508c34ba872681731d",
+      "text": "بِ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 609,
+          "cluster": 0,
+          "x": 344,
+          "y": -211,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 100,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 993,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "arabic",
+      "fontId": "NotoNaskhArabic",
+      "fontFile": "fonts/assets/NotoNaskhArabic-Regular.ttf",
+      "fontSha256": "53a7bf4e186a8fac2905286e4a94aaa8ec6cfbff5800a9423f0740414fb1609d",
+      "text": "ب",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 35,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 772,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "arabic",
+      "fontId": "NotoNaskhArabic",
+      "fontFile": "fonts/assets/NotoNaskhArabic-Regular.ttf",
+      "fontSha256": "53a7bf4e186a8fac2905286e4a94aaa8ec6cfbff5800a9423f0740414fb1609d",
+      "text": "سلام",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 485,
+          "cluster": 3,
+          "x": 0,
+          "y": 0,
+          "advanceX": 489,
+          "advanceY": 0
+        },
+        {
+          "id": 1576,
+          "cluster": 2,
+          "x": 489,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 450,
+          "cluster": 1,
+          "x": 489,
+          "y": 0,
+          "advanceX": 610,
+          "advanceY": 0
+        },
+        {
+          "id": 250,
+          "cluster": 0,
+          "x": 1099,
+          "y": 0,
+          "advanceX": 658,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "arabic",
+      "fontId": "NotoNaskhArabic",
+      "fontFile": "fonts/assets/NotoNaskhArabic-Regular.ttf",
+      "fontSha256": "53a7bf4e186a8fac2905286e4a94aaa8ec6cfbff5800a9423f0740414fb1609d",
+      "text": "بِ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 1434,
+          "cluster": 0,
+          "x": 301,
+          "y": -233,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 35,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 772,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "urdu",
+      "fontId": "NotoNastaliqUrdu",
+      "fontFile": "fonts/assets/NotoNastaliqUrdu-Regular.ttf",
+      "fontSha256": "7ec900458bd2f8749050fcf9805e51775f632bae765f99a85637189017808204",
+      "text": "پ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 16,
+          "cluster": 0,
+          "x": 576,
+          "y": -158,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 226,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1175,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "urdu",
+      "fontId": "NotoNastaliqUrdu",
+      "fontFile": "fonts/assets/NotoNastaliqUrdu-Regular.ttf",
+      "fontSha256": "7ec900458bd2f8749050fcf9805e51775f632bae765f99a85637189017808204",
+      "text": "ٹ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 1266,
+          "cluster": 0,
+          "x": 595,
+          "y": -331,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 226,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1175,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "urdu",
+      "fontId": "NotoNastaliqUrdu",
+      "fontFile": "fonts/assets/NotoNastaliqUrdu-Regular.ttf",
+      "fontSha256": "7ec900458bd2f8749050fcf9805e51775f632bae765f99a85637189017808204",
+      "text": "اردو",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 243,
+          "cluster": 3,
+          "x": 0,
+          "y": 0,
+          "advanceX": 422,
+          "advanceY": 0
+        },
+        {
+          "id": 231,
+          "cluster": 2,
+          "x": 422,
+          "y": 0,
+          "advanceX": 300,
+          "advanceY": 0
+        },
+        {
+          "id": 233,
+          "cluster": 1,
+          "x": 722,
+          "y": 0,
+          "advanceX": 406,
+          "advanceY": 0
+        },
+        {
+          "id": 218,
+          "cluster": 0,
+          "x": 1128,
+          "y": 0,
+          "advanceX": 330,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "urdu",
+      "fontId": "NotoNaskhArabic",
+      "fontFile": "fonts/assets/NotoNaskhArabic-Regular.ttf",
+      "fontSha256": "53a7bf4e186a8fac2905286e4a94aaa8ec6cfbff5800a9423f0740414fb1609d",
+      "text": "پ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 39,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 772,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "urdu",
+      "fontId": "NotoNaskhArabic",
+      "fontFile": "fonts/assets/NotoNaskhArabic-Regular.ttf",
+      "fontSha256": "53a7bf4e186a8fac2905286e4a94aaa8ec6cfbff5800a9423f0740414fb1609d",
+      "text": "ٹ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 69,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 772,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "urdu",
+      "fontId": "NotoNaskhArabic",
+      "fontFile": "fonts/assets/NotoNaskhArabic-Regular.ttf",
+      "fontSha256": "53a7bf4e186a8fac2905286e4a94aaa8ec6cfbff5800a9423f0740414fb1609d",
+      "text": "اردو",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 542,
+          "cluster": 3,
+          "x": 0,
+          "y": 0,
+          "advanceX": 468,
+          "advanceY": 0
+        },
+        {
+          "id": 181,
+          "cluster": 2,
+          "x": 468,
+          "y": 0,
+          "advanceX": 414,
+          "advanceY": 0
+        },
+        {
+          "id": 211,
+          "cluster": 1,
+          "x": 882,
+          "y": 0,
+          "advanceX": 386,
+          "advanceY": 0
+        },
+        {
+          "id": 3,
+          "cluster": 0,
+          "x": 1268,
+          "y": 0,
+          "advanceX": 238,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "hebrew",
+      "fontId": "NotoSansHebrew",
+      "fontFile": "fonts/assets/NotoSansHebrew-Regular.ttf",
+      "fontSha256": "1db5088791a4a50a579bcb0c71b30876b83b89ca33cee32ec866e4c28c5ac60d",
+      "text": "א",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 3,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 632,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "hebrew",
+      "fontId": "NotoSansHebrew",
+      "fontFile": "fonts/assets/NotoSansHebrew-Regular.ttf",
+      "fontSha256": "1db5088791a4a50a579bcb0c71b30876b83b89ca33cee32ec866e4c28c5ac60d",
+      "text": "שלום",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 23,
+          "cluster": 3,
+          "x": 0,
+          "y": 0,
+          "advanceX": 684,
+          "advanceY": 0
+        },
+        {
+          "id": 124,
+          "cluster": 2,
+          "x": 674,
+          "y": 0,
+          "advanceX": 291,
+          "advanceY": 0
+        },
+        {
+          "id": 55,
+          "cluster": 1,
+          "x": 975,
+          "y": 0,
+          "advanceX": 522,
+          "advanceY": 0
+        },
+        {
+          "id": 96,
+          "cluster": 0,
+          "x": 1497,
+          "y": 0,
+          "advanceX": 730,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "hebrew",
+      "fontId": "NotoSansHebrew",
+      "fontFile": "fonts/assets/NotoSansHebrew-Regular.ttf",
+      "fontSha256": "1db5088791a4a50a579bcb0c71b30876b83b89ca33cee32ec866e4c28c5ac60d",
+      "text": "שָׁ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 79,
+          "cluster": 0,
+          "x": 227,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 100,
+          "cluster": 0,
+          "x": 539,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 96,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 730,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "hebrew",
+      "fontId": "NotoSerifHebrew",
+      "fontFile": "fonts/assets/NotoSerifHebrew-Regular.ttf",
+      "fontSha256": "f6589dbe258d02c2ba7fc6776a2fd903ad0e9def291482570a508086ab025f32",
+      "text": "א",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 10,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 589,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "hebrew",
+      "fontId": "NotoSerifHebrew",
+      "fontFile": "fonts/assets/NotoSerifHebrew-Regular.ttf",
+      "fontSha256": "f6589dbe258d02c2ba7fc6776a2fd903ad0e9def291482570a508086ab025f32",
+      "text": "שלום",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 30,
+          "cluster": 3,
+          "x": 0,
+          "y": 0,
+          "advanceX": 582,
+          "advanceY": 0
+        },
+        {
+          "id": 126,
+          "cluster": 2,
+          "x": 582,
+          "y": 0,
+          "advanceX": 326,
+          "advanceY": 0
+        },
+        {
+          "id": 64,
+          "cluster": 1,
+          "x": 908,
+          "y": 0,
+          "advanceX": 503,
+          "advanceY": 0
+        },
+        {
+          "id": 104,
+          "cluster": 0,
+          "x": 1411,
+          "y": 0,
+          "advanceX": 727,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "hebrew",
+      "fontId": "NotoSerifHebrew",
+      "fontFile": "fonts/assets/NotoSerifHebrew-Regular.ttf",
+      "fontSha256": "f6589dbe258d02c2ba7fc6776a2fd903ad0e9def291482570a508086ab025f32",
+      "text": "שָׁ",
+      "direction": "rtl",
+      "nativeDirection": "rtl",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 88,
+          "cluster": 0,
+          "x": 198,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 108,
+          "cluster": 0,
+          "x": 544,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 104,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 727,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSansDevanagari",
+      "fontFile": "fonts/assets/NotoSansDevanagari-Regular.ttf",
+      "fontSha256": "62484c0da3a4e3cbf62ca98c25c92596f640486e154dfbec8b333a6150bbf985",
+      "text": "क",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 25,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 762,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSansDevanagari",
+      "fontFile": "fonts/assets/NotoSansDevanagari-Regular.ttf",
+      "fontSha256": "62484c0da3a4e3cbf62ca98c25c92596f640486e154dfbec8b333a6150bbf985",
+      "text": "कि",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 607,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 259,
+          "advanceY": 0
+        },
+        {
+          "id": 25,
+          "cluster": 0,
+          "x": 259,
+          "y": 0,
+          "advanceX": 762,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSansDevanagari",
+      "fontFile": "fonts/assets/NotoSansDevanagari-Regular.ttf",
+      "fontSha256": "62484c0da3a4e3cbf62ca98c25c92596f640486e154dfbec8b333a6150bbf985",
+      "text": "क्ष",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 179,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 712,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSansDevanagari",
+      "fontFile": "fonts/assets/NotoSansDevanagari-Regular.ttf",
+      "fontSha256": "62484c0da3a4e3cbf62ca98c25c92596f640486e154dfbec8b333a6150bbf985",
+      "text": "स्त्री",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 215,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 389,
+          "advanceY": 0
+        },
+        {
+          "id": 269,
+          "cluster": 2,
+          "x": 389,
+          "y": 0,
+          "advanceX": 552,
+          "advanceY": 0
+        },
+        {
+          "id": 68,
+          "cluster": 2,
+          "x": 941,
+          "y": 0,
+          "advanceX": 259,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSerifDevanagari",
+      "fontFile": "fonts/assets/NotoSerifDevanagari-Regular.ttf",
+      "fontSha256": "6bf8ddc8640295f37a9ef7bfd6d65ba886cf3457bc4487d06b71986b6d264290",
+      "text": "क",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 55,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 711,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSerifDevanagari",
+      "fontFile": "fonts/assets/NotoSerifDevanagari-Regular.ttf",
+      "fontSha256": "6bf8ddc8640295f37a9ef7bfd6d65ba886cf3457bc4487d06b71986b6d264290",
+      "text": "कि",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 601,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 246,
+          "advanceY": 0
+        },
+        {
+          "id": 55,
+          "cluster": 0,
+          "x": 246,
+          "y": 0,
+          "advanceX": 711,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSerifDevanagari",
+      "fontFile": "fonts/assets/NotoSerifDevanagari-Regular.ttf",
+      "fontSha256": "6bf8ddc8640295f37a9ef7bfd6d65ba886cf3457bc4487d06b71986b6d264290",
+      "text": "क्ष",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 90,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 695,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "devanagari",
+      "fontId": "NotoSerifDevanagari",
+      "fontFile": "fonts/assets/NotoSerifDevanagari-Regular.ttf",
+      "fontSha256": "6bf8ddc8640295f37a9ef7bfd6d65ba886cf3457bc4487d06b71986b6d264290",
+      "text": "स्त्री",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 282,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 424,
+          "advanceY": 0
+        },
+        {
+          "id": 341,
+          "cluster": 2,
+          "x": 424,
+          "y": 0,
+          "advanceX": 575,
+          "advanceY": 0
+        },
+        {
+          "id": 32,
+          "cluster": 2,
+          "x": 999,
+          "y": 0,
+          "advanceX": 246,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "bengali",
+      "fontId": "NotoSansBengali",
+      "fontFile": "fonts/assets/NotoSansBengali-Regular.ttf",
+      "fontSha256": "dd9756e276a7c74dcdd24835473105288ee68bec60f2a06376b01a7cbf209fe1",
+      "text": "ক",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 20,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 807,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "bengali",
+      "fontId": "NotoSansBengali",
+      "fontFile": "fonts/assets/NotoSansBengali-Regular.ttf",
+      "fontSha256": "dd9756e276a7c74dcdd24835473105288ee68bec60f2a06376b01a7cbf209fe1",
+      "text": "কি",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 55,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 266,
+          "advanceY": 0
+        },
+        {
+          "id": 20,
+          "cluster": 0,
+          "x": 266,
+          "y": 0,
+          "advanceX": 807,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "bengali",
+      "fontId": "NotoSansBengali",
+      "fontFile": "fonts/assets/NotoSansBengali-Regular.ttf",
+      "fontSha256": "dd9756e276a7c74dcdd24835473105288ee68bec60f2a06376b01a7cbf209fe1",
+      "text": "ক্ষ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 129,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 919,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "bengali",
+      "fontId": "NotoSerifBengali",
+      "fontFile": "fonts/assets/NotoSerifBengali-Regular.ttf",
+      "fontSha256": "fa0ec4f3724d15c6967114f70acb4f0c8b4284f13dfe582db508ae9c1616cc19",
+      "text": "ক",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 238,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 703,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "bengali",
+      "fontId": "NotoSerifBengali",
+      "fontFile": "fonts/assets/NotoSerifBengali-Regular.ttf",
+      "fontSha256": "fa0ec4f3724d15c6967114f70acb4f0c8b4284f13dfe582db508ae9c1616cc19",
+      "text": "কি",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 178,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 214,
+          "advanceY": 0
+        },
+        {
+          "id": 238,
+          "cluster": 0,
+          "x": 214,
+          "y": 0,
+          "advanceX": 703,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "bengali",
+      "fontId": "NotoSerifBengali",
+      "fontFile": "fonts/assets/NotoSerifBengali-Regular.ttf",
+      "fontSha256": "fa0ec4f3724d15c6967114f70acb4f0c8b4284f13dfe582db508ae9c1616cc19",
+      "text": "ক্ষ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 225,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 756,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tamil",
+      "fontId": "NotoSansTamil",
+      "fontFile": "fonts/assets/NotoSansTamil-Regular.ttf",
+      "fontSha256": "6f58a22f5ee2b48e799335f66df97a3312bc55ce7b33d4effad5d09cd2ebabe2",
+      "text": "க",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 18,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 825,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tamil",
+      "fontId": "NotoSansTamil",
+      "fontFile": "fonts/assets/NotoSansTamil-Regular.ttf",
+      "fontSha256": "6f58a22f5ee2b48e799335f66df97a3312bc55ce7b33d4effad5d09cd2ebabe2",
+      "text": "கி",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 18,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 825,
+          "advanceY": 0
+        },
+        {
+          "id": 166,
+          "cluster": 0,
+          "x": 825,
+          "y": 0,
+          "advanceX": 262,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tamil",
+      "fontId": "NotoSerifTamil",
+      "fontFile": "fonts/assets/NotoSerifTamil-Regular.ttf",
+      "fontSha256": "5f0961f8bd8c82afc3333bcdb088633215f972384d9a5fd5c04f80d3d883c255",
+      "text": "க",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 72,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 854,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tamil",
+      "fontId": "NotoSerifTamil",
+      "fontFile": "fonts/assets/NotoSerifTamil-Regular.ttf",
+      "fontSha256": "5f0961f8bd8c82afc3333bcdb088633215f972384d9a5fd5c04f80d3d883c255",
+      "text": "கி",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 72,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 854,
+          "advanceY": 0
+        },
+        {
+          "id": 65,
+          "cluster": 0,
+          "x": 854,
+          "y": 0,
+          "advanceX": 232,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "thai",
+      "fontId": "NotoSansThai",
+      "fontFile": "fonts/assets/NotoSansThai-Regular.ttf",
+      "fontSha256": "2257936f4254a8e7a944692441c19e871f94929a3ae0b799b1fdc4b923513098",
+      "text": "ก",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 29,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 600,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "thai",
+      "fontId": "NotoSansThai",
+      "fontFile": "fonts/assets/NotoSansThai-Regular.ttf",
+      "fontSha256": "2257936f4254a8e7a944692441c19e871f94929a3ae0b799b1fdc4b923513098",
+      "text": "กิ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 29,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 600,
+          "advanceY": 0
+        },
+        {
+          "id": 92,
+          "cluster": 0,
+          "x": 598,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "thai",
+      "fontId": "NotoSansThai",
+      "fontFile": "fonts/assets/NotoSansThai-Regular.ttf",
+      "fontSha256": "2257936f4254a8e7a944692441c19e871f94929a3ae0b799b1fdc4b923513098",
+      "text": "ไทย",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 88,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 304,
+          "advanceY": 0
+        },
+        {
+          "id": 117,
+          "cluster": 1,
+          "x": 304,
+          "y": 0,
+          "advanceX": 609,
+          "advanceY": 0
+        },
+        {
+          "id": 136,
+          "cluster": 2,
+          "x": 913,
+          "y": 0,
+          "advanceX": 594,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "thai",
+      "fontId": "NotoSerifThai",
+      "fontFile": "fonts/assets/NotoSerifThai-Regular.ttf",
+      "fontSha256": "6b6bdf65405dc04b5106c2dc428ece57e135681c3d9c7f445a3809bab2fbad86",
+      "text": "ก",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 30,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 610,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "thai",
+      "fontId": "NotoSerifThai",
+      "fontFile": "fonts/assets/NotoSerifThai-Regular.ttf",
+      "fontSha256": "6b6bdf65405dc04b5106c2dc428ece57e135681c3d9c7f445a3809bab2fbad86",
+      "text": "กิ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 30,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 610,
+          "advanceY": 0
+        },
+        {
+          "id": 93,
+          "cluster": 0,
+          "x": 600,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "thai",
+      "fontId": "NotoSerifThai",
+      "fontFile": "fonts/assets/NotoSerifThai-Regular.ttf",
+      "fontSha256": "6b6bdf65405dc04b5106c2dc428ece57e135681c3d9c7f445a3809bab2fbad86",
+      "text": "ไทย",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 89,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 344,
+          "advanceY": 0
+        },
+        {
+          "id": 117,
+          "cluster": 1,
+          "x": 344,
+          "y": 0,
+          "advanceX": 651,
+          "advanceY": 0
+        },
+        {
+          "id": 136,
+          "cluster": 2,
+          "x": 995,
+          "y": 0,
+          "advanceX": 596,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tibetan",
+      "fontId": "NotoSerifTibetan",
+      "fontFile": "fonts/assets/NotoSerifTibetan-Regular.ttf",
+      "fontSha256": "4ef302cc2474a33063819e280d9a9a32a1ced3f12aea66aad3f6d81c656db835",
+      "text": "ཀ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 6,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 704,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tibetan",
+      "fontId": "NotoSerifTibetan",
+      "fontFile": "fonts/assets/NotoSerifTibetan-Regular.ttf",
+      "fontSha256": "4ef302cc2474a33063819e280d9a9a32a1ced3f12aea66aad3f6d81c656db835",
+      "text": "ཀི",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 6,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 704,
+          "advanceY": 0
+        },
+        {
+          "id": 1328,
+          "cluster": 0,
+          "x": 90,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "tibetan",
+      "fontId": "NotoSerifTibetan",
+      "fontFile": "fonts/assets/NotoSerifTibetan-Regular.ttf",
+      "fontSha256": "4ef302cc2474a33063819e280d9a9a32a1ced3f12aea66aad3f6d81c656db835",
+      "text": "བོད",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 27,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 641,
+          "advanceY": 0
+        },
+        {
+          "id": 1341,
+          "cluster": 0,
+          "x": -40,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": 0
+        },
+        {
+          "id": 22,
+          "cluster": 2,
+          "x": 641,
+          "y": 0,
+          "advanceX": 579,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSansCJKkr",
+      "fontFile": "fonts/assets/NotoSansCJKkr-Regular.otf",
+      "fontSha256": "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a",
+      "text": "한",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 58199,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 920,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSansCJKkr",
+      "fontFile": "fonts/assets/NotoSansCJKkr-Regular.otf",
+      "fontSha256": "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a",
+      "text": "글",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 48123,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 920,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSansCJKkr",
+      "fontFile": "fonts/assets/NotoSansCJKkr-Regular.otf",
+      "fontSha256": "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a",
+      "text": "가",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 47611,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 920,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSansCJKkr",
+      "fontFile": "fonts/assets/NotoSansCJKkr-Regular.otf",
+      "fontSha256": "6bcb2a0703aa137e874fc2dffa85f6c21ba9a67fa329e81b8c801663af7e992a",
+      "text": "한",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 58199,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 920,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSerifCJKkr",
+      "fontFile": "fonts/assets/NotoSerifCJKkr-Regular.otf",
+      "fontSha256": "77b4b741f864d27f15e90f275b17106dde90b2ad28f82bab72dc95805db5fb42",
+      "text": "한",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 58134,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 966,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSerifCJKkr",
+      "fontFile": "fonts/assets/NotoSerifCJKkr-Regular.otf",
+      "fontSha256": "77b4b741f864d27f15e90f275b17106dde90b2ad28f82bab72dc95805db5fb42",
+      "text": "글",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 48058,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 966,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSerifCJKkr",
+      "fontFile": "fonts/assets/NotoSerifCJKkr-Regular.otf",
+      "fontSha256": "77b4b741f864d27f15e90f275b17106dde90b2ad28f82bab72dc95805db5fb42",
+      "text": "가",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 47546,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 966,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "korean",
+      "fontId": "NotoSerifCJKkr",
+      "fontFile": "fonts/assets/NotoSerifCJKkr-Regular.otf",
+      "fontSha256": "77b4b741f864d27f15e90f275b17106dde90b2ad28f82bab72dc95805db5fb42",
+      "text": "한",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 58134,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 966,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "japanese",
+      "fontId": "NotoSansCJKjp",
+      "fontFile": "fonts/assets/NotoSansCJKjp-Regular.otf",
+      "fontSha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+      "text": "あ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 1461,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "japanese",
+      "fontId": "NotoSansCJKjp",
+      "fontFile": "fonts/assets/NotoSansCJKjp-Regular.otf",
+      "fontSha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+      "text": "カ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 1564,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "japanese",
+      "fontId": "NotoSansCJKjp",
+      "fontFile": "fonts/assets/NotoSansCJKjp-Regular.otf",
+      "fontSha256": "68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5",
+      "text": "漢字",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 24227,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        },
+        {
+          "id": 15364,
+          "cluster": 1,
+          "x": 1000,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "japanese",
+      "fontId": "NotoSerifCJKjp",
+      "fontFile": "fonts/assets/NotoSerifCJKjp-Regular.otf",
+      "fontSha256": "d9854c7a8ef170b5a7932558856fd64eb8de0b007cd823fed6f9f514ad2803d3",
+      "text": "あ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 1468,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "japanese",
+      "fontId": "NotoSerifCJKjp",
+      "fontFile": "fonts/assets/NotoSerifCJKjp-Regular.otf",
+      "fontSha256": "d9854c7a8ef170b5a7932558856fd64eb8de0b007cd823fed6f9f514ad2803d3",
+      "text": "カ",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 1571,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "japanese",
+      "fontId": "NotoSerifCJKjp",
+      "fontFile": "fonts/assets/NotoSerifCJKjp-Regular.otf",
+      "fontSha256": "d9854c7a8ef170b5a7932558856fd64eb8de0b007cd823fed6f9f514ad2803d3",
+      "text": "漢字",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 24112,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        },
+        {
+          "id": 15348,
+          "cluster": 1,
+          "x": 1000,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "chinese-simplified",
+      "fontId": "NotoSansCJKsc",
+      "fontFile": "fonts/assets/NotoSansCJKsc-Regular.otf",
+      "fontSha256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b",
+      "text": "永",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 23015,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "chinese-simplified",
+      "fontId": "NotoSansCJKsc",
+      "fontFile": "fonts/assets/NotoSansCJKsc-Regular.otf",
+      "fontSha256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b",
+      "text": "汉字",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 23037,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        },
+        {
+          "id": 15365,
+          "cluster": 1,
+          "x": 1000,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "chinese-simplified",
+      "fontId": "NotoSansCJKsc",
+      "fontFile": "fonts/assets/NotoSansCJKsc-Regular.otf",
+      "fontSha256": "2c76254f6fc379fddfce0a7e84fb5385bb135d3e399294f6eeb6680d0365b74b",
+      "text": "骨",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 45133,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "chinese-simplified",
+      "fontId": "NotoSerifCJKsc",
+      "fontFile": "fonts/assets/NotoSerifCJKsc-Regular.otf",
+      "fontSha256": "2a2eae2628df83556c54018c41e20fa532c1b862c5256ae8b3f23feb918d12ca",
+      "text": "永",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 22931,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "chinese-simplified",
+      "fontId": "NotoSerifCJKsc",
+      "fontFile": "fonts/assets/NotoSerifCJKsc-Regular.otf",
+      "fontSha256": "2a2eae2628df83556c54018c41e20fa532c1b862c5256ae8b3f23feb918d12ca",
+      "text": "汉字",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 22952,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        },
+        {
+          "id": 15349,
+          "cluster": 1,
+          "x": 1000,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "chinese-simplified",
+      "fontId": "NotoSerifCJKsc",
+      "fontFile": "fonts/assets/NotoSerifCJKsc-Regular.otf",
+      "fontSha256": "2a2eae2628df83556c54018c41e20fa532c1b862c5256ae8b3f23feb918d12ca",
+      "text": "骨",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 45052,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 1000,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "mongolian",
+      "fontId": "NotoSansMongolian",
+      "fontFile": "fonts/assets/NotoSansMongolian-Regular.ttf",
+      "fontSha256": "c05fa293cfe2a95a9ab1e12f270a18f77b826243a77ef7e98f5f821143ce5f1f",
+      "text": "ᠠ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 88,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -929
+        }
+      ]
+    },
+    {
+      "scriptId": "mongolian",
+      "fontId": "NotoSansMongolian",
+      "fontFile": "fonts/assets/NotoSansMongolian-Regular.ttf",
+      "fontSha256": "c05fa293cfe2a95a9ab1e12f270a18f77b826243a77ef7e98f5f821143ce5f1f",
+      "text": "ᠡ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 122,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -824
+        }
+      ]
+    },
+    {
+      "scriptId": "mongolian",
+      "fontId": "NotoSansMongolian",
+      "fontFile": "fonts/assets/NotoSansMongolian-Regular.ttf",
+      "fontSha256": "c05fa293cfe2a95a9ab1e12f270a18f77b826243a77ef7e98f5f821143ce5f1f",
+      "text": "ᠮᠣᠩᠭᠣᠯ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 204,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -492
+        },
+        {
+          "id": 6,
+          "cluster": 1,
+          "x": 0,
+          "y": -492,
+          "advanceX": 0,
+          "advanceY": -573
+        },
+        {
+          "id": 13,
+          "cluster": 2,
+          "x": 0,
+          "y": -1065,
+          "advanceX": 0,
+          "advanceY": -574
+        },
+        {
+          "id": 934,
+          "cluster": 3,
+          "x": 0,
+          "y": -1639,
+          "advanceX": 0,
+          "advanceY": -568
+        },
+        {
+          "id": 6,
+          "cluster": 4,
+          "x": 0,
+          "y": -2207,
+          "advanceX": 0,
+          "advanceY": -573
+        },
+        {
+          "id": 14,
+          "cluster": 5,
+          "x": 0,
+          "y": -2780,
+          "advanceX": 0,
+          "advanceY": -383
+        }
+      ]
+    },
+    {
+      "scriptId": "phags-pa",
+      "fontId": "NotoSansPhagsPa",
+      "fontFile": "fonts/assets/NotoSansPhagsPa-Regular.ttf",
+      "fontSha256": "5092bab8568225ce9ecc16b6313a36bba298cd76a7e15e4450ae0ff3d69af1a0",
+      "text": "ꡀ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 52,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -638
+        }
+      ]
+    },
+    {
+      "scriptId": "phags-pa",
+      "fontId": "NotoSansPhagsPa",
+      "fontFile": "fonts/assets/NotoSansPhagsPa-Regular.ttf",
+      "fontSha256": "5092bab8568225ce9ecc16b6313a36bba298cd76a7e15e4450ae0ff3d69af1a0",
+      "text": "ꡁ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 88,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -712
+        }
+      ]
+    },
+    {
+      "scriptId": "phags-pa",
+      "fontId": "NotoSansPhagsPa",
+      "fontFile": "fonts/assets/NotoSansPhagsPa-Regular.ttf",
+      "fontSha256": "5092bab8568225ce9ecc16b6313a36bba298cd76a7e15e4450ae0ff3d69af1a0",
+      "text": "ꡂ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 87,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -712
+        }
+      ]
+    },
+    {
+      "scriptId": "phags-pa",
+      "fontId": "NotoSansPhagsPa",
+      "fontFile": "fonts/assets/NotoSansPhagsPa-Regular.ttf",
+      "fontSha256": "5092bab8568225ce9ecc16b6313a36bba298cd76a7e15e4450ae0ff3d69af1a0",
+      "text": "ꡀꡁꡂ",
+      "direction": "ttb",
+      "nativeDirection": "ltr",
+      "rotated": true,
+      "expected": [
+        {
+          "id": 53,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 0,
+          "advanceY": -728
+        },
+        {
+          "id": 179,
+          "cluster": 1,
+          "x": 0,
+          "y": -728,
+          "advanceX": 0,
+          "advanceY": -714
+        },
+        {
+          "id": 186,
+          "cluster": 2,
+          "x": 0,
+          "y": -1442,
+          "advanceX": 0,
+          "advanceY": -642
+        }
+      ]
+    },
+    {
+      "scriptId": "deseret",
+      "fontId": "NotoSansDeseret",
+      "fontFile": "fonts/assets/NotoSansDeseret-Regular.ttf",
+      "fontSha256": "2f6b7a76cf07465747403c0ef29ec475669da62dd5bf2b46375738f389dd0518",
+      "text": "𐐀",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 5,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 614,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "deseret",
+      "fontId": "NotoSansDeseret",
+      "fontFile": "fonts/assets/NotoSansDeseret-Regular.ttf",
+      "fontSha256": "2f6b7a76cf07465747403c0ef29ec475669da62dd5bf2b46375738f389dd0518",
+      "text": "𐐁",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 6,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 556,
+          "advanceY": 0
+        }
+      ]
+    },
+    {
+      "scriptId": "deseret",
+      "fontId": "NotoSansDeseret",
+      "fontFile": "fonts/assets/NotoSansDeseret-Regular.ttf",
+      "fontSha256": "2f6b7a76cf07465747403c0ef29ec475669da62dd5bf2b46375738f389dd0518",
+      "text": "𐐂",
+      "direction": "ltr",
+      "nativeDirection": "ltr",
+      "rotated": false,
+      "expected": [
+        {
+          "id": 7,
+          "cluster": 0,
+          "x": 0,
+          "y": 0,
+          "advanceX": 646,
+          "advanceY": 0
+        }
+      ]
+    }
+  ]
+}

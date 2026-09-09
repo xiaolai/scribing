@@ -28,7 +28,7 @@ test('every authored glyph fits a shared writing frame, with explicit visible i/
   for (const id of ['english-textbook', 'korean-textbook']) {
     const model = await source(id);
     assert.equal(Object.keys(model.units).length, id === 'english-textbook' ? 52 : 40);
-    for (const [id, item] of Object.entries(model.units)) {
+    for (const item of Object.values(model.units)) {
       const unit = authoredUnit(model, id, item);
       assert.equal(unit.motorStrokes.length, item.strokes.length);
       assert.deepEqual(unit.coordinates, model.coordinates);
