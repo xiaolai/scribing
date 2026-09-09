@@ -17,9 +17,24 @@ const MAX_STROKES = 1024;
 const MAX_POINTS = 65536;
 const MASK_SIZE = 192;
 
+/**
+ * The caller's own properties that actually carry a value.
+ *
+ * Spreading an options object with an explicitly undefined property erases the default
+ * behind it, which is worse than omitting the property.
+ */
+const definedEntries = <T extends object>(value: T): T => {
+  const result: Partial<T> = {};
+  for (const key of Object.keys(value) as Array<keyof T>) {
+    if (value[key] !== undefined) result[key] = value[key];
+  }
+  // A required property can only be undefined here if the caller is untyped JavaScript,
+  // and validateDimensions rejects that on the next line.
+  return result as T;
+};
+
 /** Unordered tracing/copying against filled font outlines; no stroke-order quiz. */
 export default class FontWriter {
-  private host: HTMLElement;
   private surface: SVGSVGElement | HTMLCanvasElement;
   private owned = true;
   private options: FontWriterOptions;
@@ -34,6 +49,22 @@ export default class FontWriter {
   private svgAnimationNodes?: {
     animation: FontAnimation;
     tiles: { mask: SVGMaskElement; reveal: SVGPathElement; ink: SVGGElement }[];
+  };
+  /**
+   * The persistent SVG scene.
+   *
+   * Every frame used to empty the surface and rebuild it: one element per glyph for the
+   * reference outline plus one per learner stroke, at animation and pointer frame rates,
+   * for output that was mostly identical. The three layers are kept and updated in place
+   * instead, in the paint order reference, animation, ink.
+   */
+  private svgScene?: {
+    root: SVGGElement;
+    reference: SVGGElement;
+    animation: SVGGElement;
+    ink: SVGGElement;
+    referenceShape?: FontShape;
+    referenceColor?: string;
   };
   // Declared before the instance field that consumes it: a static initializer runs at
   // class-definition time, but reading it from an instance field before its own
@@ -65,14 +96,17 @@ export default class FontWriter {
   constructor(target: string | HTMLElement, options: FontWriterOptions) {
     const host = typeof target === 'string' ? document.getElementById(target) : target;
     if (!host) throw new Error('FontWriter target was not found');
-    this.host = host;
+    // Only defined values override a default. Spreading the caller's object let
+    // `{padding: undefined}` erase 16, which validateDimensions then read back as 16
+    // while every render read it as 0, so the writer validated one layout and drew
+    // another.
     this.options = {
       padding: 16,
       renderer: 'svg',
       referenceColor: '#cbd1d8',
       drawingColor: '#2467aa',
       animationColor: '#222a33',
-      ...options,
+      ...definedEntries(options),
     };
     this.validateDimensions(this.options);
     if (this.options.renderer === 'canvas' && host instanceof HTMLCanvasElement) {
@@ -164,6 +198,7 @@ export default class FontWriter {
     this.maskCaches = [];
     this.animationLayer = undefined;
     this.svgAnimationNodes = undefined;
+    this.svgScene = undefined;
     const serialized = JSON.stringify(next);
     let hash = 2166136261;
     for (let i = 0; i < serialized.length; i += 1)
@@ -180,9 +215,13 @@ export default class FontWriter {
     return this.required();
   }
   async setAnimation(value: FontAnimation): Promise<void> {
-    const shape = this.required(),
-      serial = this.animationSerial,
-      shapeGeneration = this.generation;
+    const shape = this.required();
+    // Claim a serial before any await. Two concurrent calls used to read the same one,
+    // so neither could see the other as superseding it: whichever finished first
+    // attached and then bumped the serial through cancel(), which rejected the newer
+    // request and left the older animation in place.
+    const serial = ++this.animationSerial;
+    const shapeGeneration = this.generation;
     const checkpoint = () => {
       if (
         this.destroyed ||
@@ -212,9 +251,22 @@ export default class FontWriter {
         ctx.restore();
       });
       const ink = ctx.getImageData(0, 0, tile.width, tile.height).data;
-      for (let i = 0; i < tile.owners.length; i++)
-        if (ink[i * 4 + 3] > 0 && !tile.owners[i])
-          throw new Error('Animation leaves font ink uncovered');
+      // Both directions of the same coverage question. A cell with ink and no owner is
+      // never revealed; a stroke whose cells all fall outside the ink is a playback step
+      // that reveals nothing. validateAnimation cannot see either, because answering
+      // them means rasterizing the outlines.
+      const inkedOwners = new Set<number>();
+      const declaredOwners = new Set<number>();
+      for (let i = 0; i < tile.owners.length; i++) {
+        const owner = tile.owners[i];
+        if (owner) declaredOwners.add(owner);
+        if (ink[i * 4 + 3] > 0) {
+          if (!owner) throw new Error('Animation leaves font ink uncovered');
+          inkedOwners.add(owner);
+        }
+      }
+      for (const owner of declaredOwners)
+        if (!inkedOwners.has(owner)) throw new Error('Animation step covers no font ink');
       ctx.setTransform(1, 0, 0, 1, 0, 0);
       for (const i of tile.glyphIndices) {
         const glyph = shape.glyphs[i],
@@ -239,16 +291,7 @@ export default class FontWriter {
               throw new Error('Animation leaves a thin font component uncovered');
           }
       }
-      caches.push(
-        await prepareMaskField(tile, () => {
-          if (
-            this.destroyed ||
-            serial !== this.animationSerial ||
-            shapeGeneration !== this.generation
-          )
-            throw new Error('Font animation superseded');
-        }),
-      );
+      caches.push(await prepareMaskField(tile, checkpoint));
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
     if (this.destroyed || serial !== this.animationSerial)
@@ -551,7 +594,12 @@ export default class FontWriter {
   }
 
   private animationSvg(group: SVGGElement) {
-    if (!this.animation || !this.animationState || !this.shape) return;
+    if (!this.animation || !this.animationState || !this.shape) {
+      // Nothing is playing, so drop whatever the previous frame left in place. The
+      // cached elements themselves are kept and re-appended when playback resumes.
+      while (group.firstChild) group.removeChild(group.firstChild);
+      return;
+    }
     if (this.svgAnimationNodes?.animation !== this.animation) {
       this.svgAnimationNodes = {
         animation: this.animation,
@@ -575,13 +623,20 @@ export default class FontWriter {
     const pen = (this.shape?.em || 1000) * 0.035;
     if (this.surface instanceof HTMLCanvasElement) {
       const ratio = Math.min(window.devicePixelRatio || 1, 3);
-      this.surface.width = Math.round(width * ratio);
-      this.surface.height = Math.round(height * ratio);
+      const pixelWidth = Math.round(width * ratio),
+        pixelHeight = Math.round(height * ratio);
+      // Assigning width or height throws the drawing buffer away, which also cleared it
+      // and reset the transform. Doing that on every frame discarded a buffer of exactly
+      // the same size, so the clear and the transform are explicit now and the buffer is
+      // only reallocated when the size really changed.
+      if (this.surface.width !== pixelWidth) this.surface.width = pixelWidth;
+      if (this.surface.height !== pixelHeight) this.surface.height = pixelHeight;
       this.surface.style.width = `${width}px`;
       this.surface.style.height = `${height}px`;
       const ctx = this.surface.getContext('2d');
       if (!ctx) return;
-      ctx.scale(ratio, ratio);
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = this.options.referenceColor!;
       if (this.visible) this.reference(ctx, this.transform);
       this.animationCanvas(ctx, ratio);
@@ -592,45 +647,82 @@ export default class FontWriter {
       this.surface.setAttribute('width', String(width));
       this.surface.setAttribute('height', String(height));
       this.surface.setAttribute('viewBox', `0 0 ${width} ${height}`);
-      while (this.surface.firstChild) this.surface.removeChild(this.surface.firstChild);
-      const group = document.createElementNS(NS, 'g');
+      const scene = this.svgScene ?? this.createSvgScene();
       const t = this.transform;
-      group.setAttribute(
+      scene.root.setAttribute(
         'transform',
         `translate(${t.x} ${t.y}) scale(${t.scale} ${-t.scale})`,
       );
-      if (this.visible && this.shape)
-        this.shape.glyphs.forEach((g) => {
-          const path = document.createElementNS(NS, 'path');
-          path.setAttribute('d', g.path);
-          path.setAttribute('transform', `translate(${g.x} ${g.y})`);
-          path.setAttribute('fill', this.options.referenceColor!);
-          path.setAttribute('fill-rule', 'nonzero');
-          group.appendChild(path);
-        });
-      this.animationSvg(group);
-      ink.forEach((stroke) => {
-        if (!stroke.length) return;
-        if (stroke.length === 1) {
-          const dot = document.createElementNS(NS, 'circle');
-          dot.setAttribute('cx', String(stroke[0].x));
-          dot.setAttribute('cy', String(stroke[0].y));
-          dot.setAttribute('r', String(pen / 2));
-          dot.setAttribute('fill', this.options.drawingColor!);
-          group.appendChild(dot);
-        } else {
-          const line = document.createElementNS(NS, 'polyline');
-          line.setAttribute('points', stroke.map((p) => `${p.x},${p.y}`).join(' '));
-          line.setAttribute('fill', 'none');
-          line.setAttribute('stroke', this.options.drawingColor!);
-          line.setAttribute('stroke-width', String(pen));
-          line.setAttribute('stroke-linecap', 'round');
-          line.setAttribute('stroke-linejoin', 'round');
-          group.appendChild(line);
-        }
-      });
-      this.surface.appendChild(group);
+      this.svgReference(scene);
+      this.animationSvg(scene.animation);
+      this.svgInk(scene.ink, ink, pen);
     }
+  }
+
+  private createSvgScene() {
+    const layer = () => document.createElementNS(NS, 'g');
+    const scene = {
+      root: layer(),
+      reference: layer(),
+      animation: layer(),
+      ink: layer(),
+    };
+    scene.root.appendChild(scene.reference);
+    scene.root.appendChild(scene.animation);
+    scene.root.appendChild(scene.ink);
+    while (this.surface.firstChild) this.surface.removeChild(this.surface.firstChild);
+    this.surface.appendChild(scene.root);
+    this.svgScene = scene;
+    return scene;
+  }
+
+  /** Rebuild the reference outlines only when the shape or its colour changes. */
+  private svgReference(scene: NonNullable<FontWriter['svgScene']>) {
+    const shape = this.visible ? this.shape : undefined;
+    const color = this.options.referenceColor!;
+    if (scene.referenceShape === shape && scene.referenceColor === color) return;
+    scene.referenceShape = shape;
+    scene.referenceColor = color;
+    while (scene.reference.firstChild)
+      scene.reference.removeChild(scene.reference.firstChild);
+    if (!shape) return;
+    shape.glyphs.forEach((g) => {
+      const path = document.createElementNS(NS, 'path');
+      path.setAttribute('d', g.path);
+      path.setAttribute('transform', `translate(${g.x} ${g.y})`);
+      path.setAttribute('fill', color);
+      path.setAttribute('fill-rule', 'nonzero');
+      scene.reference.appendChild(path);
+    });
+  }
+
+  /** Update the learner's ink in place, reusing the nodes from the previous frame. */
+  private svgInk(group: SVGGElement, ink: Point[][], pen: number) {
+    const strokes = ink.filter((stroke) => stroke.length > 0);
+    while (group.childNodes.length > strokes.length) group.removeChild(group.lastChild!);
+    strokes.forEach((stroke, index) => {
+      const wanted = stroke.length === 1 ? 'circle' : 'polyline';
+      const existing = group.childNodes[index] as SVGElement | undefined;
+      let node = existing;
+      if (!node || node.nodeName !== wanted) {
+        node = document.createElementNS(NS, wanted);
+        if (existing) group.replaceChild(node, existing);
+        else group.appendChild(node);
+      }
+      if (wanted === 'circle') {
+        node.setAttribute('cx', String(stroke[0].x));
+        node.setAttribute('cy', String(stroke[0].y));
+        node.setAttribute('r', String(pen / 2));
+        node.setAttribute('fill', this.options.drawingColor!);
+      } else {
+        node.setAttribute('points', stroke.map((p) => `${p.x},${p.y}`).join(' '));
+        node.setAttribute('fill', 'none');
+        node.setAttribute('stroke', this.options.drawingColor!);
+        node.setAttribute('stroke-width', String(pen));
+        node.setAttribute('stroke-linecap', 'round');
+        node.setAttribute('stroke-linejoin', 'round');
+      }
+    });
   }
   private point(event: PointerEvent): Point | undefined {
     const rect = this.surface.getBoundingClientRect();
@@ -704,14 +796,10 @@ export default class FontWriter {
     if (this.destroyed || e.pointerId !== this.pointer || !this.gesture) return;
     e.preventDefault();
     if (this.gesture.length + this.committedPoints >= MAX_POINTS) return;
+    // point() returns undefined for anything non-finite or beyond 1e7, so there is
+    // nothing left to re-check here.
     const point = this.point(e);
-    if (
-      !point ||
-      ![point.x, point.y].every(Number.isFinite) ||
-      Math.abs(point.x) > 1e7 ||
-      Math.abs(point.y) > 1e7
-    )
-      return;
+    if (!point) return;
     const last = this.gesture[this.gesture.length - 1];
     // A pointer that has not moved far enough to record a point has not changed
     // anything to draw. Rendering anyway rebuilt the whole SVG tree per event, at
@@ -872,6 +960,7 @@ export default class FontWriter {
     this.maskCaches = [];
     this.animationLayer = undefined;
     this.svgAnimationNodes = undefined;
+    this.svgScene = undefined;
     this.paths = [];
     this.strokes = [];
     this.committedPoints = 0;

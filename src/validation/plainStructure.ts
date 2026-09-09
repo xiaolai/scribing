@@ -112,6 +112,26 @@ export function readPlainArray(
   fail: FailFn,
   options: PlainArrayOptions,
 ): unknown[] {
+  const length = assertPlainArray(value, fail, options);
+  const source = value as unknown[];
+  const result: unknown[] = [];
+  for (let i = 0; i < length; i += 1) {
+    result.push(readPlainArrayIndex(source, i, fail, options.detail));
+  }
+  return result;
+}
+
+/**
+ * Validate the container and return its length, without reading any element.
+ *
+ * Paired with `readPlainArrayIndex`, this lets a caller read a very large array under
+ * its own pacing rather than materializing every descriptor in one uninterruptible pass.
+ */
+export function assertPlainArray(
+  value: unknown,
+  fail: FailFn,
+  options: PlainArrayOptions,
+): number {
   const { min = 0, max, detail = '' } = options;
 
   if (
@@ -133,16 +153,21 @@ export function readPlainArray(
   ) {
     fail(detail);
   }
+  return length as number;
+}
 
-  const result: unknown[] = [];
-  for (let i = 0; i < length; i += 1) {
-    const descriptor = Object.getOwnPropertyDescriptor(source, String(i));
-    if (!descriptor || !descriptor.enumerable || !hasOwn(descriptor, 'value')) {
-      fail(detail ? `${detail}[${i}]` : `[${i}]`);
-    }
-    result.push(descriptor!.value);
+/** Read one index of an array already accepted by `assertPlainArray`. */
+export function readPlainArrayIndex(
+  source: unknown[],
+  index: number,
+  fail: FailFn,
+  detail = '',
+): unknown {
+  const descriptor = Object.getOwnPropertyDescriptor(source, String(index));
+  if (!descriptor || !descriptor.enumerable || !hasOwn(descriptor, 'value')) {
+    fail(detail ? `${detail}[${index}]` : `[${index}]`);
   }
-  return result;
+  return descriptor!.value;
 }
 
 const typedArrayPrototype = Object.getPrototypeOf(Uint16Array.prototype);

@@ -2,7 +2,9 @@ import yieldWork from './yieldWork';
 import { FontAnimation, FontShape } from './types';
 import pathGeometry from './pathGeometry';
 import {
+  assertPlainArray,
   readPlainArray,
+  readPlainArrayIndex,
   readPlainObject,
   readUint16Array,
 } from '../validation/plainStructure';
@@ -33,24 +35,35 @@ const isNumber = (n: unknown): n is number =>
 const isLabel = (s: unknown): s is string =>
   typeof s === 'string' && s.length > 0 && s.length <= 256;
 
-/** Yield to input every `every` items so a large guide cannot block the main thread. */
-async function pace(count: number, every: number, checkpoint: () => void) {
-  if (count % every === 0) {
-    await yieldWork();
-    checkpoint();
-  }
-}
+/**
+ * True every `every` items, so the caller can yield to input.
+ *
+ * This is a plain predicate rather than an async helper: awaiting a call per item
+ * allocated a promise and burned a microtask for the 8,191 items out of 8,192 that were
+ * only ever going to return immediately.
+ */
+const shouldYield = (count: number, every: number) => count % every === 0;
 
 async function readStrokePoints(
   value: unknown,
   budget: { points: number },
   checkpoint: () => void,
 ) {
-  const raw = readPlainArray(value, fail, { min: 1, max: MAX_POINTS });
+  // Validate the container, then read its entries inside the pacing loop. Copying the
+  // whole array first meant up to a million descriptors were materialized in one
+  // uninterruptible pass before any of the pacing below could run.
+  const length = assertPlainArray(value, fail, { min: 1, max: MAX_POINTS });
+  const source = value as unknown[];
   const points: ReadonlyArray<number>[] = [];
-  for (const entry of raw) {
-    await pace(budget.points, 8192, checkpoint);
-    const pair = readPlainArray(entry, fail, { min: 2, max: 2 });
+  for (let i = 0; i < length; i += 1) {
+    if (shouldYield(budget.points, 8192)) {
+      await yieldWork();
+      checkpoint();
+    }
+    const pair = readPlainArray(readPlainArrayIndex(source, i, fail), fail, {
+      min: 2,
+      max: 2,
+    });
     if (!pair.every(isNumber)) fail();
     if ((budget.points += 1) > MAX_POINTS) fail();
     points.push(Object.freeze(pair as number[]));
@@ -77,7 +90,10 @@ async function readStrokes(value: unknown, checkpoint: () => void): Promise<Stro
 
   for (const entry of raw) {
     checkpoint();
-    await pace(strokes.length, 32, checkpoint);
+    if (shouldYield(strokes.length, 32)) {
+      await yieldWork();
+      checkpoint();
+    }
 
     const stroke = object(
       entry,
@@ -123,11 +139,22 @@ function assertTileCoversGlyphs(tile: Record<string, unknown>, shape: FontShape)
   }
 }
 
+/** Bookkeeping carried across every tile of one animation. */
+type TileState = {
+  cells: number;
+  covered: Set<number>;
+  used: Uint8Array;
+  /** Tile that claimed each stroke, or -1. See the cross-tile check in readTile. */
+  owningTile: Int32Array;
+  /** Index of the tile currently being read. */
+  tile: number;
+};
+
 function readTile(
   value: unknown,
   shape: FontShape,
   strokeCount: number,
-  state: { cells: number; covered: Set<number>; used: Uint8Array },
+  state: TileState,
 ): Tile {
   const tile = object(value, [
     'glyphIndices',
@@ -184,8 +211,16 @@ function readTile(
     const owner = owners[i];
     if (owner > strokeCount) fail();
     // Progress outside conservative coverage is meaningless and would be read anyway.
-    if (owner) state.used[owner - 1] = 1;
-    else if (progress[i]) fail();
+    if (owner) {
+      // A stroke may not span tiles. Each tile rescales its strokes' progress to the
+      // full clock range on its own, so the two halves of a split stroke would be
+      // revealed over the same interval instead of one after the other. There is no
+      // coherent timing for it, and the generator never emits one.
+      if (state.owningTile[owner - 1] >= 0 && state.owningTile[owner - 1] !== state.tile)
+        fail();
+      state.owningTile[owner - 1] = state.tile;
+      state.used[owner - 1] = 1;
+    } else if (progress[i]) fail();
   }
   tile.owners = owners;
   tile.progress = progress;
@@ -196,9 +231,12 @@ function readTile(
 /**
  * Validate a caller-supplied animation against the shape it claims to describe.
  *
- * Rejects anything that is not bound to `shapeKey`, leaves font ink uncovered, reuses a
- * glyph across tiles, or references a stroke that no tile owns. Yields periodically and
- * calls `checkpoint`, which throws if the request has been superseded.
+ * Rejects anything that is not bound to `shapeKey`, reuses a glyph across tiles, splits
+ * one stroke across tiles, declares a stroke that no tile owns, or leaves a glyph with
+ * ink outside every tile. Whether the owned cells actually cover the rendered ink is a
+ * question about pixels, so FontWriter answers it against the real raster after this
+ * returns. Yields periodically and calls `checkpoint`, which throws if the request has
+ * been superseded.
  */
 export default async function validateAnimation(
   value: FontAnimation,
@@ -227,16 +265,19 @@ export default async function validateAnimation(
   const expected = provenances.size > 1 ? 'mixed' : strokes[0].provenance;
   if (data.provenance !== expected) fail();
 
-  const state = {
+  const state: TileState = {
     cells: 0,
     covered: new Set<number>(),
     used: new Uint8Array(strokes.length),
+    owningTile: new Int32Array(strokes.length).fill(-1),
+    tile: 0,
   };
   const tiles: Tile[] = [];
   for (const entry of readPlainArray(data.tiles, fail, { min: 1, max: MAX_TILES })) {
     await yieldWork();
     checkpoint();
     tiles.push(readTile(entry, shape, strokes.length, state));
+    state.tile += 1;
   }
 
   // Every declared stroke must be drawn somewhere, and every glyph that has ink must

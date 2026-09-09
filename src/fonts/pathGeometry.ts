@@ -27,6 +27,20 @@ const COORD_LIMIT = 1e7;
 /** Polyline samples emitted per curve segment when building a contour. */
 const CURVE_SAMPLES = 16;
 
+/**
+ * SVG path whitespace, which is not JavaScript's `\s`.
+ *
+ * The grammar allows only tab, newline, form feed, carriage return and space. `\s` also
+ * matches U+00A0, U+2028, U+FEFF and the rest of the Unicode space property, so a path
+ * separated by a non-breaking space passed validation here and was then rejected or
+ * silently truncated by the renderer that had to parse it for real.
+ */
+const LEADING_MOVE = /^[\t\n\f\r ]*[Mm]/;
+const TRAILING_SPACE = /^[\t\n\f\r ]*$/;
+const SEPARATOR = /^[\t\n\f\r ,]*$/;
+const BAD_SEPARATOR =
+  /,[\t\n\f\r ]*,|[MmLlHhVvCcSsQqTtZz][\t\n\f\r ]*,|,[\t\n\f\r ]*[MmLlHhVvCcSsQqTtZz]|,[\t\n\f\r ]*$/;
+
 type CommandGroup = { command: string; values: number[] };
 
 /**
@@ -36,10 +50,7 @@ type CommandGroup = { command: string; values: number[] };
  * a comma, so a stray character cannot be silently skipped and change the geometry.
  */
 function tokenize(path: string): CommandGroup[] {
-  if (
-    !/^\s*[Mm]/.test(path) ||
-    /,\s*,|[MmLlHhVvCcSsQqTtZz]\s*,|,\s*[MmLlHhVvCcSsQqTtZz]|,\s*$/.test(path)
-  ) {
+  if (!LEADING_MOVE.test(path) || BAD_SEPARATOR.test(path)) {
     fail();
   }
   const token = /[MmLlHhVvCcSsQqTtZz]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
@@ -47,7 +58,7 @@ function tokenize(path: string): CommandGroup[] {
   let match: RegExpExecArray | null;
   let end = 0;
   while ((match = token.exec(path))) {
-    if (!/^[\s,]*$/.test(path.slice(end, match.index))) fail();
+    if (!SEPARATOR.test(path.slice(end, match.index))) fail();
     if (/^[A-Za-z]$/.test(match[0])) {
       groups.push({ command: match[0], values: [] });
     } else {
@@ -57,7 +68,7 @@ function tokenize(path: string): CommandGroup[] {
     }
     end = token.lastIndex;
   }
-  if (!/^\s*$/.test(path.slice(end))) fail();
+  if (!TRAILING_SPACE.test(path.slice(end))) fail();
   return groups;
 }
 
@@ -106,7 +117,12 @@ function extremumParameters(axisValues: number[]): number[] {
 }
 
 /**
- * Running bounds, signed area and contour list for one outline.
+ * Running bounds, total enclosed area and contour list for one outline.
+ *
+ * The area is a sum of absolute ring areas, so a hole adds to it rather than subtracting
+ * from it. That is what the only consumer wants: contourProbes uses it to judge how
+ * sparsely a contour fills its bounding box, and a signed total would read a ring with
+ * a large hole as nearly empty.
  *
  * Kept separate from the command walk so that the walk holds only pen state, and so
  * that the geometry accumulation can be reasoned about on its own.
@@ -308,10 +324,25 @@ export function contourProbes(
   if (w >= step * 2 && h >= step * 2 && box.area >= w * h * 0.12) return [];
   const out: Point[] = [];
   const rows = Math.min(16384, Math.max(1, Math.ceil(h / step)));
+  // Bucket each edge into the rows it can cross. Every row used to test every segment,
+  // so a contour with thousands of points across thousands of rows cost their product:
+  // a 35,231-character fixture spent roughly 64 million comparisons here. The exact
+  // crossing test below is unchanged, and the buckets are a superset of the rows it can
+  // accept, so the output is identical.
+  const buckets: number[][] = Array.from({ length: rows }, () => []);
+  const rowIndex = (y: number) => ((y - box.minY) * rows) / h - 0.5;
+  for (let i = 0; i < box.points.length; i++) {
+    const a = box.points[i],
+      b = box.points[(i + 1) % box.points.length];
+    const first = Math.max(0, Math.floor(rowIndex(Math.min(a[1], b[1]))));
+    const last = Math.min(rows - 1, Math.ceil(rowIndex(Math.max(a[1], b[1]))));
+    for (let row = first; row <= last; row++) buckets[row].push(i);
+  }
+
   for (let row = 0; row < rows; row++) {
     const y = box.minY + (h * (row + 0.5)) / rows,
       xs: number[] = [];
-    for (let i = 0; i < box.points.length; i++) {
+    for (const i of buckets[row]) {
       const a = box.points[i],
         b = box.points[(i + 1) % box.points.length];
       if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y))
@@ -323,15 +354,43 @@ export function contourProbes(
       if (accept(x, y)) out.push([x, y]);
     }
   }
-  if (!out.length)
-    for (const fy of [0.5, 0.25, 0.75, 0.1, 0.9])
-      for (const fx of [0.5, 0.25, 0.75, 0.1, 0.9]) {
-        const x = box.minX + w * fx,
-          y = box.minY + h * fy;
-        if (accept(x, y)) {
-          out.push([x, y]);
-          return out;
-        }
-      }
-  return out;
+  if (out.length) return out;
+  const fallback = fallbackProbe(box, accept);
+  return fallback ? [fallback] : out;
+}
+
+/**
+ * One interior point for a contour whose scanline midpoints were all rejected.
+ *
+ * Curves are sampled into a fixed number of chords, so for a thin curved contour the
+ * sampled polygon can miss the interior everywhere; returning nothing made the caller
+ * skip its coverage check for that contour entirely. A coarse grid is tried first, then
+ * the contour's own edge midpoints stepped in toward its centre.
+ */
+function fallbackProbe(
+  box: Contour,
+  accept: (x: number, y: number) => boolean,
+): Point | undefined {
+  const w = box.maxX - box.minX,
+    h = box.maxY - box.minY;
+  for (const fy of [0.5, 0.25, 0.75, 0.1, 0.9])
+    for (const fx of [0.5, 0.25, 0.75, 0.1, 0.9]) {
+      const x = box.minX + w * fx,
+        y = box.minY + h * fy;
+      if (accept(x, y)) return [x, y];
+    }
+  const cx = box.minX + w / 2,
+    cy = box.minY + h / 2;
+  for (const fraction of [0.25, 0.5]) {
+    for (let i = 0; i < box.points.length; i++) {
+      const a = box.points[i],
+        b = box.points[(i + 1) % box.points.length];
+      const mx = (a[0] + b[0]) / 2,
+        my = (a[1] + b[1]) / 2;
+      const x = mx + (cx - mx) * fraction,
+        y = my + (cy - my) * fraction;
+      if (accept(x, y)) return [x, y];
+    }
+  }
+  return undefined;
 }

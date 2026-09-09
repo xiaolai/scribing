@@ -205,3 +205,124 @@ describe('validateAnimation', () => {
     expect(result.strokes).toHaveLength(2);
   });
 });
+
+describe('limits and cross-tile constraints', () => {
+  it('rejects a stroke split across two tiles', async () => {
+    // Each tile rescales its strokes' progress to the full clock range on its own, so
+    // the two halves of a split stroke would reveal over the same interval instead of
+    // one after the other. There is no coherent timing for it.
+    const wide = validateShape({
+      schemaVersion: 1,
+      text: 'oo',
+      font: { id: 'fixture', name: 'Fixture', sha256: 'a'.repeat(64) },
+      script: 'Latn',
+      language: 'en',
+      direction: 'ltr',
+      em: 1000,
+      bounds: [0, 0, 300, 100],
+      glyphs: [
+        {
+          id: 1,
+          cluster: 0,
+          path: 'M0 0H100V100H0Z',
+          x: 0,
+          y: 0,
+          advanceX: 200,
+          advanceY: 0,
+        },
+        {
+          id: 2,
+          cluster: 1,
+          path: 'M0 0H100V100H0Z',
+          x: 200,
+          y: 0,
+          advanceX: 100,
+          advanceY: 0,
+        },
+      ],
+    });
+
+    const split: FontAnimation = {
+      schemaVersion: 1,
+      shapeKey: KEY,
+      provenance: 'generated',
+      strokes: [
+        {
+          id: 's1',
+          points: [
+            [0, 0],
+            [300, 100],
+          ],
+          kind: 'curve',
+          provenance: 'generated',
+        },
+      ],
+      tiles: [0, 200].map((offset) => ({
+        glyphIndices: [offset ? 1 : 0],
+        bounds: [offset, 0, 100, 100] as [number, number, number, number],
+        width: 2,
+        height: 2,
+        owners: Uint16Array.from([1, 1, 1, 1]),
+        progress: Uint16Array.from([0, 21845, 43690, 65535]),
+      })),
+    };
+
+    await expect(validateAnimation(split, wide, KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+
+  it.each([
+    ['a tile edge of zero', { width: 0 }],
+    ['a negative tile edge', { width: -2 }],
+    ['a fractional tile edge', { width: 2.5 }],
+    ['a tile edge past the limit', { width: 16385 }],
+  ])('rejects %s', async (_label, overrides) => {
+    const input = animation(KEY);
+    Object.assign(input.tiles[0], overrides);
+    await expect(validateAnimation(input, shape(), KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+
+  it('rejects an empty stroke list', async () => {
+    const input = animation(KEY);
+    input.strokes = [];
+    await expect(validateAnimation(input, shape(), KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+
+  it('rejects an empty tile list', async () => {
+    const input = animation(KEY);
+    input.tiles = [];
+    await expect(validateAnimation(input, shape(), KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+
+  it('rejects a stroke with a single point', async () => {
+    const input = animation(KEY);
+    input.strokes[0].points = [[0, 0]];
+    await expect(validateAnimation(input, shape(), KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+
+  it('rejects an owner beyond the declared stroke count', async () => {
+    const input = animation(KEY);
+    input.tiles[0].owners = Uint16Array.from([1, 1, 1, 2]);
+    await expect(validateAnimation(input, shape(), KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+
+  it('rejects progress recorded outside conservative coverage', async () => {
+    const input = animation(KEY);
+    input.tiles[0].owners = Uint16Array.from([1, 1, 1, 0]);
+    input.tiles[0].progress = Uint16Array.from([0, 21845, 43690, 65535]);
+    await expect(validateAnimation(input, shape(), KEY, noCancel)).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+  });
+});

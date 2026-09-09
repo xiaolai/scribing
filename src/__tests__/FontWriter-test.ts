@@ -153,3 +153,59 @@ describe('formal font shapes', () => {
     },
   );
 });
+
+describe('font shape rejection boundaries', () => {
+  it.each([
+    ['a line separator', 0x85],
+    ['a control sequence introducer', 0x9b],
+    ['a C1 control at the low end', 0x80],
+    ['a C1 control at the high end', 0x9f],
+  ])('rejects text containing %s', (_label, code) => {
+    // The check only looked below U+0020 and at U+007F, so the whole C1 block passed.
+    const shape = sample();
+    shape.text = `o${String.fromCharCode(code)}`;
+    expect(() => validateShape(shape)).toThrow('Invalid FontShape');
+  });
+
+  it.each([
+    ['an empty text', { text: '' }],
+    ['a zero em', { em: 0 }],
+    ['a negative em', { em: -1000 }],
+    ['a non-finite em', { em: Infinity }],
+    ['an unknown direction', { direction: 'diagonal' }],
+    ['a wrong schema version', { schemaVersion: 2 }],
+  ])('rejects %s', (_label, overrides) => {
+    expect(() => validateShape(Object.assign(sample(), overrides) as any)).toThrow(
+      'Invalid FontShape',
+    );
+  });
+
+  it('rejects an empty glyph list', () => {
+    const shape = sample();
+    shape.glyphs = [];
+    expect(() => validateShape(shape)).toThrow('Invalid FontShape');
+  });
+
+  it('rejects a cluster that does not start a scalar', () => {
+    const shape = sample();
+    shape.text = '\u{1F600}';
+    // Offset 1 is the middle of the surrogate pair.
+    shape.glyphs[0].cluster = 1;
+    expect(() => validateShape(shape)).toThrow('Invalid FontShape');
+  });
+
+  it('rejects a path separated by a non-breaking space', () => {
+    // The SVG grammar allows only tab, newline, form feed, carriage return and space.
+    // JavaScript's \s also matches U+00A0, so a path separated by one validated here
+    // and was then rejected or silently truncated by the renderer parsing it for real.
+    const shape = sample();
+    shape.glyphs[0].path = 'M0 0H100\u00A0V100H0Z';
+    expect(() => validateShape(shape)).toThrow('Invalid FontShape');
+  });
+
+  it('still accepts the ordinary separators the grammar allows', () => {
+    const shape = sample();
+    shape.glyphs[0].path = 'M0,0\tH100\nV100\r H0 Z';
+    expect(() => validateShape(shape)).not.toThrow();
+  });
+});

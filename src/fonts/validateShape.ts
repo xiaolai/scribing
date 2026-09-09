@@ -13,12 +13,21 @@ const BOUNDS_ROUNDING = 1.01;
 const finite = (n: unknown) =>
   typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1e7;
 
-/** Printable, non-control text within a length bound. */
+/**
+ * Printable, non-control text within a length bound.
+ *
+ * Both control blocks are excluded. The C1 range U+0080 to U+009F was not: U+0085 is a
+ * line break and U+009B an escape introducer, and both passed a check that only looked
+ * below U+0020 and at U+007F.
+ */
 const text = (s: unknown, max: number) =>
   typeof s === 'string' &&
   s.length > 0 &&
   s.length <= max &&
-  Array.from(s).every((c) => c.charCodeAt(0) >= 32 && c.charCodeAt(0) !== 127);
+  Array.from(s).every((c) => {
+    const code = c.codePointAt(0)!;
+    return code >= 32 && code !== 127 && (code < 0x80 || code > 0x9f);
+  });
 
 const fail = (): never => {
   throw new Error('Invalid FontShape');
@@ -95,10 +104,13 @@ function assertMetadata(shape: FontShape) {
 }
 
 /**
- * Byte offsets at which each Unicode scalar of `text` starts.
+ * UTF-16 code-unit offsets at which each Unicode scalar of `text` starts.
  *
- * Glyph clusters must name one of these, so a cluster cannot point into the middle of
- * a surrogate pair. Lone surrogates are rejected outright.
+ * These are the same offsets `String.prototype.slice` and every other JavaScript string
+ * index uses, which is what a cluster is compared against; they are not byte offsets,
+ * and calling them that was misleading for anything outside the Basic Latin range.
+ * Glyph clusters must name one of these, so a cluster cannot point into the middle of a
+ * surrogate pair. Lone surrogates are rejected outright.
  */
 function clusterOffsets(value: string): number[] {
   const offsets: number[] = [];

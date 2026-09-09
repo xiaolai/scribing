@@ -187,3 +187,43 @@ describe('animationMask', () => {
     });
   });
 });
+
+describe('short strokes', () => {
+  // A stroke advances about 65535/cells per neighbouring cell, so the fixed 16384
+  // cutoff rejected every neighbour of a stroke shorter than eight cells. The gradient
+  // collapsed, the corner field went flat, and the stroke revealed in whole-cell jumps.
+  it('reveals a four-cell linear stroke gradually', async () => {
+    const field = await prepareMaskField(
+      tile(4, 1, [1, 1, 1, 1], [0, 21845, 43690, 65535]),
+      noCancel,
+    );
+    const four = tile(4, 1, [1, 1, 1, 1], [0, 21845, 43690, 65535]);
+
+    const areas = [0.1, 0.3, 0.5, 0.7, 0.9].map((fraction) =>
+      pathArea(maskPath(four, field, 0, fraction)),
+    );
+
+    // Whole-cell jumps produce at most four distinct areas over five samples, and
+    // repeats among consecutive samples. A gradient gives a distinct area each time.
+    expect(new Set(areas.map((area) => Math.round(area * 1000)))).toHaveProperty(
+      'size',
+      areas.length,
+    );
+    for (let i = 1; i < areas.length; i++) {
+      expect(areas[i]).toBeGreaterThan(areas[i - 1]);
+    }
+  });
+
+  it('still reveals an eight-cell stroke gradually', async () => {
+    const progress = Array.from({ length: 8 }, (_v, i) => Math.round((i / 7) * 65535));
+    const owners = new Array(8).fill(1);
+    const field = await prepareMaskField(tile(8, 1, owners, progress), noCancel);
+    const eight = tile(8, 1, owners, progress);
+
+    const areas = [0.2, 0.5, 0.8].map((fraction) =>
+      pathArea(maskPath(eight, field, 0, fraction)),
+    );
+    expect(areas[1]).toBeGreaterThan(areas[0]);
+    expect(areas[2]).toBeGreaterThan(areas[1]);
+  });
+});

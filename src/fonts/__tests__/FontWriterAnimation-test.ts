@@ -496,6 +496,45 @@ describe('FontWriter animation and input', () => {
     w.destroy();
   });
 
+  it('lets the newer of two concurrent setAnimation calls win', async () => {
+    // Both calls used to read the same serial, so neither saw the other as superseding
+    // it: whichever finished first attached and then bumped the serial through
+    // cancel(), which rejected the newer request and kept the older animation.
+    const w = writer();
+    await w.setShape(shape());
+
+    const older = w.setAnimation(animationFor(w.check().shapeId, 1));
+    const newer = w.setAnimation(animationFor(w.check().shapeId, 2));
+
+    await expect(older).rejects.toThrow('Font animation superseded');
+    await expect(newer).resolves.toBeUndefined();
+    w.destroy();
+  });
+
+  it('keeps the default padding when it is passed explicitly as undefined', async () => {
+    // Spreading the caller's options let an explicit undefined erase the default, which
+    // validateDimensions then read back as 16 while every render read it as 0.
+    const explicit = Scribing.createFontWriter('font', {
+      width: 300,
+      height: 300,
+      padding: undefined,
+    });
+    await explicit.setShape(shape());
+    const withUndefined = document
+      .querySelector('#font svg g')!
+      .getAttribute('transform');
+    explicit.destroy();
+
+    document.body.innerHTML = '<div id="font"></div>';
+    const omitted = Scribing.createFontWriter('font', { width: 300, height: 300 });
+    await omitted.setShape(shape());
+    expect(document.querySelector('#font svg g')!.getAttribute('transform')).toBe(
+      withUndefined,
+    );
+    expect(withUndefined).toContain('translate(16 ');
+    omitted.destroy();
+  });
+
   describe('work avoided', () => {
     // These pin the two performance claims as observable behaviour rather than as a
     // timing number, which would be noisy on a shared runner and would not say which
@@ -513,15 +552,53 @@ describe('FontWriter animation and input', () => {
       const surface = document.querySelector('#font svg')!;
       surface.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
 
-      // render() replaces the whole root group, so its identity is a reliable witness.
-      const groupBefore = surface.querySelector('g');
+      // The scene is persistent now, so node identity no longer distinguishes a render
+      // from a skipped one. Any render touches the DOM; a skipped one touches nothing.
+      const observer = new MutationObserver(() => undefined);
+      observer.observe(surface, { subtree: true, childList: true, attributes: true });
+
       // Same coordinates: below the movement threshold, so nothing is recorded.
       window.dispatchEvent(pointerEvent('pointermove', { clientX: 10, clientY: 10 }));
-      expect(surface.querySelector('g')).toBe(groupBefore);
+      expect(observer.takeRecords()).toHaveLength(0);
 
       // A move that clears the threshold must still render.
       window.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90 }));
-      expect(surface.querySelector('g')).not.toBe(groupBefore);
+      expect(observer.takeRecords().length).toBeGreaterThan(0);
+      observer.disconnect();
+      w.destroy();
+    });
+
+    it('keeps the reference outlines across frames', async () => {
+      // Every frame used to empty the surface and rebuild one element per glyph, at
+      // pointer and animation frame rates, for identical output.
+      const w = writer('svg');
+      await w.setShape(shape());
+      const surface = document.querySelector('#font svg')!;
+      const outlineBefore = surface.querySelector('path');
+      expect(outlineBefore).not.toBeNull();
+
+      w.startTrace();
+      surface.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+      window.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90 }));
+
+      expect(surface.querySelector('path')).toBe(outlineBefore);
+      w.destroy();
+    });
+
+    it('reuses the ink node while a stroke grows', async () => {
+      const w = writer('svg');
+      await w.setShape(shape());
+      const surface = document.querySelector('#font svg')!;
+      w.startTrace();
+      surface.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+      window.dispatchEvent(pointerEvent('pointermove', { clientX: 90, clientY: 90 }));
+
+      const line = surface.querySelector('polyline');
+      expect(line).not.toBeNull();
+      window.dispatchEvent(pointerEvent('pointermove', { clientX: 150, clientY: 150 }));
+
+      expect(surface.querySelector('polyline')).toBe(line);
+      expect(surface.querySelectorAll('polyline')).toHaveLength(1);
       w.destroy();
     });
 

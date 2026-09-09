@@ -5,6 +5,11 @@ export type MaskField = {
   corners: Float32Array;
   first: number;
   last: number;
+  /**
+   * Cell bounding box of each stroke, four entries per stroke from `first`, as
+   * minX, minY, maxX, maxY. A stroke with no cells has minX greater than maxX.
+   */
+  strokeBounds: Int32Array;
   full: string;
   completed: string;
   stroke: number;
@@ -19,9 +24,11 @@ export type MaskField = {
  * seams between neighbouring cell polygons.
  */
 async function progressGradients(tile: FontAnimationTile, checkpoint: () => void) {
-  const { width, height, owners, progress } = tile;
+  const { owners } = tile;
   const gx = new Float32Array(owners.length),
     gy = new Float32Array(owners.length);
+
+  const cutoffs = neighbourCutoffs(owners);
 
   for (let i = 0; i < owners.length; i++) {
     if (i % 32768 === 0) {
@@ -29,34 +36,7 @@ async function progressGradients(tile: FontAnimationTile, checkpoint: () => void
       await yieldWork();
     }
     if (!owners[i]) continue;
-    const x = i % width,
-      y = Math.floor(i / width);
-    let xx = 0,
-      xy = 0,
-      yy = 0,
-      xp = 0,
-      yp = 0;
-    for (let dy = -1; dy <= 1; dy++) {
-      for (let dx = -1; dx <= 1; dx++) {
-        if (
-          (!dx && !dy) ||
-          x + dx < 0 ||
-          x + dx >= width ||
-          y + dy < 0 ||
-          y + dy >= height
-        )
-          continue;
-        const j = i + dy * width + dx;
-        if (owners[j] !== owners[i] || Math.abs(progress[j] - progress[i]) > 16384)
-          continue;
-        const p = progress[j] - progress[i];
-        xx += dx * dx;
-        xy += dx * dy;
-        yy += dy * dy;
-        xp += dx * p;
-        yp += dy * p;
-      }
-    }
+    const { xx, xy, yy, xp, yp } = neighbourMoments(tile, i, cutoffs[owners[i]]);
     const det = xx * yy - xy * xy;
     if (det) {
       gx[i] = (xp * yy - yp * xy) / det;
@@ -67,6 +47,56 @@ async function progressGradients(tile: FontAnimationTile, checkpoint: () => void
     }
   }
   return { gx, gy };
+}
+
+/**
+ * Largest progress step between neighbouring cells that still counts as continuous.
+ *
+ * A stroke's progress advances by about 65535 / cells from one cell to the next, so the
+ * fixed 16384 this replaces rejected every neighbour of a stroke shorter than eight
+ * cells: no gradient survived, the corner field went flat, and the stroke revealed in
+ * whole-cell jumps. The cutoff now follows each stroke's own resolution and never falls
+ * below the old constant, which is what still keeps it from bridging a real
+ * discontinuity where a long stroke doubles back on itself.
+ */
+function neighbourCutoffs(owners: FontAnimationTile['owners']) {
+  let maxOwner = 0;
+  for (let i = 0; i < owners.length; i++) if (owners[i] > maxOwner) maxOwner = owners[i];
+  const cells = new Uint32Array(maxOwner + 1);
+  for (let i = 0; i < owners.length; i++) if (owners[i]) cells[owners[i]] += 1;
+  const cutoffs = new Float64Array(maxOwner + 1);
+  for (let owner = 1; owner <= maxOwner; owner++) {
+    cutoffs[owner] = cells[owner] ? Math.max(16384, (2 * 65535) / cells[owner]) : 16384;
+  }
+  return cutoffs;
+}
+
+/** Least-squares moments of cell `i` against the neighbours that share its stroke. */
+function neighbourMoments(tile: FontAnimationTile, i: number, cutoff: number) {
+  const { width, height, owners, progress } = tile;
+  const x = i % width,
+    y = Math.floor(i / width);
+  let xx = 0,
+    xy = 0,
+    yy = 0,
+    xp = 0,
+    yp = 0;
+  for (let dy = -1; dy <= 1; dy++) {
+    for (let dx = -1; dx <= 1; dx++) {
+      if ((!dx && !dy) || x + dx < 0 || x + dx >= width || y + dy < 0 || y + dy >= height)
+        continue;
+      const j = i + dy * width + dx;
+      if (owners[j] !== owners[i] || Math.abs(progress[j] - progress[i]) > cutoff)
+        continue;
+      const p = progress[j] - progress[i];
+      xx += dx * dx;
+      xy += dx * dy;
+      yy += dy * dy;
+      xp += dx * p;
+      yp += dy * p;
+    }
+  }
+  return { xx, xy, yy, xp, yp };
 }
 
 /** Corner offsets of a cell, in the order the marching-squares code expects. */
@@ -162,19 +192,40 @@ async function normalizeCorners(
   }
 }
 
-/** Row-run outline of every owned cell, plus the stroke range the tile covers. */
-function completedOutline(tile: FontAnimationTile) {
+/**
+ * Row-run outline of every owned cell, the stroke range the tile covers, and each
+ * stroke's cell bounding box.
+ *
+ * The bounding boxes let playback scan only the rows and columns a stroke occupies
+ * instead of the whole tile on every changing frame.
+ */
+async function completedOutline(tile: FontAnimationTile, checkpoint: () => void) {
   const { width, height, owners } = tile;
   let first = Infinity,
     last = -1;
   const runs: string[] = [];
+  const boxes = new Map<number, [number, number, number, number]>();
   for (let y = 0; y < height; y++) {
+    // A large guide can have hundreds of thousands of cells here, and this used to run
+    // in one uninterruptible burst with no way to observe a superseding request.
+    if (y % 256 === 0) {
+      checkpoint();
+      await yieldWork();
+    }
     let start = -1;
     for (let x = 0; x <= width; x++) {
       const owner = x < width ? owners[y * width + x] : 0;
       if (owner) {
         first = Math.min(first, owner - 1);
         last = Math.max(last, owner - 1);
+        const box = boxes.get(owner);
+        if (!box) boxes.set(owner, [x, y, x, y]);
+        else {
+          if (x < box[0]) box[0] = x;
+          if (y < box[1]) box[1] = y;
+          if (x > box[2]) box[2] = x;
+          if (y > box[3]) box[3] = y;
+        }
         if (start < 0) start = x;
       } else if (start >= 0) {
         runs.push(rect(start, y, x - start));
@@ -182,7 +233,15 @@ function completedOutline(tile: FontAnimationTile) {
       }
     }
   }
-  return { first, last, full: outline(runs) };
+  checkpoint();
+  const count = last >= first ? last - first + 1 : 0;
+  const strokeBounds = new Int32Array(count * 4);
+  for (let i = 0; i < count; i++) {
+    const box = boxes.get(first + i + 1);
+    // An absent stroke gets an empty box: minX above maxX, so no row is scanned.
+    strokeBounds.set(box ?? [1, 0, -1, -1], i * 4);
+  }
+  return { first, last, strokeBounds, full: outline(runs) };
 }
 
 /**
@@ -198,13 +257,14 @@ export async function prepareMaskField(
   const gradients = await progressGradients(tile, checkpoint);
   const corners = await cornerProgress(tile, gradients, checkpoint);
   await normalizeCorners(tile, corners, checkpoint);
-  const { first, last, full } = completedOutline(tile);
+  const { first, last, strokeBounds, full } = await completedOutline(tile, checkpoint);
   checkpoint();
 
   return {
     corners,
     first,
     last,
+    strokeBounds,
     full,
     completed: '',
     stroke: -1,
@@ -428,49 +488,77 @@ function activeStrokeAt(
   progress: number,
   threshold: number,
 ): string[] {
-  const { owners, width, height } = tile;
+  const { owners, width } = tile;
   const runs: string[] = [];
-  for (let y = 0; y < height; y++) {
+  // Scan only the cells this stroke occupies. Every changing frame used to walk the
+  // whole tile, which for a 65,536-cell guide meant reading four corner values per cell
+  // for a stroke covering a fraction of them.
+  const at = (stroke - field.first) * 4;
+  const minX = field.strokeBounds[at],
+    minY = field.strokeBounds[at + 1],
+    maxX = field.strokeBounds[at + 2],
+    maxY = field.strokeBounds[at + 3];
+  if (minX > maxX) return runs;
+
+  for (let y = minY; y <= maxY; y++) {
     let start = -1;
-    for (let x = 0; x <= width; x++) {
-      const i = y * width + x,
-        owned = x < width && owners[i] === stroke + 1,
-        at = i * 4;
-      const values = owned
-        ? [
-            field.corners[at],
-            field.corners[at + 1],
-            field.corners[at + 2],
-            field.corners[at + 3],
-          ]
-        : [];
-      const full =
-        owned && (progress >= 1 || (progress > 0 && values.every((v) => v <= threshold)));
+    for (let x = minX; x <= maxX + 1; x++) {
+      const i = y * width + x;
+      const cell =
+        x <= maxX && owners[i] === stroke + 1
+          ? cellState(field, i, progress, threshold)
+          : undefined;
+      const full = cell ? cell.full : false;
       if (full && start < 0) start = x;
       if (!full && start >= 0) {
         runs.push(rect(start, y, x - start));
         start = -1;
       }
-      if (owned && !full && progress > 0 && values.some((v) => v <= threshold)) {
-        const a: Vertex = [x, y, values[0]],
-          b: Vertex = [x + 1, y, values[1]],
-          c: Vertex = [x + 1, y + 1, values[2]],
-          d: Vertex = [x, y + 1, values[3]];
-        runs.push(
-          clippedTriangle([a, b, c], threshold),
-          clippedTriangle([a, c, d], threshold),
-        );
+      if (cell && !cell.full && cell.partial) {
+        runs.push(...cellTriangles(cell.corners, x, y, threshold));
       }
     }
   }
   return runs;
 }
 
+/** Whether a cell is fully or partly reached, with its four corner values. */
+function cellState(field: MaskField, index: number, progress: number, threshold: number) {
+  const at = index * 4;
+  // Read the corners into locals rather than an array: this is the innermost loop of
+  // playback, and the array was allocated once per cell on every frame.
+  const v0 = field.corners[at],
+    v1 = field.corners[at + 1],
+    v2 = field.corners[at + 2],
+    v3 = field.corners[at + 3];
+  const every = v0 <= threshold && v1 <= threshold && v2 <= threshold && v3 <= threshold;
+  const some = v0 <= threshold || v1 <= threshold || v2 <= threshold || v3 <= threshold;
+  return {
+    corners: [v0, v1, v2, v3] as const,
+    full: progress >= 1 || (progress > 0 && every),
+    partial: progress > 0 && some,
+  };
+}
+
+/** The two clipped triangles that give a partly-reached cell its analytic edge. */
+function cellTriangles(
+  corners: readonly [number, number, number, number],
+  x: number,
+  y: number,
+  threshold: number,
+) {
+  const a: Vertex = [x, y, corners[0]],
+    b: Vertex = [x + 1, y, corners[1]],
+    c: Vertex = [x + 1, y + 1, corners[2]],
+    d: Vertex = [x, y + 1, corners[3]];
+  return [clippedTriangle([a, b, c], threshold), clippedTriangle([a, c, d], threshold)];
+}
+
 /**
  * SVG path revealing `stroke` at `fraction` of its progress, plus everything before it.
  *
- * Results are memoized on the quantized step, so replaying the same frame, or two
- * frames that land on the same reveal step, costs nothing.
+ * Results are memoized on the exact progress, so replaying the same animation state
+ * costs nothing. The comment inside records why the key is not quantized.
  */
 export function maskPath(
   tile: FontAnimationTile,
