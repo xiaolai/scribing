@@ -1,7 +1,8 @@
 version: 2.1
 
 jobs:
-  build:
+  # Fast gates: no browsers, no font binaries. These fail in seconds, so they run first.
+  verify:
     docker:
       - image: cimg/node:22.14
     working_directory: ~/repo
@@ -9,27 +10,107 @@ jobs:
       - checkout
       - restore_cache:
           keys:
-            - v2-node22-{{ checksum "yarn.lock" }}
+            - v3-node22-{{ checksum "yarn.lock" }}
       - run: yarn install --frozen-lockfile
       - save_cache:
           paths:
             - node_modules
-          key: v2-node22-{{ checksum "yarn.lock" }}
-      - run: yarn typecheck
-      - run: yarn lint-test
-      - run: yarn test --runInBand
-      - run: yarn test-data
-      - run: yarn check-data
-      - run: yarn check-data-reproducible
-      - run: yarn build
-      - run: yarn check-demo
-      - run: yarn check-package
-      - run: yarn playwright install --with-deps chromium
-      - run: yarn check-multilingual-demo
+          key: v3-node22-{{ checksum "yarn.lock" }}
+      - run:
+          name: Formatting
+          command: yarn prettier-check
+      - run:
+          name: Lint
+          command: yarn lint-test
+      - run:
+          name: Types
+          command: yarn typecheck
+      - run:
+          name: Unit tests and coverage thresholds
+          command: yarn test --runInBand
+      - run:
+          name: Data model tests
+          command: yarn test-data
+      - run:
+          name: Data integrity
+          command: yarn check-data
+      - run:
+          name: Data reproducibility
+          command: yarn check-data-reproducible
+      - run:
+          name: Build
+          command: yarn build
+      - run:
+          name: Demo smoke
+          command: yarn check-demo
+      - run:
+          name: Package tarball
+          command: yarn check-package
+      - persist_to_workspace:
+          root: ~/repo
+          paths:
+            - dist
+
+  # Slow gates: need the ~169 MB font binaries and real browsers.
+  #
+  # fonts/assets is not in git. `yarn fetch-fonts` restores it from the pinned upstream
+  # URLs, verifying every byte length and SHA-256 against fonts/assets.lock.json before
+  # writing, so a compromised or drifted download fails the build rather than entering
+  # the cache. The cache key is the lockfile itself, so changing a pin busts it.
+  browser-gates:
+    docker:
+      - image: cimg/node:22.14
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ~/repo
+      - restore_cache:
+          keys:
+            - v3-node22-{{ checksum "yarn.lock" }}
+      - run: yarn install --frozen-lockfile
+      - restore_cache:
+          keys:
+            - v1-fonts-{{ checksum "fonts/assets.lock.json" }}
+      - run:
+          name: Restore pinned font binaries
+          command: yarn fetch-fonts
+      - save_cache:
+          paths:
+            - fonts/assets
+          key: v1-fonts-{{ checksum "fonts/assets.lock.json" }}
+      - run:
+          name: Font asset and derived-artifact integrity
+          command: yarn check-fonts
+      - run:
+          name: Font provider and source-loader tests
+          command: yarn test-fonts
+      - run: yarn playwright install --with-deps chromium webkit
+      - run:
+          name: Multilingual demo
+          command: yarn check-multilingual-demo
+      - run:
+          name: Font demo
+          command: yarn check-font-demo
+      - run:
+          name: Font animation
+          command: yarn check-font-animation
+          no_output_timeout: 30m
+      - run:
+          name: Font contours and endpoints
+          command: yarn check-font-contours
+          no_output_timeout: 45m
+      - run:
+          name: Font source workflow
+          command: yarn check-font-sources
+          no_output_timeout: 30m
 
 # Publishing is intentionally manual until the fork's npm ownership and release
 # policy are established. CI must never publish automatically from master.
 workflows:
   verify:
     jobs:
-      - build
+      - verify
+      - browser-gates:
+          requires:
+            - verify
