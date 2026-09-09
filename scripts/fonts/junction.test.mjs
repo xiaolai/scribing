@@ -113,3 +113,44 @@ for (const [name, trails, rects, sources] of [
     assert.deepEqual(assignment.owners, owners);
     assert.deepEqual(assignment.progress, progress);
   });
+
+test('a run that exhausts its work budget commits nothing from the pair it was on', async () => {
+  // Repairs are committed pair by pair. When the budget runs out mid-pair, the pair in
+  // progress is abandoned and every pair committed before it stands; nothing pinned
+  // either half of that, so a partial commit would have gone unnoticed.
+  const trails = [line(40, 5, 40, 75), line(10, 40, 70, 40)];
+  const rects = [
+    [36, 5, 44, 75],
+    [10, 36, 70, 44],
+  ];
+
+  const full = await prepare(trails, rects);
+  await repairSourceJunctions(
+    full.assignment,
+    full.ink,
+    trails,
+    [{}, {}],
+    width,
+    height,
+    0,
+  );
+  const repaired = full.assignment.owners.slice();
+
+  const starved = await prepare(trails, rects);
+  const before = starved.assignment.owners.slice();
+  // One operation is not enough to finish the only pair there is.
+  await repairSourceJunctions(
+    starved.assignment,
+    starved.ink,
+    trails,
+    [{}, {}],
+    width,
+    height,
+    0,
+    undefined,
+    1,
+  );
+
+  assert.deepEqual(starved.assignment.owners, before);
+  assert.notDeepEqual(repaired, before);
+});

@@ -701,6 +701,23 @@ export async function normalizeOwnership(
 }
 // Source-plan crossings share physical ink. Reserve a conservative local portion
 // of the earlier stem before the later stroke, without flooding along that branch.
+/**
+ * Reassign ownership around junctions where two source-adapted strokes meet.
+ *
+ * Repairs are committed pair by pair. When the work budget runs out mid-pair, the pair
+ * in progress is abandoned and every pair committed before it stands, which is what
+ * makes the result of a truncated run still coherent.
+ *
+ * @param {{owners: Uint16Array, progress: Uint16Array}} assignment mutated in place
+ * @param {Uint8Array} ink binary mask, exactly `width * height` cells
+ * @param {Array<Array<[number, number]>>} trails ordered cell-space points per stroke
+ * @param {Array<object|null>} sources one entry per trail; null means generated
+ * @param {number} width positive integer
+ * @param {number} height positive integer
+ * @param {number} startIndex global index of the first trail
+ * @param {AbortSignal} [signal] aborting it throws AbortError
+ * @param {number} [maxWork] geometric operations before the run gives up
+ */
 export async function repairSourceJunctions(
   assignment,
   ink,
@@ -710,7 +727,9 @@ export async function repairSourceJunctions(
   height,
   startIndex,
   signal,
+  maxWork = 2000000,
 ) {
+  assertGrid(ink, width, height, 'repairSourceJunctions');
   const indices = sources.map((source, i) => (source ? i : -1)).filter((i) => i >= 0);
   if (indices.length < 2) return;
   const counts = new Uint32Array(trails.length);
@@ -831,7 +850,7 @@ export async function repairSourceJunctions(
         returns = new Map();
       for (let i = 0; i < a.points.length - 1; i++)
         for (let j = 0; j < b.points.length - 1; j++) {
-          if (++work > 2000000) return;
+          if (++work > maxWork) return;
           if (work % 32768 === 0) {
             stop(signal);
             await yieldWork();
@@ -933,7 +952,7 @@ export async function repairSourceJunctions(
             x <= Math.min(width - 1, Math.ceil(x2));
             x++
           ) {
-            if (++work > 2000000) return;
+            if (++work > maxWork) return;
             if (work % 32768 === 0) {
               stop(signal);
               await yieldWork();
@@ -942,7 +961,7 @@ export async function repairSourceJunctions(
             if (assignment.owners[cell] !== startIndex + later + 1) continue;
             let nearest;
             for (let n = 0; n < a.points.length - 1; n++) {
-              if (++work > 2000000) return;
+              if (++work > maxWork) return;
               if (work % 32768 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1001,7 +1020,7 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 1, Math.ceil(p[0] + span * 2));
               x++
             ) {
-              if (++work > 2000000) return;
+              if (++work > maxWork) return;
               if (work % 32768 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1079,7 +1098,7 @@ export async function repairSourceJunctions(
               ],
               steps = Math.ceil(length / 0.75);
             for (let k = 0; k <= steps; k++) {
-              if (++work > 2000000) return;
+              if (++work > maxWork) return;
               if (work % 32768 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1150,7 +1169,7 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 1, Math.ceil(x2));
               x++
             ) {
-              if (++work > 2000000) return;
+              if (++work > maxWork) return;
               if (work % 32768 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1553,7 +1572,7 @@ export async function repairSourceJunctions(
             x <= Math.min(width - 1, Math.ceil(origin[0] + 3 * radius));
             x++
           ) {
-            if (++work > 2000000) return;
+            if (++work > maxWork) return;
             if (work % 32768 === 0) {
               stop(signal);
               await yieldWork();
