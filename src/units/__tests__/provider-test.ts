@@ -41,3 +41,26 @@ it('rejects ambiguity, invalid aliases, invalid content and aborted requests', a
     createDataProvider(makePack()).load({ id: 'i' }, { signal: controller.signal }),
   ).rejects.toThrow(/abort/);
 });
+
+describe('manifest completeness', () => {
+  // `!value` accepted an empty string and any object at all, and four required fields
+  // were not checked, so a pack whose license was `{}` and whose name, version,
+  // provenance and source name were missing entirely passed validation and shipped.
+  it.each([
+    ['a missing name', { name: undefined }],
+    ['an empty name', { name: '' }],
+    ['a missing version', { version: undefined }],
+    ['an object license', { license: {} }],
+    ['a missing provenance', { provenance: undefined }],
+    ['an unknown provenance', { provenance: 'guessed' }],
+    ['an object source url', { source: { name: 'x', url: {} } }],
+    ['a missing source name', { source: { url: 'https://example.com/test' } }],
+  ])('rejects %s', (_label, overrides) => {
+    const pack = { ...makePack(), ...overrides } as any;
+    expect(() => createDataProvider(pack)).toThrow('Invalid writing data pack manifest.');
+  });
+
+  it('still accepts a complete manifest', () => {
+    expect(() => createDataProvider(makePack())).not.toThrow();
+  });
+});

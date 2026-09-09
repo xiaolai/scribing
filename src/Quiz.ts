@@ -29,7 +29,10 @@ export default class Quiz {
   _mistakesOnStroke = 0;
   _totalMistakes = 0;
   _userStroke: UserStroke | undefined;
+  /** Ids still present in the render state, oldest first. */
   _userStrokesIds: Array<number> | undefined;
+  /** An exception from a caller's callback, rethrown once the quiz is consistent. */
+  _callbackError: { value: unknown } | undefined;
 
   constructor(character: Character, renderState: RenderState, positioner: Positioner) {
     this._character = character;
@@ -41,9 +44,7 @@ export default class Quiz {
   startQuiz(options: ParsedScribingOptions) {
     this._generation++;
     this._userStroke = undefined;
-    if (this._userStrokesIds) {
-      this._renderState.run(quizActions.removeAllUserStrokes(this._userStrokesIds));
-    }
+    this._retireUserStrokes(undefined);
     this._userStrokesIds = [];
 
     this._isActive = true;
@@ -91,7 +92,9 @@ export default class Quiz {
       return Promise.resolve();
     }
     const point = this._positioner.convertExternalPoint(externalPoint);
-    this._userStroke.appendPoint(point, externalPoint);
+    // Nothing moved far enough to change the gesture, so there is nothing to copy and
+    // nothing to re-render.
+    if (!this._userStroke.appendPoint(point, externalPoint)) return Promise.resolve();
     const nextPoints = this._userStroke.points.slice(0);
     return this._renderState.run(
       quizActions.updateUserStroke(this._userStroke.id, nextPoints),
@@ -99,24 +102,37 @@ export default class Quiz {
   }
 
   setPositioner(positioner: Positioner) {
+    // Points already converted by the previous positioner cannot be compared with ones
+    // converted by the new one, so a gesture that spans a resize is discarded rather
+    // than graded against a mixture of two coordinate spaces.
+    this.cancelUserStroke();
     this._positioner = positioner;
   }
 
   endUserStroke() {
+    this._endUserStroke();
+    this._flushCallbackError();
+  }
+
+  _endUserStroke() {
     if (!this._isActive || !this._userStroke) return;
     const generation = this._generation;
     const userStroke = this._userStroke;
+    // Close the gesture before anything that can throw. A feedback callback that threw
+    // used to leave it open, so the same stroke could be submitted a second time.
+    this._userStroke = undefined;
 
     this._renderState.run(
       quizActions.hideUserStroke(
-        this._userStroke.id,
+        userStroke.id,
         this._options!.drawingFadeDuration ?? 300,
       ),
     );
+    // The gesture before this one has finished fading and is safe to drop.
+    this._retireUserStrokes(userStroke.id);
 
     // skip single-point strokes
-    if (this._userStroke.points.length === 1) {
-      this._userStroke = undefined;
+    if (userStroke.points.length === 1) {
       return;
     }
 
@@ -124,7 +140,7 @@ export default class Quiz {
 
     const currentStroke = this._getCurrentStroke();
     const { isMatch, meta } = strokeMatches(
-      this._userStroke,
+      userStroke,
       this._character,
       this._currentStrokeIndex,
       {
@@ -143,30 +159,23 @@ export default class Quiz {
       isMatch || isForceAccepted || (meta.isStrokeBackwards && acceptBackwardsStrokes);
 
     if (isAccepted) {
-      this._handleSuccess(meta);
-    } else {
-      this._handleFailure(meta);
-      if (generation !== this._generation || !this._isActive) return;
-
-      const { showHintAfterMisses, highlightColor, strokeHighlightSpeed } =
-        this._options!;
-
-      if (
-        showHintAfterMisses !== false &&
-        this._mistakesOnStroke >= showHintAfterMisses
-      ) {
-        this._renderState.run(
-          characterActions.highlightStroke(
-            currentStroke,
-            colorStringToVals(highlightColor),
-            strokeHighlightSpeed,
-          ),
-        );
-      }
+      this._handleSuccess(meta, userStroke);
+      return;
     }
 
-    if (generation === this._generation && this._userStroke === userStroke) {
-      this._userStroke = undefined;
+    this._handleFailure(meta, userStroke);
+    if (generation !== this._generation || !this._isActive) return;
+
+    const { showHintAfterMisses, highlightColor, strokeHighlightSpeed } = this._options!;
+
+    if (showHintAfterMisses !== false && this._mistakesOnStroke >= showHintAfterMisses) {
+      this._renderState.run(
+        characterActions.highlightStroke(
+          currentStroke,
+          colorStringToVals(highlightColor),
+          strokeHighlightSpeed,
+        ),
+      );
     }
   }
 
@@ -175,23 +184,24 @@ export default class Quiz {
     const { id } = this._userStroke;
     this._userStroke = undefined;
     this._renderState.run(quizActions.hideUserStroke(id, 0));
+    this._retireUserStrokes(id);
   }
 
   cancel() {
     this._generation++;
     this._isActive = false;
     this._userStroke = undefined;
-    if (this._userStrokesIds) {
-      this._renderState.run(quizActions.removeAllUserStrokes(this._userStrokesIds));
-    }
+    this._retireUserStrokes(undefined);
   }
 
   _getStrokeData({
     isCorrect,
     meta,
+    userStroke,
   }: {
     isCorrect: boolean;
     meta: StrokeMatchResultMeta;
+    userStroke: UserStroke;
   }): StrokeData {
     return {
       character: this._character.symbol,
@@ -200,13 +210,21 @@ export default class Quiz {
       totalMistakes: this._totalMistakes,
       strokesRemaining:
         this._character.strokes.length - this._currentStrokeIndex - (isCorrect ? 1 : 0),
-      drawnPath: getDrawnPath(this._userStroke!),
+      drawnPath: getDrawnPath(userStroke),
       isBackwards: meta.isStrokeBackwards,
     };
   }
 
   nextStroke() {
+    this._nextStroke();
+    this._flushCallbackError();
+  }
+
+  _nextStroke() {
     if (!this._isActive || !this._options) return;
+    // A gesture in progress belongs to the stroke being left behind. Skipping used to
+    // keep it, and it was then graded against the stroke the quiz had moved on to.
+    this.cancelUserStroke();
     const generation = this._generation;
 
     const { strokes, symbol } = this._character;
@@ -233,7 +251,7 @@ export default class Quiz {
 
     if (isComplete) {
       this._isActive = false;
-      onComplete?.({
+      this._notify(onComplete, {
         character: symbol,
         totalMistakes: this._totalMistakes,
       });
@@ -251,23 +269,67 @@ export default class Quiz {
     if (generation === this._generation) this._renderState.run(animation);
   }
 
-  _handleSuccess(meta: StrokeMatchResultMeta) {
+  _handleSuccess(meta: StrokeMatchResultMeta, userStroke: UserStroke) {
     if (!this._options) return;
 
     const generation = this._generation;
     const { onCorrectStroke } = this._options;
 
-    onCorrectStroke?.({
-      ...this._getStrokeData({ isCorrect: true, meta }),
-    });
+    this._notify(
+      onCorrectStroke,
+      this._getStrokeData({ isCorrect: true, meta, userStroke }),
+    );
 
-    if (generation === this._generation) this.nextStroke();
+    if (generation === this._generation) this._nextStroke();
   }
 
-  _handleFailure(meta: StrokeMatchResultMeta) {
+  _handleFailure(meta: StrokeMatchResultMeta, userStroke: UserStroke) {
     this._mistakesOnStroke += 1;
     this._totalMistakes += 1;
-    this._options!.onMistake?.(this._getStrokeData({ isCorrect: false, meta }));
+    this._notify(
+      this._options!.onMistake,
+      this._getStrokeData({ isCorrect: false, meta, userStroke }),
+    );
+  }
+
+  /**
+   * Run a caller's feedback callback without letting it stall the quiz.
+   *
+   * These callbacks are notifications. An exception used to abandon the rest of
+   * endUserStroke: the gesture stayed open, and after onCorrectStroke the quiz never
+   * advanced, so the same stroke could be submitted again and again. The error is kept
+   * and rethrown once the quiz is consistent, so it still reaches the caller.
+   */
+  _notify<T>(callback: ((arg: T) => void) | undefined, arg: T) {
+    if (!callback) return;
+    try {
+      callback(arg);
+    } catch (error) {
+      this._callbackError ??= { value: error };
+    }
+  }
+
+  _flushCallbackError() {
+    const pending = this._callbackError;
+    this._callbackError = undefined;
+    if (pending) throw pending.value;
+  }
+
+  /**
+   * Drop every finished gesture except the one that just ended.
+   *
+   * Removing the node for the gesture in progress stops touchmove from firing on some
+   * mobile browsers, so the most recent stroke is left faded rather than removed. The
+   * ones before it are safe, and keeping them held a point array and a rendered node
+   * per attempt for the whole quiz.
+   */
+  _retireUserStrokes(keepId: number | undefined) {
+    const ids = this._userStrokesIds;
+    if (!ids || ids.length === 0) return;
+    const stale = ids.filter((id) => id !== keepId);
+    if (stale.length === 0) return;
+    this._userStrokesIds = ids.filter((id) => id === keepId);
+    this._renderState.run(quizActions.removeAllUserStrokes(stale));
   }
 
   _getCurrentStroke(): Stroke {

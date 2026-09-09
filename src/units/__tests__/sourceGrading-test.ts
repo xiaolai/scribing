@@ -237,3 +237,32 @@ it('measures other recordings of one source class without labeling them accepted
       ),
     );
 });
+
+describe('short strokes fit both directions', () => {
+  // A straight 100-unit line reversed puts every sample within the 70-unit tolerance,
+  // so testing the forward fit first accepted it as 'correct' and 'wrong-direction' was
+  // unreachable for strokes that short.
+  const shortStroke = {
+    kind: 'line' as const,
+    points: [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+    ],
+    width: 10,
+  };
+
+  it('reports the better-fitting direction', () => {
+    const reversed = shortStroke.points.slice().reverse();
+    expect(gradeStroke(shortStroke as any, shortStroke.points, 'forward', 1)).toBe(
+      'correct',
+    );
+    expect(gradeStroke(shortStroke as any, reversed, 'forward', 1)).toBe(
+      'wrong-direction',
+    );
+  });
+
+  it('still accepts either direction when the plan allows it', () => {
+    const reversed = shortStroke.points.slice().reverse();
+    expect(gradeStroke(shortStroke as any, reversed, 'either', 1)).toBe('correct');
+  });
+});

@@ -63,14 +63,23 @@ export function gradeStroke(
   const last = drawn.length - 1;
   const forward = drawn.map((p, i) => distance(p, target!.points[i]));
   const backward = drawn.map((p, i) => distance(p, target!.points[last - i]));
+  const meanError = (errors: number[]) =>
+    errors.reduce((a, b) => a + b, 0) / errors.length;
   // Endpoints get a tighter budget than the mean, and no single sample may drift
   // more than twice the tolerance, so a stroke cannot pass on average alone.
   const matches = (errors: number[]) =>
     Math.max(errors[0], errors[last]) <= tolerance * 1.5 &&
-    errors.reduce((a, b) => a + b, 0) / errors.length <= tolerance &&
+    meanError(errors) <= tolerance &&
     Math.max(...errors) <= tolerance * 2;
-  if (matches(forward)) return 'correct';
-  if (matches(backward)) return direction === 'either' ? 'correct' : 'wrong-direction';
+  // A short stroke fits both ways: reversing a straight 100-unit line puts every
+  // sample within a 70-unit tolerance, so testing forward first accepted it as
+  // 'correct' and 'wrong-direction' was unreachable. Take whichever fits better.
+  const forwardFits = matches(forward);
+  const backwardFits = matches(backward);
+  if (forwardFits && (!backwardFits || meanError(forward) <= meanError(backward))) {
+    return 'correct';
+  }
+  if (backwardFits) return direction === 'either' ? 'correct' : 'wrong-direction';
   const minX = Math.min(...target.points.map((p) => p.x)) - tolerance * 2;
   const maxX = Math.max(...target.points.map((p) => p.x)) + tolerance * 2;
   const minY = Math.min(...target.points.map((p) => p.y)) - tolerance * 2;

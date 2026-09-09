@@ -1198,3 +1198,116 @@ describe('Quiz', () => {
     });
   });
 });
+
+describe('gesture bookkeeping', () => {
+  const startQuiz = (overrides: Record<string, unknown> = {}) => {
+    const renderState = createRenderState();
+    const quiz = new Quiz(char, renderState, new Positioner(opts));
+    quiz.startQuiz({ ...opts, ...overrides } as any);
+    return { quiz, renderState };
+  };
+
+  const draw = (quiz: Quiz) => {
+    quiz.startUserStroke({ x: 10, y: 20 });
+    quiz.continueUserStroke({ x: 20, y: 30 });
+  };
+
+  beforeEach(() => {
+    (strokeMatches as any).mockImplementation(() => ({
+      isMatch: true,
+      meta: { isStrokeBackwards: false },
+    }));
+  });
+
+  it('closes the gesture and advances even when onCorrectStroke throws', () => {
+    // A throwing callback used to abandon the rest of endUserStroke: the gesture stayed
+    // open and the quiz stayed on the stroke just completed, so it could be submitted
+    // again and again.
+    const failure = new Error('listener exploded');
+    const { quiz } = startQuiz({
+      onCorrectStroke: () => {
+        throw failure;
+      },
+    });
+
+    draw(quiz);
+    expect(() => quiz.endUserStroke()).toThrow(failure);
+    expect(quiz._userStroke).toBeUndefined();
+    expect(quiz._currentStrokeIndex).toBe(1);
+  });
+
+  it('closes the gesture even when onMistake throws', () => {
+    (strokeMatches as any).mockImplementation(() => ({
+      isMatch: false,
+      meta: { isStrokeBackwards: false },
+    }));
+    const failure = new Error('listener exploded');
+    const { quiz } = startQuiz({
+      onMistake: () => {
+        throw failure;
+      },
+    });
+
+    draw(quiz);
+    expect(() => quiz.endUserStroke()).toThrow(failure);
+    expect(quiz._userStroke).toBeUndefined();
+    expect(quiz._totalMistakes).toBe(1);
+  });
+
+  it('reports only the first callback failure and clears it afterwards', () => {
+    const { quiz } = startQuiz({
+      onCorrectStroke: () => {
+        throw new Error('first');
+      },
+    });
+    draw(quiz);
+    expect(() => quiz.endUserStroke()).toThrow('first');
+    expect(quiz._callbackError).toBeUndefined();
+  });
+
+  it('discards a gesture in progress when the stroke is skipped', () => {
+    // Skipping used to keep the gesture, which was then graded against the stroke the
+    // quiz had already moved on to.
+    const { quiz } = startQuiz();
+    draw(quiz);
+    quiz.nextStroke();
+    expect(quiz._userStroke).toBeUndefined();
+    expect(quiz._currentStrokeIndex).toBe(1);
+  });
+
+  it('discards a gesture that spans a resize', () => {
+    // Points converted by two different positioners cannot be compared with each other.
+    const { quiz } = startQuiz();
+    draw(quiz);
+    quiz.setPositioner(new Positioner({ ...opts, width: 400, height: 400 }));
+    expect(quiz._userStroke).toBeUndefined();
+  });
+
+  it('keeps at most one finished gesture in the render state', async () => {
+    // Only the most recent gesture is left rendered, because removing the node for the
+    // one in progress stops touchmove from firing on some mobile browsers. Keeping all
+    // of them held a point array and a rendered node per attempt for the whole quiz.
+    const { quiz, renderState } = startQuiz();
+    (strokeMatches as any).mockImplementation(() => ({
+      isMatch: false,
+      meta: { isStrokeBackwards: false },
+    }));
+
+    for (let i = 0; i < 5; i++) {
+      draw(quiz);
+      quiz.endUserStroke();
+      await resolvePromises();
+    }
+
+    expect(quiz._userStrokesIds).toHaveLength(1);
+    expect(Object.keys(renderState.state.userStrokes ?? {})).toHaveLength(1);
+  });
+
+  it('ignores a pointer move too small to change the gesture', () => {
+    const { quiz } = startQuiz();
+    quiz.startUserStroke({ x: 10, y: 20 });
+    // The mocked positioner offsets by a constant, so this is a zero-length move.
+    quiz.continueUserStroke({ x: 10, y: 20 });
+    expect(quiz._userStroke!.points).toHaveLength(1);
+  });
+});

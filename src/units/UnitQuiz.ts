@@ -102,7 +102,9 @@ export default class UnitQuiz {
         (_, i) => i === 0 || i % 2 === 1,
       );
     }
-    stroke.appendPoint(point, external);
+    // Nothing moved far enough to change the gesture, so there is nothing to copy and
+    // nothing to re-render.
+    if (!stroke.appendPoint(point, external)) return Promise.resolve();
     return this._renderState.run(
       quizActions.updateUserStroke(stroke.id, stroke.points.slice()),
     );

@@ -48,22 +48,27 @@ export default function strokeMatches(
   const { isMatch, meta, avgDist } = getMatchData(points, strokes[strokeNum], options);
 
   if (!isMatch) {
+    // A backwards match used to return here, skipping disambiguation entirely, so with
+    // acceptBackwardsStrokes on, a later stroke drawn backwards was taken as the
+    // current one. The reversed gesture gets the same later-stroke check.
+    if (
+      meta.isStrokeBackwards &&
+      drewALaterStrokeBackwards(points, strokes, strokeNum, options)
+    ) {
+      return { isMatch: false, meta: { isStrokeBackwards: false } };
+    }
     return { isMatch, meta };
   }
 
   // if there is a better match among strokes the user hasn't drawn yet, the user probably drew the wrong stroke
-  const laterStrokes = strokes.slice(strokeNum + 1);
-  let closestMatchDist = avgDist;
+  const closestMatchDist = closestLaterMatch(
+    points,
+    strokes,
+    strokeNum,
+    options,
+    avgDist,
+  );
 
-  for (let i = 0; i < laterStrokes.length; i++) {
-    const later = getMatchData(points, laterStrokes[i], {
-      ...options,
-      checkBackwards: false,
-    });
-    if (later.isMatch && later.avgDist < closestMatchDist) {
-      closestMatchDist = later.avgDist;
-    }
-  }
   // if there's a better match, rather that returning false automatically, try reducing leniency instead
   // if leniency is already really high we can allow some similar strokes to pass
   if (closestMatchDist < avgDist) {
@@ -78,6 +83,47 @@ export default function strokeMatches(
 
   return { isMatch, meta };
 }
+
+type MatchOptions = {
+  leniency?: number;
+  isOutlineVisible?: boolean;
+  averageDistanceThreshold?: number;
+};
+
+/** The smallest average distance among later strokes that also match, else `best`. */
+const closestLaterMatch = (
+  points: Point[],
+  strokes: Stroke[],
+  strokeNum: number,
+  options: MatchOptions,
+  best: number,
+) => {
+  let closest = best;
+  for (let i = strokeNum + 1; i < strokes.length; i++) {
+    const later = getMatchData(points, strokes[i], { ...options, checkBackwards: false });
+    if (later.isMatch && later.avgDist < closest) {
+      closest = later.avgDist;
+    }
+  }
+  return closest;
+};
+
+/** True when the reversed gesture fits a later stroke better than the current one. */
+const drewALaterStrokeBackwards = (
+  points: Point[],
+  strokes: Stroke[],
+  strokeNum: number,
+  options: MatchOptions,
+) => {
+  const reversed = [...points].reverse();
+  const own = getMatchData(reversed, strokes[strokeNum], {
+    ...options,
+    checkBackwards: false,
+  });
+  return (
+    closestLaterMatch(reversed, strokes, strokeNum, options, own.avgDist) < own.avgDist
+  );
+};
 
 const startAndEndMatches = (points: Point[], closestStroke: Stroke, leniency: number) => {
   const startingDist = distance(closestStroke.getStartingPoint(), points[0]);
@@ -140,17 +186,32 @@ const SHAPE_FIT_ROTATIONS = [
   (-1 * Math.PI) / 16,
 ];
 
+/**
+ * `normalizeCurve` is pure and is asked for the same curves over and over: the gesture is
+ * re-fitted against every later stroke, and each reference stroke's points never change.
+ * Keying on the array identity keeps that to one computation per curve, and the entries
+ * are released with the arrays.
+ */
+const normalizedCurves = new WeakMap<Point[], Point[]>();
+
+const normalizeCurveOnce = (curve: Point[]) => {
+  const cached = normalizedCurves.get(curve);
+  if (cached) return cached;
+  const normalized = normalizeCurve(curve);
+  normalizedCurves.set(curve, normalized);
+  return normalized;
+};
+
 const shapeFit = (curve1: Point[], curve2: Point[], leniency: number) => {
-  const normCurve1 = normalizeCurve(curve1);
-  const normCurve2 = normalizeCurve(curve2);
-  let minDist = Infinity;
-  SHAPE_FIT_ROTATIONS.forEach((theta) => {
-    const dist = frechetDist(normCurve1, rotate(normCurve2, theta));
-    if (dist < minDist) {
-      minDist = dist;
-    }
-  });
-  return minDist <= FRECHET_THRESHOLD * leniency;
+  const threshold = FRECHET_THRESHOLD * leniency;
+  const normCurve1 = normalizeCurveOnce(curve1);
+  const normCurve2 = normalizeCurveOnce(curve2);
+  // The result only asks whether some rotation is within the threshold, so there is
+  // nothing to learn from the remaining Frechet comparisons once one is.
+  for (const theta of SHAPE_FIT_ROTATIONS) {
+    if (frechetDist(normCurve1, rotate(normCurve2, theta)) <= threshold) return true;
+  }
+  return false;
 };
 
 const getMatchData = (
@@ -181,8 +242,8 @@ const getMatchData = (
   const shapeMatch = shapeFit(points, stroke.points, leniency);
   const lengthMatch = lengthMatches(points, stroke, leniency);
 
-  const isMatch =
-    withinDistThresh && startAndEndMatch && directionMatch && shapeMatch && lengthMatch;
+  // withinDistThresh is not retested: its false branch returned above.
+  const isMatch = startAndEndMatch && directionMatch && shapeMatch && lengthMatch;
 
   if (checkBackwards && !isMatch) {
     const backwardsMatchData = getMatchData([...points].reverse(), stroke, {

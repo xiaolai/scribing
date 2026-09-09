@@ -28,6 +28,17 @@ const plainRecord = (value: unknown) => {
   );
 };
 
+/**
+ * Manifest fields the pack format requires. `!value` accepted an empty string and any
+ * object at all, so a pack whose license was `{}` and whose name, version, provenance
+ * and source.name were absent entirely passed validation and shipped anyway.
+ */
+const nonEmptyString = (value: unknown) =>
+  typeof value === 'string' && value.length > 0 && value.length <= 1024;
+
+const STATUSES = ['technical-preview', 'reviewed'];
+const PROVENANCES = ['authored', 'recorded', 'image-traced', 'font-inferred', 'mixed'];
+
 /** An offline, immutable provider. Loading never guesses a missing language or variant. */
 export default function createDataProvider(pack: WritingDataPack): WritingDataProvider {
   plainRecord(pack);
@@ -37,10 +48,14 @@ export default function createDataProvider(pack: WritingDataPack): WritingDataPr
     pack.schemaVersion !== 1 ||
     !pack.units ||
     Array.isArray(pack.units) ||
-    !pack.id ||
-    !pack.license ||
-    !pack.source?.url ||
-    ['technical-preview', 'reviewed'].indexOf(pack.status) < 0
+    !nonEmptyString(pack.id) ||
+    !nonEmptyString(pack.name) ||
+    !nonEmptyString(pack.version) ||
+    !nonEmptyString(pack.license) ||
+    !nonEmptyString(pack.source?.name) ||
+    !nonEmptyString(pack.source?.url) ||
+    PROVENANCES.indexOf(pack.provenance) < 0 ||
+    STATUSES.indexOf(pack.status) < 0
   ) {
     throw new Error('Invalid writing data pack manifest.');
   }
@@ -77,8 +92,10 @@ export default function createDataProvider(pack: WritingDataPack): WritingDataPr
         request.variant === undefined ? id : `${id}@${normalized(request.variant)}`;
       const resolved = own(aliases, key) ? aliases[key] : key;
       if (!own(index, resolved)) throw new Error(`Writing unit is unavailable: ${key}`);
+      // `units` is this closure's own snapshot: every entry was validated above and no
+      // caller ever receives it, only the copy returned below. Revalidating it on each
+      // load re-walked the whole unit for a guarantee construction already made.
       const unit = units[index[resolved]];
-      validateUnit(unit);
       if (signal.aborted) throw new Error('Unit load aborted.');
       return JSON.parse(JSON.stringify(unit));
     },

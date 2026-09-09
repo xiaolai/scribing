@@ -13,7 +13,11 @@ const parsePx = (value: string | undefined) => {
 const PIXEL_LENGTH = /^-?\d+(\.\d+)?(px)?$/;
 
 export default class RenderTarget extends RenderTargetBase<HTMLCanvasElement> {
-  static init(elmOrId: string | HTMLCanvasElement, width = '100%', height = '100%') {
+  static init(
+    elmOrId: string | HTMLCanvasElement,
+    width: string | number = '100%',
+    height: string | number = '100%',
+  ) {
     const element = (() => {
       if (typeof elmOrId === 'string') {
         return document.getElementById(elmOrId);

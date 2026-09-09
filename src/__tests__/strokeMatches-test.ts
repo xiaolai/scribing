@@ -1393,3 +1393,53 @@ describe('strokeMatches', () => {
     assertNotMatches('阝', 1, points);
   });
 });
+
+describe('backwards strokes and stroke order', () => {
+  // A backwards match returned before the later-stroke check ever ran, so with
+  // acceptBackwardsStrokes on, drawing a later stroke backwards was accepted as the
+  // current one.
+  const strokeAt = (
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+    num: number,
+  ) => new Stroke('', [from, to], num);
+
+  const gesture = (points: Array<{ x: number; y: number }>) => {
+    const stroke = new UserStroke(1, points[0], { x: 0, y: 0 });
+    points.slice(1).forEach((point) => stroke.appendPoint(point, { x: 0, y: 0 }));
+    return stroke;
+  };
+
+  it('does not report a later stroke drawn backwards as the current one backwards', () => {
+    const character = new Character('X', [
+      strokeAt({ x: 0, y: 0 }, { x: 10, y: 50 }, 0),
+      strokeAt({ x: 500, y: 500 }, { x: 510, y: 550 }, 1),
+    ]);
+    // Drawn along the second stroke, from its end to its start.
+    const drawn = gesture([
+      { x: 510, y: 551 },
+      { x: 505, y: 525 },
+      { x: 502, y: 501 },
+    ]);
+
+    const result = strokeMatches(drawn, character, 0, { leniency: 20 });
+    expect(result.isMatch).toBe(false);
+    expect(result.meta.isStrokeBackwards).toBe(false);
+  });
+
+  it('still reports the current stroke drawn backwards', () => {
+    const character = new Character('X', [
+      strokeAt({ x: 0, y: 0 }, { x: 10, y: 50 }, 0),
+      strokeAt({ x: 500, y: 500 }, { x: 510, y: 550 }, 1),
+    ]);
+    const drawn = gesture([
+      { x: 10, y: 51 },
+      { x: 5, y: 25 },
+      { x: 2, y: 1 },
+    ]);
+
+    const result = strokeMatches(drawn, character, 0);
+    expect(result.isMatch).toBe(false);
+    expect(result.meta.isStrokeBackwards).toBe(true);
+  });
+});
