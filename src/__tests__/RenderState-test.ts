@@ -161,3 +161,53 @@ describe('RenderState', () => {
     });
   });
 });
+
+describe('scope cancellation boundaries', () => {
+  // A bare startsWith treats "strokes.1" as a prefix of "strokes.10", so animating
+  // stroke 1 cancelled stroke 10 and every sibling sharing those leading digits.
+  const chain = (state: RenderState, scope: string) => {
+    const mutation = {
+      scope,
+      _runningPromise: undefined,
+      run: () => new Promise<void>(() => undefined),
+      pause: () => undefined,
+      resume: () => undefined,
+      cancel: () => undefined,
+    };
+    return state.run([mutation]);
+  };
+
+  it('does not cancel a sibling whose index merely shares leading digits', async () => {
+    const state = new RenderState(char, opts);
+    const ten = chain(state, 'character.main.strokes.10');
+    let tenSettled = false;
+    void ten.then(() => {
+      tenSettled = true;
+    });
+
+    chain(state, 'character.main.strokes.1');
+    await Promise.resolve();
+    expect(tenSettled).toBe(false);
+  });
+
+  it('still cancels an exact scope match', async () => {
+    const state = new RenderState(char, opts);
+    const first = chain(state, 'character.main.strokes.1');
+    chain(state, 'character.main.strokes.1');
+    await expect(first).resolves.toEqual({ canceled: true });
+  });
+
+  it('still cancels a genuine descendant', async () => {
+    const state = new RenderState(char, opts);
+    const child = chain(state, 'character.main.strokes.1');
+    chain(state, 'character.main');
+    await expect(child).resolves.toEqual({ canceled: true });
+  });
+
+  it('cancelAll still reaches every chain', async () => {
+    const state = new RenderState(char, opts);
+    const running = chain(state, 'character.main.strokes.7');
+    state.cancelAll();
+    await expect(running).resolves.toEqual({ canceled: true });
+  });
+});

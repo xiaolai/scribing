@@ -33,9 +33,14 @@ export default class Positioner {
 
   constructor(options: PositionerOptions) {
     const { padding, width, height } = options;
-    this.padding = padding;
-    this.width = width;
-    this.height = height;
+    // Sanitise once, then store the sanitised values. convertExternalPoint reads
+    // this.height directly, so keeping the raw value here would reintroduce the NaN
+    // or Infinity that the scale computation below carefully excludes.
+    const finite = (value: number) => (Number.isFinite(value) ? value : 0);
+    const safePadding = Math.max(0, finite(padding));
+    this.padding = safePadding;
+    this.width = finite(width);
+    this.height = finite(height);
 
     const bounds = options.bounds;
     const origin = bounds ? { x: bounds[0], y: bounds[1] } : from;
@@ -45,15 +50,20 @@ export default class Positioner {
     // bounding rect, which produced scale 0 and made convertExternalPoint divide by
     // zero, silently mapping every pointer coordinate to Infinity or NaN. Previously
     // only the writing-unit path was clamped.
-    const effectiveWidth = Math.max(MIN_EFFECTIVE_SIZE, width - 2 * padding);
-    const effectiveHeight = Math.max(MIN_EFFECTIVE_SIZE, height - 2 * padding);
+    // Math.max(1e-6, NaN) is NaN, so clamping alone does not stop a non-finite
+    // dimension reaching scale and offset. A NaN scale makes every converted pointer
+    // coordinate NaN, which reads as a writer that silently rejects all input.
+    const effectiveWidth = Math.max(MIN_EFFECTIVE_SIZE, this.width - 2 * this.padding);
+    const effectiveHeight = Math.max(MIN_EFFECTIVE_SIZE, this.height - 2 * this.padding);
     const scaleX = effectiveWidth / sourceWidth;
     const scaleY = effectiveHeight / sourceHeight;
 
     this.scale = Math.min(scaleX, scaleY);
 
-    const xCenteringBuffer = padding + (effectiveWidth - this.scale * sourceWidth) / 2;
-    const yCenteringBuffer = padding + (effectiveHeight - this.scale * sourceHeight) / 2;
+    const xCenteringBuffer =
+      this.padding + (effectiveWidth - this.scale * sourceWidth) / 2;
+    const yCenteringBuffer =
+      this.padding + (effectiveHeight - this.scale * sourceHeight) / 2;
 
     this.xOffset = -1 * origin.x * this.scale + xCenteringBuffer;
     this.yOffset = -1 * origin.y * this.scale + yCenteringBuffer;

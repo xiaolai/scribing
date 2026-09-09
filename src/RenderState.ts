@@ -216,15 +216,29 @@ export default class RenderState {
     this._getActiveMutations().forEach((mutation) => mutation.resume());
   }
 
+  /**
+   * True when two scope paths name the same node or one contains the other.
+   *
+   * A bare `startsWith` treats `strokes.1` as a prefix of `strokes.10`, so starting an
+   * animation on stroke 1 cancelled stroke 10, 11 and every other sibling whose index
+   * happens to begin with the same digits. Containment has to end on a path separator.
+   * The empty scope matches everything, which is how cancelAll works.
+   */
+  private static scopesOverlap(a: string, b: string) {
+    if (a === b || a === '' || b === '') return true;
+    const [shorter, longer] = a.length < b.length ? [a, b] : [b, a];
+    return longer.startsWith(`${shorter}.`);
+  }
+
   cancelMutations(scopesToCancel: string[]) {
-    for (const chain of this._mutationChains) {
-      for (const chainId of chain._scopes) {
-        for (const scopeToCancel of scopesToCancel) {
-          if (chainId.startsWith(scopeToCancel) || scopeToCancel.startsWith(chainId)) {
-            this._cancelMutationChain(chain);
-          }
-        }
-      }
+    // Snapshot first: _cancelMutationChain rewrites _mutationChains, and cancelling
+    // the same chain once per matching scope pair re-applied its forced mutations and
+    // re-rendered for every match.
+    for (const chain of [...this._mutationChains]) {
+      const overlaps = chain._scopes.some((chainId) =>
+        scopesToCancel.some((scope) => RenderState.scopesOverlap(chainId, scope)),
+      );
+      if (overlaps) this._cancelMutationChain(chain);
     }
   }
 

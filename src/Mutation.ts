@@ -216,7 +216,12 @@ function getPartialValues<T>(
   for (const key in endValues) {
     const endValue = endValues[key];
     const startValue = startValues?.[key];
-    if (typeof startValue === 'number' && typeof endValue === 'number' && endValue >= 0) {
+    // Interpolate any numeric leaf, sign included. This previously also required
+    // `endValue >= 0`, so a negative target fell through to the recursion branch,
+    // where `for (const key in <number>)` yields nothing and the tween produced an
+    // empty object instead of a number. isAlreadyAtEnd below carried the identical
+    // test; both are fixed, because one was never the whole defect.
+    if (typeof startValue === 'number' && typeof endValue === 'number') {
       target[key] = progress * (endValue - startValue) + startValue;
     } else {
       target[key] = getPartialValues(startValue, endValue, progress);

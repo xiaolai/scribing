@@ -41,6 +41,22 @@ describe('Positioner', () => {
     });
   });
 
+  it.each([
+    ['a NaN width', NaN, 100, 20],
+    ['an infinite height', 100, Infinity, 20],
+    ['NaN padding', 100, 100, NaN],
+  ])('produces a finite transform for %s', (_label, width, height, padding) => {
+    // Math.max(1e-6, NaN) is NaN, so the clamp alone let a non-finite dimension reach
+    // scale. Every converted pointer coordinate then became NaN and the writer looked
+    // like it was silently rejecting all input.
+    const positioner = new Positioner({ width, height, padding });
+    expect(Number.isFinite(positioner.scale)).toBe(true);
+    expect(positioner.scale).toBeGreaterThan(0);
+    const point = positioner.convertExternalPoint({ x: 10, y: 10 });
+    expect(Number.isFinite(point.x)).toBe(true);
+    expect(Number.isFinite(point.y)).toBe(true);
+  });
+
   it('does not clamp a drawable area that is merely small', () => {
     const positioner = new Positioner({ width: 100, height: 100, padding: 20 });
     // 100 - 2*20 = 60 across a 1024-unit character box.

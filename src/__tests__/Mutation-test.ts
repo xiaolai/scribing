@@ -195,3 +195,37 @@ describe('Mutation.Delay', () => {
     expect(isResolved).toBe(true);
   });
 });
+
+describe('numeric leaves of any sign', () => {
+  // getPartialValues and isAlreadyAtEnd both detected a numeric leaf with
+  // `endValue >= 0`, so a negative target took the object-recursion branch. Iterating
+  // a number yields no keys, so the tween emitted {} instead of a number and the
+  // mutation reported itself already finished. Both sites are fixed; both are pinned.
+  const state = () => ({
+    state: { offset: 10 },
+    updateState(changes: any) {
+      Object.assign(this.state, changes);
+    },
+  });
+
+  it('interpolates towards a negative target rather than emitting an object', async () => {
+    const renderState = state();
+    const mutation = new Mutation('offset', -30, { duration: 100 });
+    const running = mutation.run(renderState as any);
+    clock.tick(50);
+    expect(typeof renderState.state.offset).toBe('number');
+    expect(renderState.state.offset).toBeLessThan(10);
+    clock.tick(100);
+    await running;
+    expect(renderState.state.offset).toBe(-30);
+  });
+
+  it('does not report a negative target as already reached', async () => {
+    const renderState = state();
+    const mutation = new Mutation('offset', -1, { duration: 100 });
+    const running = mutation.run(renderState as any);
+    clock.tick(200);
+    await running;
+    expect(renderState.state.offset).toBe(-1);
+  });
+});
