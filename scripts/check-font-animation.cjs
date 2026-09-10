@@ -409,6 +409,7 @@ const server = http.createServer((req, res) => {
               ...new Set([
                 ...script.inventory.flatMap((t) => Array.from(t)),
                 ...(scriptId === 'chinese-simplified' ? ['好'] : []),
+                ...(scriptId === 'korean' ? ['한', '글', '고', '갃'] : []),
               ]),
             ]
               .slice(0, 32)
@@ -428,7 +429,10 @@ const server = http.createServer((req, res) => {
           await writer.setAnimation(plan);
         }
         const sourcedTimings = [];
-        for (const scriptId of ['english', 'chinese-simplified']) {
+        // Korean joins the list so a coverage regression shows in one line of output.
+        // Its jamo are fitted per region rather than looked up whole, so its sourced
+        // path count is the signal that the Hangul decomposition still works.
+        for (const scriptId of ['english', 'chinese-simplified', 'korean']) {
           const script = catalog.scripts.find((s) => s.id === scriptId),
             text = [
               ...new Set([

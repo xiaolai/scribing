@@ -1,7 +1,7 @@
 ---
 title: 'Close the reachable stroke-order gaps and stop implying the unreachable ones'
 mode: 'full-plan'
-status: 'Executed 2026-09-11 — 4 done, 2 blocked on a failed gate, 1 deferred'
+status: 'Executed 2026-09-11 — 5 done, 1 partial, 1 blocked (Chinese expansion)'
 baseline: '462a8fc1'
 ---
 
@@ -104,9 +104,24 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 
 ### WI-003: Hangul composer and generated pack
 
-**Status:** BLOCKED — 2026-09-11
-**Changed:** nothing.
-**Blocker:** this item's stated dependency is "WI-002 reports accept". WI-002 reported reject, and its gate line says WI-003 does not start until it reports. Building the pack anyway would produce 11,172 units that `registerSource` rejects for the structural reason in WI-002 Finding 2, which Target Rule 4 forbids shipping. The route that could work is per-jamo region fitting, and this plan's Open Questions say to scope that "then and not before", so it is recorded under Outstanding work rather than built here.
+**Status:** PARTIAL — 2026-09-11, unblocked on user instruction, by a different route
+**Changed:** extras/fonts/animation.mjs
+**Verified:** yarn check-font-animation, plus 150 measured trials of 75 syllables across 2 fonts.
+
+The pack route stays dead for the reason WI-002 gave. Korean was instead unblocked by generalising the incumbent, which is the route WI-002 identified as the one that could work. `registerKoreanPilot` no longer holds a three-entry hardcoded map; it decomposes any modern syllable through the Unicode arithmetic, splits compound finals into their parts, and derives the jamo regions from the vowel's layout class.
+
+| Layout class           | adapted |  mixed | generated |
+| ---------------------- | ------: | -----: | --------: |
+| vertical (any final)   |      10 |     40 |        14 |
+| horizontal (any final) |      10 |     24 |         0 |
+| wrapping               |       0 |      0 |        52 |
+| **total**              |  **20** | **64** |    **66** |
+
+Coverage went from 3 hardcoded syllables to **7,448 attempted**, the 14 non-wrapping vowels × 19 initials × 28 finals. Of the non-wrapping trials, 84 of 98 (86%) get source adoption. Full `source-adapted`, which is what makes the demo say "Animate strokes", is 20 of 150.
+
+**Not finished, and here is what is missing.** Wrapping vowels ㅘㅙㅚㅝㅞㅟㅢ are declined outright, which is 7 of 21 vowels and about 3,724 syllables. Each region is masked out as a rectangle and fitted alone, and a wrapping vowel wraps around the initial in an L-shape that no rectangle separates. Declining is deliberate: a wrong fit would be worse than a generated sequence. `mixed` also remains the common outcome, so most syllables still show "Reveal shape".
+
+**One experiment failed and is recorded rather than repeated.** Widening each region by 3% to stop strokes being clipped at a cut made things worse, 7 fully adapted down to 3. A letter's fit is hurt more by seeing a sliver of its neighbour than by having its own stroke clipped.
 
 - Goal: All 11,172 modern syllables as composed units, reproducibly.
 - Tests (first): Unicode decomposition round-trips for the full range; composition order is initial, medial, final for every layout class; multiple batchim run left to right; every plan consumes every stroke exactly once; jamo internal order is preserved byte-for-byte from the source pack.
@@ -119,9 +134,11 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 
 ### WI-004: Korean integration and gates
 
-**Status:** BLOCKED — 2026-09-11
-**Changed:** nothing.
-**Blocker:** depends on WI-003, which is blocked. There is no pack to integrate and no Korean `sourcePaths` figure for `check-font-animation` to report. Adding gate cases now would pin the current behaviour, in which Korean resolves to `generated` or at best `mixed`, as though it were the intended outcome.
+**Status:** DONE — 2026-09-11, unblocked with WI-003
+**Changed:** scripts/check-font-animation.cjs
+**Verified:** the gate now reports Korean beside English and Chinese, `{"scriptId":"korean","scalars":32,"ms":740,"sourcePaths":78,"totalPaths":95}`, so 78 of 95 paths are sourced. Fault-injected a `return null` into `decomposeHangul`; the gate failed with `Korean component fallback NotoSansCJKkr가` and passed again on restore.
+
+The path-level figure of 82% is higher than WI-003's plan-level 56% because a `mixed` plan still has most of its individual paths sourced. Both are true and they measure different things: paths are what gets drawn in the right order, plans are what the demo labels.
 
 - Goal: Korean text produces `source-adapted` plans in the browser, and a regression would be caught.
 - Tests (first): `한글` and a complex-batchim syllable resolve to source plans; stroke count equals the sum of the jamo counts; the demo's action label reads "Animate strokes" for Korean.
@@ -163,9 +180,15 @@ The bar in this item was roughly 99%. It is not close.
 
 ### WI-006: Chinese coverage expansion
 
-**Status:** DEFERRED — 2026-09-11, re-scope required
+**Status:** BLOCKED — 2026-09-11. The only remaining block, and it is not cleared.
 **Changed:** nothing.
-**Blocker:** this item's own risk line says "if WI-005 kills GlyphWiki, re-scope this as its own plan rather than absorbing an open-ended build here." WI-005 killed it at 45.7% with a structural cause. The surviving route is YES / GB13000.1, which needs a trail-to-stroke-type classifier and an assignment solver, neither of which exists. That is an open-ended build and it does not belong inside this plan. The Handoff section asks for this decision to be explicit, so: **deferred, not carried as open work here.**
+**Blocker:** the data half is solved and the algorithm half is not.
+
+The YES source was located and inspected: Wiktionary carries it as `Appendix:Stroke orders of CJK Unified Ideographs in YES order, parts 1–4`, a machine-readable table whose rows are character, stroke sequence, stroke count, codepoint, under CC BY-SA. Example row: `一 | ㇐ | 1 | 4E00`. Acquiring all 20,992 sequences is a scrape.
+
+What is missing is the matching. YES gives a sequence of stroke _types_; this engine has skeleton trails from `graphTrails`, and the two do not correspond one to one. `graphTrails` joins smooth continuations and splits at junctions, so a closed form like 口 yields one trail for three written strokes while 十 happens to yield two for two. Ordering trails against a type sequence therefore needs both a classifier and a segmentation that can disagree with the skeleton, and its accuracy would have to be validated against the existing 9,574 before any of it could ship.
+
+That is a research problem, not an afternoon, and a half-built version would order strokes wrongly while looking authoritative, which is the exact failure this whole plan exists to prevent. Recorded as blocked with the scope written down rather than started.
 
 - Goal: Raise Chinese from 9,574 toward 20,992.
 - Tests (first): defined once the route is chosen. For the GlyphWiki route, agreement against the existing 9,574 on the overlap. For the YES route, a trail-to-stroke-type classifier validated against known sequences.

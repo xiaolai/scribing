@@ -682,6 +682,176 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
     kinds: source.map((s) => s.kind),
   };
 }
+/**
+ * Modern Hangul jamo, in the order Unicode composes them.
+ *
+ * A syllable is L + V + optional T, and Unicode 3.12 gives the arithmetic:
+ * S = 0xAC00 + (L * 21 + V) * 28 + T. Writing order follows the same sequence, with
+ * the batchim last and its parts left to right.
+ */
+const HANGUL_L = [...'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ'];
+const HANGUL_V = [...'ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ'];
+const HANGUL_T = [null, ...'ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ'];
+
+/**
+ * Compound finals, written as their parts from left to right.
+ *
+ * The jamo pack draws the 40 standalone letters and none of these eleven, so a
+ * 겹받침 syllable is unreachable without splitting the final first.
+ */
+const HANGUL_COMPOUND_T = {
+  ㄳ: 'ㄱㅅ',
+  ㄵ: 'ㄴㅈ',
+  ㄶ: 'ㄴㅎ',
+  ㄺ: 'ㄹㄱ',
+  ㄻ: 'ㄹㅁ',
+  ㄼ: 'ㄹㅂ',
+  ㄽ: 'ㄹㅅ',
+  ㄾ: 'ㄹㅌ',
+  ㄿ: 'ㄹㅍ',
+  ㅀ: 'ㄹㅎ',
+  ㅄ: 'ㅂㅅ',
+};
+
+/** Vowels whose dominant stroke is vertical; the initial sits to their left. */
+const HANGUL_VOWEL_VERTICAL = new Set([...'ㅏㅐㅑㅒㅓㅔㅕㅖㅣ']);
+/** Vowels whose dominant stroke is horizontal; the initial sits above them. */
+const HANGUL_VOWEL_HORIZONTAL = new Set([...'ㅗㅛㅜㅠㅡ']);
+
+/** Decompose one modern syllable into the letters that are written, in order. */
+function decomposeHangul(text) {
+  if (Array.from(text).length !== 1) return null;
+  const n = text.codePointAt(0) - 0xac00;
+  if (!Number.isInteger(n) || n < 0 || n > 11171) return null;
+  const initial = HANGUL_L[Math.floor(n / 588)],
+    vowel = HANGUL_V[Math.floor(n / 28) % 21],
+    final = HANGUL_T[n % 28];
+  const finals = final ? Array.from(HANGUL_COMPOUND_T[final] || final) : [];
+  return { letters: [initial, vowel, ...finals], vowel, finals };
+}
+
+/**
+ * Rectangular sub-regions of the ink, one per written letter, in writing order.
+ *
+ * Each region is masked out of the ink and skeleton and fitted on its own, which is
+ * why they must be rectangles. That is also the limitation: a wrapping vowel such as
+ * ㅘ occupies an L-shape around the initial and cannot be separated from it by one
+ * rectangle, so those syllables are declined here and fall back to a generated
+ * sequence rather than being fitted wrongly.
+ */
+function hangulRegions({ vowel, finals, ink, width, box, cut }) {
+  const [left, top, right, bottom] = box;
+  const w = right - left,
+    h = bottom - top;
+  if (HANGUL_VOWEL_VERTICAL.has(vowel))
+    return withFinal(verticalLayout(box, w, h, finals, cut), finals, cut);
+  if (HANGUL_VOWEL_HORIZONTAL.has(vowel))
+    return withFinal(horizontalLayout(box, w, h, finals, ink, width, cut), finals, cut);
+  // A wrapping vowel such as ㅘ occupies an L-shape around the initial. Each region is
+  // masked out of the ink as a rectangle and fitted on its own, and no rectangle can
+  // separate those two, so these are declined and fall back to a generated sequence
+  // rather than being fitted wrongly.
+  return null;
+}
+
+/** Attach the batchim regions a layout reserved for them, splitting a compound final. */
+function withFinal(layout, finals, cut) {
+  if (!layout) return null;
+  const { body, final } = layout;
+  if (!finals.length) return body;
+  if (!final) return null;
+  const [fx1, fy1, fx2, fy2] = final;
+  if (finals.length === 1) return [...body, final];
+  const xm = cut('x', fx1 + (fx2 - fx1) * 0.3, fx1 + (fx2 - fx1) * 0.7, fy1, fy2);
+  if (xm <= fx1 || xm >= fx2) return null;
+  return [...body, [fx1, fy1, xm, fy2], [xm + 1, fy1, fx2, fy2]];
+}
+
+/**
+ * Vertical vowel: batchim off the bottom first, then the body split down the middle.
+ *
+ * Taking the batchim first is safe here because the initial and the vowel are side by
+ * side, so the bottom band is genuinely the emptiest horizontal line.
+ */
+function verticalLayout(box, w, h, finals, cut) {
+  const [left, top, right, bottom] = box;
+  let bodyBottom = bottom,
+    final = null;
+  if (finals.length) {
+    const y = cut('y', top + h * 0.6, top + h * 0.79, left, right);
+    if (y <= top || y >= bottom) return null;
+    bodyBottom = y;
+    final = [left, y + 1, right, bottom];
+  }
+  const x = cut('x', left + w * 0.42, left + w * 0.69, top, bodyBottom);
+  if (x <= left || x >= right) return null;
+  return {
+    body: [
+      [left, top, x, bodyBottom],
+      [x + 1, top, right, bodyBottom],
+    ],
+    final,
+  };
+}
+
+/**
+ * Horizontal vowel: locate the vowel's wide bar first, then cut above and below it.
+ *
+ * The bar has to be found across the whole box before anything is split off. A generic
+ * valley search for the batchim runs first in the vertical layout, but here it lands
+ * near the bar itself and disturbs the detection; 글 regressed exactly that way.
+ * The bar is the widest run of ink rather than a gap, so it is found by span, not by
+ * emptiness, or the search puts it inside the initial's region and leaves the vowel
+ * with nothing.
+ */
+function horizontalLayout(box, w, h, finals, ink, width, cut) {
+  const [left, top, right, bottom] = box;
+  let band = -1,
+    span = 0;
+  for (let y = Math.round(top + h * 0.3); y <= Math.round(top + h * 0.56); y++) {
+    let a = width,
+      b = -1;
+    for (let x = left; x <= right; x++)
+      if (ink[y * width + x]) {
+        a = Math.min(a, x);
+        b = Math.max(b, x);
+      }
+    if (b - a > span) {
+      span = b - a;
+      band = y;
+    }
+  }
+  if (band < 0 || span < w * 0.55) return null;
+  let first = band,
+    last = band;
+  const occupied = (y) => {
+    let count = 0;
+    for (let x = left; x <= right; x++) count += ink[y * width + x];
+    return count > w * 0.45;
+  };
+  while (first > top && occupied(first - 1)) first--;
+  while (last < bottom && occupied(last + 1)) last++;
+  const y1 = cut('y', Math.max(top, first - h * 0.12), first - 1, left, right);
+  if (y1 >= first) return null;
+  if (!finals.length)
+    return {
+      body: [
+        [left, top, right, y1],
+        [left, y1 + 1, right, bottom],
+      ],
+      final: null,
+    };
+  const y2 = cut('y', last + 1, Math.min(bottom, last + h * 0.12), left, right);
+  if (y2 <= last) return null;
+  return {
+    body: [
+      [left, top, right, y1],
+      [left, y1 + 1, right, y2],
+    ],
+    final: [left, y2 + 1, right, bottom],
+  };
+}
+
 async function registerKoreanPilot(
   text,
   loader,
@@ -692,17 +862,9 @@ async function registerKoreanPilot(
   height,
   signal,
 ) {
-  const pilots = { 가: ['ㄱ', 'ㅏ'], 한: ['ㅎ', 'ㅏ', 'ㄴ'], 글: ['ㄱ', 'ㅡ', 'ㄹ'] };
-  const letters = pilots[text];
-  if (!letters) return null;
-  // These three declared Unicode compositions are the complete syllable pilot.
-  const expected = { 가: [0, 0, 0], 한: [18, 0, 4], 글: [0, 18, 8] },
-    n = text.codePointAt(0) - 0xac00;
-  if (
-    JSON.stringify([Math.floor(n / 588), Math.floor(n / 28) % 21, n % 28]) !==
-    JSON.stringify(expected[text])
-  )
-    return null;
+  const decomposed = decomposeHangul(text);
+  if (!decomposed) return null;
+  const { letters, vowel, finals } = decomposed;
   let left = width,
     right = 0,
     top = height,
@@ -714,6 +876,7 @@ async function registerKoreanPilot(
       top = Math.min(top, Math.floor(i / width));
       bottom = Math.max(bottom, Math.floor(i / width));
     }
+  if (right <= left || bottom <= top) return null;
   const cut = (axis, lo, hi, otherLo, otherHi) => {
     let best = -1,
       score = Infinity;
@@ -729,60 +892,18 @@ async function registerKoreanPilot(
     }
     return best;
   };
-  const w = right - left,
-    h = bottom - top;
-  let regions;
-  if (text === '가') {
-    const x = cut('x', left + w * 0.42, left + w * 0.68, top, bottom);
-    regions = [
-      [left, top, x, bottom],
-      [x + 1, top, right, bottom],
-    ];
-  } else if (text === '한') {
-    const y = cut('y', top + h * 0.6, top + h * 0.79, left, right),
-      x = cut('x', left + w * 0.42, left + w * 0.69, top, y);
-    regions = [
-      [left, top, x, y],
-      [x + 1, top, right, y],
-      [left, y + 1, right, bottom],
-    ];
-  } else {
-    // Identify the actual wide ㅡ band first; a broad valley search can otherwise
-    // put that vowel into the initial ㄱ region and leave an empty middle region.
-    let band = -1,
-      span = 0;
-    for (let y = Math.round(top + h * 0.3); y <= Math.round(top + h * 0.56); y++) {
-      let a = width,
-        b = -1;
-      for (let x = left; x <= right; x++)
-        if (ink[y * width + x]) {
-          a = Math.min(a, x);
-          b = Math.max(b, x);
-        }
-      if (b - a > span) {
-        span = b - a;
-        band = y;
-      }
-    }
-    if (band < 0 || span < w * 0.55) return null;
-    let first = band,
-      last = band;
-    const occupied = (y) => {
-      let count = 0;
-      for (let x = left; x <= right; x++) count += ink[y * width + x];
-      return count > w * 0.45;
-    };
-    while (first > top && occupied(first - 1)) first--;
-    while (last < bottom && occupied(last + 1)) last++;
-    const y1 = cut('y', Math.max(top, first - h * 0.12), first - 1, left, right),
-      y2 = cut('y', last + 1, Math.min(bottom, last + h * 0.12), left, right);
-    if (y1 >= first || y2 <= last) return null;
-    regions = [
-      [left, top, right, y1],
-      [left, y1 + 1, right, y2],
-      [left, y2 + 1, right, bottom],
-    ];
-  }
+  const regions = hangulRegions({
+    vowel,
+    finals,
+    ink,
+    width,
+    box: [left, top, right, bottom],
+    cut,
+  });
+  if (!regions || regions.length !== letters.length) return null;
+  // Regions are taken as cut, with no margin. Widening them by 3% was tried and made
+  // things worse, 7 fully adapted down to 3: a letter's fit is hurt more by seeing a
+  // sliver of its neighbour than by having its own stroke clipped at the boundary.
   const result = { trails: [], kinds: [], source: [] };
   for (let k = 0; k < letters.length; k++) {
     stop(signal);

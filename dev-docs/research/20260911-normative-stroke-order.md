@@ -97,8 +97,24 @@ also not the download this note implied. Of the first 40 glyphs probed, 39 held 
 strokes, only component references, so reading it at all means reimplementing KAGE's
 recursive composition.
 
-**What that leaves.** Korean is still the best target, but by generalising the incumbent's
-per-jamo region cutting, not by composing blocks. Chinese expansion now has only the
+**What that leaves, and what was then built.** Korean was the best target, and the route
+was generalising the incumbent's per-jamo region cutting rather than composing blocks.
+That has since been done. `registerKoreanPilot` now decomposes any modern syllable
+through the Unicode arithmetic, splits compound finals into their parts, and derives
+jamo regions from the vowel's layout class. Coverage went from 3 hardcoded syllables to
+7,448 attempted, and across 150 measured trials 84 of the 98 non-wrapping ones get source
+adoption. Wrapping vowels ㅘㅙㅚㅝㅞㅟㅢ are declined, about 3,724 syllables, because each
+region is masked as a rectangle and a wrapping vowel surrounds the initial in an L-shape
+that no rectangle separates. `check-font-animation` now reports Korean at 78 of 95 paths
+sourced.
+
+**Chinese remains open.** The YES data itself turned out to be reachable: Wiktionary
+carries it as a machine-readable table, character, stroke sequence, stroke count and
+codepoint, under CC BY-SA. The obstacle is matching, not acquisition. YES gives stroke
+_types_ while this engine has skeleton trails, and the two do not correspond one to one:
+`graphTrails` yields one trail for the three strokes of 口. Ordering trails against a type
+sequence needs a classifier and a segmentation willing to disagree with the skeleton, and
+its accuracy would have to be validated against the existing 9,574 first. Chinese expansion now has only the
 YES / GB13000.1 route, which needs a stroke-type classifier and an assignment solver. Both
 are separate pieces of work with their own risk, and neither is the afternoon this note
 implied.
