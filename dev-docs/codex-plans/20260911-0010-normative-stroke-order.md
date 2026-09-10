@@ -1,7 +1,7 @@
 ---
 title: 'Close the reachable stroke-order gaps and stop implying the unreachable ones'
 mode: 'full-plan'
-status: 'Draft — not started'
+status: 'Executed 2026-09-11 — 4 done, 2 blocked on a failed gate, 1 deferred'
 baseline: '462a8fc1'
 ---
 
@@ -134,6 +134,24 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 
 ### WI-005: GlyphWiki writing-order verification spike
 
+**Status:** DONE — 2026-09-11. KAGE order is not writing order. **The route is dead.**
+**Changed:** nothing committed.
+**Verified:** 300 kanji sampled from `fonts/motor/japanese.json`, which is KanjiVG at a pinned revision. Each KAGE stroke was matched to the KanjiVG stroke it lies on and the induced index sequence tested for monotonicity, because KAGE splits some written strokes into several rendering pieces and a raw count comparison would be meaningless.
+
+| Measure         |      Result |
+| --------------- | ----------: |
+| Sampled         |         300 |
+| Order agrees    | 137 (45.7%) |
+| Order disagrees |         163 |
+
+The bar in this item was roughly 99%. It is not close.
+
+**Finding 1 — GlyphWiki is not a download.** Of the first 40 glyphs probed, 39 held no literal strokes at all, only component references. Getting strokes at all meant implementing recursive expansion of `99:` entries with their placement boxes, which is the KAGE engine's own job. The Decision Log's premise, "GlyphWiki is a download; YES needs a trail classifier and an assignment solver", is false: both routes need a build.
+
+**Finding 2 — the disagreement is structural, not noise.** 追 maps to `[6,7,7,8,8,0,1,2,2,3,4,4,5]`, a clean block rotation. Its KanjiVG strokes 6, 7 and 8 sit at x 14–30 and along the bottom sweep, which is unambiguously 辶. KanjiVG writes the walking radical last; KAGE composes it first, because composition order is rendering order and an enclosing radical is placed before what it encloses. That is the "structural disagreement pattern" this item named as fatal.
+
+**Caveat:** the stroke matching is a nearest-curve heuristic, so some of the 163 will be mis-matches rather than genuine order differences. The conclusion does not rest on the rate. Finding 2 alone is disqualifying, and no plausible correction moves 45.7% past 99%.
+
 - Goal: Answer whether KAGE stroke sequence equals writing order, and therefore whether the YES route is needed at all.
 - Tests (first): sample at least 300 kanji present in both GlyphWiki and KanjiVG, stratified by stroke count; compare stroke sequence after normalising geometry.
 - Acceptance (measurable): a reported agreement rate with the disagreement cases characterised. Above roughly 99% makes GlyphWiki usable with spot review; a structural disagreement pattern kills the route outright.
@@ -144,6 +162,10 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 - Priority / estimate: P1 / S. **Gate: WI-006 scope depends on this.**
 
 ### WI-006: Chinese coverage expansion
+
+**Status:** DEFERRED — 2026-09-11, re-scope required
+**Changed:** nothing.
+**Blocker:** this item's own risk line says "if WI-005 kills GlyphWiki, re-scope this as its own plan rather than absorbing an open-ended build here." WI-005 killed it at 45.7% with a structural cause. The surviving route is YES / GB13000.1, which needs a trail-to-stroke-type classifier and an assignment solver, neither of which exists. That is an open-ended build and it does not belong inside this plan. The Handoff section asks for this decision to be explicit, so: **deferred, not carried as open work here.**
 
 - Goal: Raise Chinese from 9,574 toward 20,992.
 - Tests (first): defined once the route is chosen. For the GlyphWiki route, agreement against the existing 9,574 on the overlap. For the YES route, a trail-to-stroke-type classifier validated against known sequences.

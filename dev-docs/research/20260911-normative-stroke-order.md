@@ -66,6 +66,43 @@ For Arabic the only corpora are recognition datasets: Calliar, AOLAH, Hijja, KHA
 
 **GlyphWiki is unverified and possibly large.** It holds KAGE stroke descriptions for a very large CJK repertoire under a public-domain-equivalent licence. KAGE is a rendering format, so whether its stroke sequence coincides with writing order is a property nobody has stated. It is cheaply testable against KanjiVG on the overlap, and worth testing before any work on the YES route.
 
+## Update, 2026-09-11 evening: two of the three findings above did not survive testing
+
+The "Three actionable findings" section was written from a survey, not from a trial. Both
+of its cheap routes were then spiked under
+[the plan](../codex-plans/20260911-0010-normative-stroke-order.md), and both failed. What
+follows supersedes them; the survey of what data exists is unaffected.
+
+**There was already a Korean incumbent, and the note missed it.**
+`extras/fonts/animation.mjs:685` contains `registerKoreanPilot`, reached when the loader
+finds no record and the shape is Hangul. It handles three hardcoded syllables, 가 한 글,
+by projection-cutting the ink into jamo regions and fitting each separately. So the claim
+above that Korean's useful coverage is zero is slightly too strong: it is three syllables,
+and mostly at `mixed` rather than `source-adapted`, which still shows "Reveal shape".
+
+**Composing a whole block and fitting it does not work.** Across 2 fonts × 7 syllables,
+a table-composed block was accepted once. `registerSource`'s frame search has two degrees
+of freedom, `scaleX` and `offsetX`, both horizontal, with y a fixed stretch onto the ink
+bounding box. A Hangul block needs independent 2D placement per jamo, which that search
+cannot express, so no layout table recovers it. Separately, the 40-jamo pack holds none of
+the eleven compound finals ㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄ, so 겹받침 syllables cannot be composed at
+all without decomposing the final first.
+
+**GlyphWiki's KAGE order is not writing order.** 300 kanji were compared against KanjiVG
+by matching each KAGE stroke to the KanjiVG stroke it lies on and testing the induced
+sequence for monotonicity. 137 agreed, 45.7%. The disagreement has a structural cause
+rather than being noise: 追 maps to `[6,7,7,8,8,0,1,2,2,3,4,4,5]`, because KanjiVG writes
+the 辶 radical last while KAGE composes it first, enclosure before enclosed. GlyphWiki is
+also not the download this note implied. Of the first 40 glyphs probed, 39 held no literal
+strokes, only component references, so reading it at all means reimplementing KAGE's
+recursive composition.
+
+**What that leaves.** Korean is still the best target, but by generalising the incumbent's
+per-jamo region cutting, not by composing blocks. Chinese expansion now has only the
+YES / GB13000.1 route, which needs a stroke-type classifier and an assignment solver. Both
+are separate pieces of work with their own risk, and neither is the afternoon this note
+implied.
+
 ## What cannot be fixed
 
 For Arabic, Thai, Hebrew, Tamil, Bengali, Cyrillic, Greek and the remaining scripts in the catalogue, the conclusion is not "not found yet". These traditions teach letter formation, but no ministry publishes it as a normative sequence and no one has published it as data. Building it would mean commissioning native curriculum authorities per script, which is a content programme rather than an import.
