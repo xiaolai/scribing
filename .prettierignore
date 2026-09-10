@@ -33,5 +33,10 @@
 # Audit run records. Machine-written tables, kept verbatim as the record of a run.
 /.cc-suite
 
+# Self-contained companion HTML, emitted by a generator with fonts inlined as base64.
+# Reformatting is undone the next time the generator runs, so the two would take turns
+# rewriting each other exactly as the stamper and Prettier did over the demo import map.
+/dev-docs/artifacts
+
 # Written by Jest in its own format.
 **/__snapshots__
