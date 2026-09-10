@@ -76949,6 +76949,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "english",
+      "strokeOrderUnitCount": 52,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           65,
@@ -77270,6 +77274,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "chinese",
+      "strokeOrderUnitCount": 9574,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           11904,
@@ -77431,6 +77439,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "chinese",
+      "strokeOrderUnitCount": 9574,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           11904,
@@ -77609,6 +77621,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "japanese",
+      "strokeOrderUnitCount": 6636,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           11904,
@@ -77875,6 +77891,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "korean",
+      "strokeOrderUnitCount": 40,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           4352,
@@ -78125,6 +78145,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1536,
@@ -78675,6 +78697,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1536,
@@ -79106,6 +79130,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1536,
@@ -79577,6 +79603,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1329,
@@ -79705,6 +79733,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           68352,
@@ -79797,6 +79827,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6912,
@@ -79962,6 +79994,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2432,
@@ -80276,6 +80310,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           10240,
@@ -80430,6 +80466,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           4096,
@@ -80828,6 +80866,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5120,
@@ -81054,6 +81094,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1024,
@@ -81344,6 +81386,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1024,
@@ -81564,6 +81608,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2304,
@@ -81800,6 +81846,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2304,
@@ -81972,6 +82020,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           67648,
@@ -82178,6 +82228,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           4608,
@@ -82415,6 +82467,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           4256,
@@ -82533,6 +82587,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           4256,
@@ -82709,6 +82765,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           11264,
@@ -82824,6 +82882,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           70400,
@@ -83106,6 +83166,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           880,
@@ -83413,6 +83475,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2689,
@@ -83590,6 +83654,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2561,
@@ -83786,6 +83852,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1425,
@@ -83997,6 +84065,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "japanese",
+      "strokeOrderUnitCount": 6636,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           12353,
@@ -84219,6 +84291,10 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "normative",
+      "strokeOrderGroup": "japanese",
+      "strokeOrderUnitCount": 6636,
+      "strokeOrderNote": "Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.",
       "ranges": [
         [
           12449,
@@ -84365,6 +84441,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3200,
@@ -84562,6 +84640,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3328,
@@ -84733,6 +84813,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43744,
@@ -84974,6 +85056,8 @@
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
       "writingMode": "vertical-lr",
       "layoutNote": "The provider shapes this script left-to-right, then rotates the entire run clockwise for its conventional vertical orientation. This is one run, not a multi-column page layout.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6144,
@@ -85112,6 +85196,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1984,
@@ -85231,6 +85317,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2817,
@@ -85452,6 +85540,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5792,
@@ -85530,6 +85620,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43008,
@@ -85646,6 +85738,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1792,
@@ -85729,6 +85823,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5888,
@@ -85829,6 +85925,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3840,
@@ -86068,6 +86166,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           11568,
@@ -86175,6 +86275,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3585,
@@ -86287,6 +86389,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3713,
@@ -86431,6 +86535,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6016,
@@ -86566,6 +86672,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2946,
@@ -86768,6 +86876,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3072,
@@ -86945,6 +87055,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           3457,
@@ -87116,6 +87228,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           125184,
@@ -87201,6 +87315,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           71424,
@@ -87451,6 +87567,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           42656,
@@ -87539,6 +87657,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           92880,
@@ -87627,6 +87747,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           7104,
@@ -87752,6 +87874,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           72704,
@@ -87887,6 +88011,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           69632,
@@ -88000,6 +88126,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6656,
@@ -88076,6 +88204,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5952,
@@ -88171,6 +88301,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66208,
@@ -88265,6 +88397,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66864,
@@ -88349,6 +88483,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           69888,
@@ -88479,6 +88615,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43520,
@@ -88729,6 +88867,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5024,
@@ -88900,6 +89040,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           994,
@@ -89134,6 +89276,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           73728,
@@ -89243,6 +89387,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           67584,
@@ -89385,6 +89531,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66560,
@@ -89471,6 +89619,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           71680,
@@ -89693,6 +89843,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           77824,
@@ -89780,6 +89932,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66352,
@@ -89875,6 +90029,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           73056,
@@ -89993,6 +90149,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           68864,
@@ -90061,6 +90219,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5920,
@@ -90158,6 +90318,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43392,
@@ -90289,6 +90451,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           69760,
@@ -90403,6 +90567,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43264,
@@ -90494,6 +90660,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           68096,
@@ -90619,6 +90787,8 @@
       ],
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           70144,
@@ -90752,6 +90922,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           70320,
@@ -90849,6 +91021,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           7168,
@@ -90950,6 +91124,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6400,
@@ -91196,6 +91372,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           67072,
@@ -91406,6 +91584,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           65536,
@@ -91519,6 +91699,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           42192,
@@ -91598,6 +91780,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2112,
@@ -91696,6 +91880,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           72960,
@@ -91863,6 +92049,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           93952,
@@ -91974,6 +92162,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           71168,
@@ -92122,6 +92312,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6528,
@@ -92240,6 +92432,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           70656,
@@ -92360,6 +92554,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5760,
@@ -92450,6 +92646,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           7248,
@@ -92606,6 +92804,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           68736,
@@ -92691,6 +92891,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66304,
@@ -92785,6 +92987,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66464,
@@ -92912,6 +93116,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           68608,
@@ -93026,6 +93232,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66736,
@@ -93102,6 +93310,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66688,
@@ -93240,6 +93450,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           92928,
@@ -93376,6 +93588,8 @@
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
       "writingMode": "vertical-lr",
       "layoutNote": "The provider shapes this script left-to-right, then rotates the entire run clockwise for its conventional vertical orientation. This is one run, not a multi-column page layout.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43072,
@@ -93444,6 +93658,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           67840,
@@ -93517,6 +93733,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43312,
@@ -93596,6 +93814,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           2048,
@@ -93720,6 +93940,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43136,
@@ -93836,6 +94058,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           70016,
@@ -93990,6 +94214,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66640,
@@ -94083,6 +94309,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           71040,
@@ -94186,6 +94414,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           69840,
@@ -94270,6 +94500,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           7040,
@@ -94376,6 +94608,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           5984,
@@ -94461,6 +94695,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6480,
@@ -94561,6 +94797,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           6688,
@@ -94732,6 +94970,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           43648,
@@ -94870,6 +95110,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           71296,
@@ -94991,6 +95233,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           1920,
@@ -95092,6 +95336,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           70784,
@@ -95212,6 +95458,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           66432,
@@ -95418,6 +95666,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           42240,
@@ -95545,6 +95795,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           71840,
@@ -95759,6 +96011,8 @@
       "inventoryStatus": "curated-unicode-inventory",
       "inventoryNote": "Encoded character samples; not a complete language alphabet or a certified handwriting sequence.",
       "fontChoiceNote": "One bundled family is available for this script; no alternate face is implied.",
+      "strokeOrder": "none",
+      "strokeOrderNote": "No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.",
       "ranges": [
         [
           40960,

@@ -12,6 +12,18 @@ def ranges(points):
   else:out.append([cp,cp])
  return out
 lock=read('fonts/assets.lock.json'); scripts=read('scripts/fonts/scripts.json')
+# Stroke-order availability. The predicate mirrors the group selection in
+# extras/fonts/animation.mjs exactly, so the catalog cannot advertise a group the
+# runtime would not consult. Normative order exists for four scripts and no others;
+# see dev-docs/research/20260911-normative-stroke-order.md.
+motor_index=read('fonts/motor/index.json')
+motor_units={g['id']:g['unitCount'] for g in motor_index['groups']}
+def motor_group(entry):
+ if entry['script']=='Latn':return 'english'
+ if entry['script']=='Hang':return 'korean'
+ if entry['language'].startswith('ja'):return 'japanese'
+ if entry['language'].startswith('zh'):return 'chinese'
+ return None
 for group in ['fonts','notices','unicode']:
  for entry in lock[group]:
   assert hashlib.sha256((ROOT/entry['file']).read_bytes()).hexdigest()==entry['sha256'],entry['file']
@@ -68,6 +80,15 @@ for entry in scripts:
  if len(entry['fontIds'])==1:entry['fontChoiceNote']='One bundled family is available for this script; no alternate face is implied.'
  if entry['id'] in ['mongolian','phags-pa']:
   entry['writingMode']='vertical-lr';entry['layoutNote']='The provider shapes this script left-to-right, then rotates the entire run clockwise for its conventional vertical orientation. This is one run, not a multi-column page layout.'
+ # A caller reading the catalog must be able to tell, before preparing anything,
+ # whether stroke order can exist for this script. Rendering works for every entry;
+ # instruction does not.
+ group=motor_group(entry)
+ entry['strokeOrder']='normative' if group else 'none'
+ if group:
+  entry['strokeOrderGroup']=group
+  entry['strokeOrderUnitCount']=motor_units[group]
+ entry['strokeOrderNote']=('Ordered motor data exists for this script and is fitted onto the font outlines. The count is the whole source group, not this entry alone.' if group else 'No authority publishes a normative stroke order for this script and no dataset encodes one. Rendering, tracing and shape reveal work; stroke order does not.')
  # Persist all script codepoint ranges so a text input may use more than the compact inventory.
  entry['ranges']=[r for script in entry['unicodeScripts'] for r in script_ranges[script]]
 script_ids={s['id']:s for s in scripts}

@@ -59,6 +59,12 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 
 ### WI-001: Stroke-order availability in the catalogue
 
+**Status:** DONE — 2026-09-11
+**Changed:** scripts/fonts/build-catalog.py, scripts/fonts/check-assets.mjs, fonts/catalog.json, fonts/catalog.lock.json
+**Verified:** yarn check-fonts — 120 script entries, 7 normative and 113 none. Fault-injected a false `normative` claim on `arabic` with the lock hash updated so the drift check could not mask it; the new assertion failed with `arabic order`, then passed again on restore.
+**Deviation:** the item named `src/units/types.ts` and `scripts/data/check.mjs`. Neither was touched. There is no catalogue type in TypeScript, and adding one would export a type with no consumer, since the catalogue is passed to `createFontProvider` from JavaScript. `scripts/data/check.mjs` reads `packs/generated/catalog.json`, a different file; the font catalogue is asserted by `scripts/fonts/check-assets.mjs`, which is where the assertion went.
+**Note:** the field resolves to 7 normative script entries, not 4. `hiragana` and `katakana` carry `language: ja` and `chinese-traditional` carries `zh-Hant`, so the runtime predicate selects a motor group for each. The count reported is the whole source group's, which `strokeOrderNote` states.
+
 - Goal: A caller can tell, without preparing anything, whether a script can have stroke order at all.
 - Tests (first): every script entry has the field; the four normative scripts report a count matching `fonts/motor/*.json`; a script with no motor group reports `none`.
 - Acceptance (measurable): `check-data` asserts the field against the motor index rather than trusting the catalogue.
@@ -69,6 +75,23 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 - Priority / estimate: P0 / S.
 
 ### WI-002: Hangul composition spike
+
+**Status:** DONE — 2026-09-11. The answer is no. **The gate does not open.**
+**Changed:** nothing committed. Ran through a scratch Playwright harness, since the preparer needs Canvas and Path2D.
+**Verified:** 2 fonts × 7 syllables = 14 trials per route, comparing the incumbent against a table-composed block supplied through `sourceLoader`.
+
+| Route                           | source-adapted | mixed | generated |
+| ------------------------------- | -------------: | ----: | --------: |
+| Incumbent `registerKoreanPilot` |              1 |     4 |         9 |
+| Table-composed whole block      |              1 |     0 |        13 |
+
+**Finding 1 — the plan missed an incumbent.** `extras/fonts/animation.mjs:685` already contains `registerKoreanPilot`, reached when the loader returns no record and `shape.script === 'Hang'`. It handles three hardcoded syllables, 가 한 글, by projection-cutting the ink into jamo regions and fitting each separately. That is the per-jamo route this plan listed as its _fallback_, so the fallback is the incumbent and the plan's primary route is the untried one. It is also unreliable on its own three: mostly `mixed`, and font-dependent. `mixed` still shows "Reveal shape", so it does not deliver stroke order either.
+
+**Finding 2 — the whole-block route fails structurally, not by tuning.** `registerSource`'s frame search has two degrees of freedom, `scaleX` and `offsetX`, both horizontal; the y mapping is a fixed stretch of the source extent onto the ink bounding box. A Hangul block needs independent 2D placement per jamo, which that search cannot express. No layout table can recover it.
+
+**Finding 3 — the jamo pack cannot express 겹받침.** It holds 40 units and none of the eleven compound finals ㄳㄵㄶㄺㄻㄼㄽㄾㄿㅀㅄ, only the doubled ㄲ and ㅆ. 곩 composed zero strokes for this reason. Any route must decompose a compound final into its parts first.
+
+**Deviation:** the item named LXGW WenKai KR, Nanum Pen Script and Noto Sans KR. The catalogue ships only `NotoSansCJKkr` and `NotoSerifCJKkr` for Korean; testing the other two would mean adding fonts to the catalogue, which is outside this item. Two faces were tested rather than three, which weakens the stated mitigation. Findings 2 and 3 do not depend on font count.
 
 - Goal: Settle whether a table-composed block fits a real font's skeleton well enough for `registerSource` to accept it.
 - Tests (first): compose five syllables covering every layout class — 가 vertical, 고 horizontal, 과 wrapping, 한 vertical with final, 곩 horizontal with complex final — by hand or by a throwaway script.
@@ -81,6 +104,10 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 
 ### WI-003: Hangul composer and generated pack
 
+**Status:** BLOCKED — 2026-09-11
+**Changed:** nothing.
+**Blocker:** this item's stated dependency is "WI-002 reports accept". WI-002 reported reject, and its gate line says WI-003 does not start until it reports. Building the pack anyway would produce 11,172 units that `registerSource` rejects for the structural reason in WI-002 Finding 2, which Target Rule 4 forbids shipping. The route that could work is per-jamo region fitting, and this plan's Open Questions say to scope that "then and not before", so it is recorded under Outstanding work rather than built here.
+
 - Goal: All 11,172 modern syllables as composed units, reproducibly.
 - Tests (first): Unicode decomposition round-trips for the full range; composition order is initial, medial, final for every layout class; multiple batchim run left to right; every plan consumes every stroke exactly once; jamo internal order is preserved byte-for-byte from the source pack.
 - Acceptance (measurable): 11,172 units generated; `check-data-reproducible` extends from 498 files to include them and still reports `reproducible: true`; pack passes the manifest validation added at `e93c4e60`.
@@ -91,6 +118,10 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 - Priority / estimate: P0 / M.
 
 ### WI-004: Korean integration and gates
+
+**Status:** BLOCKED — 2026-09-11
+**Changed:** nothing.
+**Blocker:** depends on WI-003, which is blocked. There is no pack to integrate and no Korean `sourcePaths` figure for `check-font-animation` to report. Adding gate cases now would pin the current behaviour, in which Korean resolves to `generated` or at best `mixed`, as though it were the intended outcome.
 
 - Goal: Korean text produces `source-adapted` plans in the browser, and a regression would be caught.
 - Tests (first): `한글` and a complex-batchim syllable resolve to source plans; stroke count equals the sum of the jamo counts; the demo's action label reads "Animate strokes" for Korean.
@@ -124,6 +155,11 @@ Purely additive. No existing pack, unit or API changes shape. Korean text that p
 - Priority / estimate: P2 / L, conditional.
 
 ### WI-007: Narrow the claims to what is true
+
+**Status:** DONE — 2026-09-11
+**Changed:** README.md, docs/fonts.md, docs/multilingual.md, CHANGELOG.md
+**Verified:** yarn prettier-check — all matched files pass; yarn check-fonts — 120 script entries, catalogue field asserted against the motor index. Rendering and instruction are now stated separately in all four files, each pointing at the survey for the reason.
+**Deviation:** the item wanted "final counts from WI-003", which is blocked. The documentation therefore records the counts as they actually are, including that Korean's 40 units are isolated jamo and ordinary Korean text falls back to a generated sequence. Naming that gap is more useful than waiting for a number that does not exist yet, and it will need one edit when WI-003 lands.
 
 - Goal: Documentation says stroke order works for four scripts and rendering works for 120 entries, as two separate statements.
 - Tests (first): documentation lint and diff review; no runtime gate.

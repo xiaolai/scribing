@@ -2,6 +2,8 @@
 
 Scribing supports optional v2 writing units alongside the existing Chinese API. A unit may represent a letter, syllable, character, or an explicitly named source observation. The engine animates and checks the supplied model; this does not establish that its formation is a reviewed teaching standard.
 
+Stroke order and script support are separate claims. The font catalogue covers 120 script entries for rendering. Ordered motor data exists for four groups: chinese 9,574, japanese 6,636, english 52 and korean 40. The Korean units are isolated jamo, so ordinary Korean text falls back to a generated drawing sequence; that is a known gap, recorded with its cause in [the survey](../dev-docs/research/20260911-normative-stroke-order.md). Devanagari is deferred: Wikimedia Commons holds 85 stroke-order files for it, of which only 13 are vector, so importing it resembles authoring rather than importing.
+
 ## Try the demo
 
 Build the library with `yarn build`, serve the repository over HTTP, then open `/demo/multilingual/`. The page reads `packs/generated/catalog.json` and fetches only the chosen local pack. Once those repository assets are available locally, it needs no external runtime data service. `/demo/` remains the Chinese demo and uses its existing remote character loader.

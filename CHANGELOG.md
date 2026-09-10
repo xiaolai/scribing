@@ -153,6 +153,15 @@ along with a stroke that lies entirely outside the glyphs it claims.
 
 ### Changed
 
+Every catalogue script entry now declares `strokeOrder`, either `normative` with its
+source group and unit count or `none` with the reason. The two things the catalogue
+describes had been advertised as one: outlines, tracing and shape reveal work for all
+120 script entries, while normative stroke order exists for four source groups and
+reaches seven entries. `check-fonts` asserts the field against the motor index the
+runtime consults, so the catalogue cannot claim a group the loader would never select.
+No authority publishes a normative order for the remaining 113 scripts; see
+`dev-docs/research/20260911-normative-stroke-order.md` for the survey behind that.
+
 The public type surface tightened in four places. Nothing was removed or renamed, but a
 consumer who was relying on one of these will now see a compile error rather than
 behaviour that never worked.

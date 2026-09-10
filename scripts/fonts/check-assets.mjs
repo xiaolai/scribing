@@ -170,6 +170,48 @@ for (const group of motor.groups) {
     assert.equal(group.unitCount, 9574);
   }
 }
+
+/**
+ * Stroke-order availability, asserted against the motor index rather than the catalog.
+ *
+ * The predicate below is the group selection from extras/fonts/animation.mjs, repeated
+ * here on purpose: if the two ever disagree the catalog would advertise stroke order
+ * for a script whose text the loader never looks up, which is exactly the overstatement
+ * this field exists to prevent. Normative order exists for four groups and no others;
+ * see dev-docs/research/20260911-normative-stroke-order.md.
+ */
+const motorUnits = new Map(motor.groups.map((g) => [g.id, g.unitCount]));
+for (const script of catalog.scripts) {
+  const group =
+    script.script === 'Latn'
+      ? 'english'
+      : script.script === 'Hang'
+        ? 'korean'
+        : script.language.startsWith('ja')
+          ? 'japanese'
+          : script.language.startsWith('zh')
+            ? 'chinese'
+            : null;
+  assert.equal(script.strokeOrder, group ? 'normative' : 'none', `${script.id} order`);
+  assert(script.strokeOrderNote?.length > 0, `${script.id} note`);
+  if (group) {
+    assert.equal(script.strokeOrderGroup, group, `${script.id} group`);
+    assert.equal(
+      script.strokeOrderUnitCount,
+      motorUnits.get(group),
+      `${script.id} unit count`,
+    );
+  } else {
+    assert(!('strokeOrderGroup' in script), `${script.id} claims a group it cannot use`);
+    assert(!('strokeOrderUnitCount' in script), `${script.id} claims a unit count`);
+  }
+}
+assert.equal(
+  catalog.scripts.filter((s) => s.strokeOrder === 'normative').length,
+  7,
+  'Normative stroke order covers seven script entries across four motor groups',
+);
+
 const { createRequire } = await import('node:module');
 const require = createRequire(import.meta.url);
 const expectedGeometry =

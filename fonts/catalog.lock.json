@@ -3,7 +3,7 @@
   "files": [
     {
       "file": "fonts/catalog.json",
-      "sha256": "d5fcbb70457754f464df780146214879e1b0e077b948de7fd5f34939bfbc5f57"
+      "sha256": "e696dcb9dd84c3565a165569a5b71388d692ac0554ff2d1093360ac49a5f08a6"
     },
     {
       "file": "fonts/script-ranges.json",
@@ -15,7 +15,7 @@
     },
     {
       "file": "scripts/fonts/build-catalog.py",
-      "sha256": "dc54228899eb34f91b09cba27162eb2c55dda539ab6b0ad18d125b2178a7157b"
+      "sha256": "748ebbb6a79fd87a0831b5d1637caf41a35b4a98b4489bb724990e064b7b0175"
     },
     {
       "file": "scripts/fonts/requirements.txt",
