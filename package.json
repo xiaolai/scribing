@@ -1,6 +1,6 @@
 {
   "name": "@lixiaolai/scribing",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "author": "xiaolai <lixiaolai@gmail.com>",
   "description": "Multilingual stroke models, real-font animation, tracing and copying.",
   "repository": {

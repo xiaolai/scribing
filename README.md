@@ -43,7 +43,11 @@ After building, load the local browser bundle:
 
 The CommonJS and ES module builds are `dist/index.cjs.js` and `dist/index.esm.js`. The default export is `Scribing`. Browser bundles expose `window.Scribing`; options types and renderer interfaces use the `Scribing` name as well. When migrating, replace `HanziWriter` with `Scribing` and update browser bundle paths.
 
-This fork has not yet been published to npm. The package is named `@lixiaolai/scribing`; the unscoped name `scribing` on npm belongs to an unrelated project and never referred to this one.
+```sh
+npm install @lixiaolai/scribing
+```
+
+The package is [`@lixiaolai/scribing`](https://www.npmjs.com/package/@lixiaolai/scribing). The unscoped name `scribing` on npm belongs to an unrelated project and has never referred to this one.
 
 The inherited API is described in the [upstream documentation](https://hanziwriter.org/docs.html). Use `Scribing` in place of `HanziWriter` in its examples. Custom stroke datasets can be supplied through `charDataLoader`.
 

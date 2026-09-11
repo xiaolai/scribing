@@ -6,6 +6,19 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 
 Nothing yet.
 
+## [4.0.1] - 2026-09-12
+
+### Fixed
+
+- **The published README said the package was not published.** It is the first thing a
+  visitor to the npm page reads, and 4.0.0 shipped with "This fork has not yet been
+  published to npm" still in it, along with "Nothing has been published" in the bundled
+  changelog. Both were written while that was true and neither was revisited before the
+  release. The README now carries an install line, which it had never had, since a reader
+  arriving from npm wants that first.
+- `SECURITY.md` said supported-version reporting applied only to `master` because nothing
+  was published. It now names the released version.
+
 ## [4.0.0] - 2026-09-11
 
 First release under the Scribing name, and the first release of this fork at all. It
@@ -38,7 +51,7 @@ honest. And every tag from v1.0.0 to v3.7.3 in this repository is upstream's, so
 release could not be tagged without moving an existing tag or inventing a parallel tag
 namespace; v4.0.0 is free and keeps `git describe` meaningful.
 
-Nothing has been published. The inherited tags are left in place.
+Published as `@lixiaolai/scribing`. The inherited upstream tags are left in place.
 
 ### Fixed
 

@@ -7,7 +7,7 @@ authors:
   - family-names: 'Chanin'
     given-names: 'David'
     orcid: 'https://orcid.org/0009-0004-6619-5469'
-version: '4.0.0'
+version: '4.0.1'
 repository-code: 'https://github.com/xiaolai/scribing'
 abstract: 'Scribing is a fork of Hanzi Writer for stroke-order animations and handwriting practice, with additional writing systems planned.'
 keywords:

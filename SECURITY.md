@@ -68,4 +68,5 @@ tooling and are not published. Both development servers bind to `127.0.0.1` only
 
 ## Supported versions
 
-This fork has not been published to npm. Until it is, fixes land on `master` only.
+The released package is `@lixiaolai/scribing`. Fixes land on `master` and are picked up
+by the next release; only the most recent published version is supported.
