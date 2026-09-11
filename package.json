@@ -1,15 +1,19 @@
 {
   "name": "@xiaolai/scribing",
-  "version": "1.0.0",
+  "version": "4.0.0",
   "author": "xiaolai <lixiaolai@gmail.com>",
   "description": "Multilingual stroke models, real-font animation, tracing and copying.",
-  "repository": "xiaolai/scribing",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiaolai/scribing.git"
+  },
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
   "types": "dist/types/index.d.ts",
   "license": "MIT",
   "publishConfig": {
-    "access": "public"
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "sideEffects": false,
   "keywords": [
@@ -88,6 +92,7 @@
     "prettier-check": "prettier -c .",
     "typecheck": "tsc --noEmit && tsc --project tsconfig.build.json --noEmit",
     "check-package": "node scripts/check-package.cjs",
+    "check-publish": "npm publish --dry-run",
     "check-demo": "node scripts/check-demo.cjs",
     "test-data": "node --test scripts/data/test/*.test.mjs",
     "check-data": "node scripts/data/check.mjs",

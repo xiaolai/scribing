@@ -5,19 +5,30 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 ## [Unreleased]
 
 A hardening and modernization pass covering the toolchain, the validation layer, test
-coverage and the check gates. No public API was removed or renamed.
+coverage and the check gates. Within the fork's own API nothing was removed or renamed;
+the package name and version did change, and the rebrand from Hanzi Writer before it was
+breaking in its own right. See the migration notes in the README.
 
-**The package is now `@xiaolai/scribing`, at version 1.0.0.** The fork carried
+**The package is now `@xiaolai/scribing`, at version 4.0.0.** The fork carried
 `hanzi-writer`'s version 3.0.0, which upstream set in January 2021 and which the rebrand
-left untouched, so the number described a lineage this package had left. The unscoped
-name `scribing` also belongs to an unrelated npm package, a collaborative rich-text
-editing model, so it was never available to publish under. Scoping settles both: the
-version line is independent of `hanzi-writer` the moment the name differs, and 3.0.0
-would have implied two earlier majors of Scribing that never existed.
+left untouched. It was also behind this repository's own tags, which run to v3.7.3,
+because upstream's `semantic-release` tagged at publish time without committing
+`package.json`.
 
-Nothing has been published yet. The repository still carries upstream's tags, v3.4.0
-through v3.7.3, which were created by upstream's `semantic-release`; they are not this
-package's tags, and `git describe` will report one of them until they are dealt with.
+The unscoped name `scribing` belongs to an unrelated npm package, a collaborative
+rich-text editing model, so it was never available to publish under. Scoping settles
+that, and a scoped package is restricted by default, so `publishConfig` sets `access` to
+public and pins `registry` so a stray scope-level registry setting cannot redirect a
+publish. `yarn check-publish` performs a dry run.
+
+4.0.0 rather than a fresh 1.0.0, for two reasons. The README presents this as the
+migration target for Hanzi Writer users and tells them to replace `HanziWriter` with
+`Scribing`, so the release is the breaking successor to 3.7.3 and numbering it as one is
+honest. And every tag from v1.0.0 to v3.7.3 in this repository is upstream's, so a 1.0.0
+release could not be tagged without moving an existing tag or inventing a parallel tag
+namespace; v4.0.0 is free and keeps `git describe` meaningful.
+
+Nothing has been published. The inherited tags are left in place.
 
 ### Fixed
 
