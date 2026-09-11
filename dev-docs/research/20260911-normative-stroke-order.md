@@ -125,6 +125,10 @@ For Arabic, Thai, Hebrew, Tamil, Bengali, Cyrillic, Greek and the remaining scri
 
 The honest consequence is that the catalogue's 120 script entries and the stroke-order feature describe different products. Rendering, tracing and shape reveal genuinely work for all 120. Stroke order can only ever work for four. The code already keeps these apart: a plan that is not fully `source-adapted` shows "Reveal shape" rather than "Animate strokes", and `docs/fonts.md` states that generated plans make "no conventional stroke-order claim". What is missing is machine-readable per-script metadata saying which of the two a caller is getting, so the distinction survives outside the demo.
 
+## Companion note
+
+[How everyone else solves stroke order](20260911-how-others-solve-stroke-order.md) surveys the shipping products and the extraction literature. Its short version: no product derives order from glyph geometry, every one transcribes a national standard, and automatic extraction tops out around 84–96%, which is unusable for teaching. It also records a licensing trap, since Taiwan's Ministry of Education animations are CC BY-NC-ND and cannot be used here.
+
 ## Recommendation
 
 Build Korean composition. Verify GlyphWiki. Add coverage metadata so the catalogue stops implying a promise it cannot keep. Treat the YES route as a separate decision, taken after the GlyphWiki result is known. Do not pursue the remaining scripts as a data problem, because they are not one.

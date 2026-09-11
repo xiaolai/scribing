@@ -190,6 +190,8 @@ What is missing is the matching. YES gives a sequence of stroke _types_; this en
 
 That is a research problem, not an afternoon, and a half-built version would order strokes wrongly while looking authoritative, which is the exact failure this whole plan exists to prevent. Recorded as blocked with the scope written down rather than started.
 
+**Since blocked, the framing has changed.** [A survey of how other products solve this](../research/20260911-how-others-solve-stroke-order.md) found that none of them derive order from geometry: they transcribe a national standard and ship their own stroke dataset. Published automatic extraction tops out at 84–96%, which teaches one character in ten wrongly. So the route for this item is extending the motor packs from the YES transcription, not building a classifier. That is a different and much safer piece of work, and it belongs in its own plan.
+
 - Goal: Raise Chinese from 9,574 toward 20,992.
 - Tests (first): defined once the route is chosen. For the GlyphWiki route, agreement against the existing 9,574 on the overlap. For the YES route, a trail-to-stroke-type classifier validated against known sequences.
 - Acceptance (measurable): coverage count and an overlap agreement rate against present data, with no regression on the existing 9,574.
