@@ -30,6 +30,8 @@ Read directly from `fonts/motor/*.json` and `packs/generated/*.json` at `462a8fc
 
 Across all 149 packs: 98 `authored`, 50 `recorded`, 1 `mixed`.
 
+The word "normative" hides a wide range of scope. China's GB 13000.1 fixes 20,902 ideographs, more than is shipped here. Japan's 『筆順指導の手びき』 of 1958 fixes 881 education kanji and disclaims exclusivity in its own text, so most of the 6,636 Japanese characters rest on a 2003 Sanseidō reference work rather than on a government document. [The companion note](20260911-how-others-solve-stroke-order.md) sets the four groups against their standards side by side.
+
 Two findings matter more than the counts.
 
 **Korean does not cover Korean.** The 40 units are isolated jamo. The pack says so: "no syllable-block composition." Lookup in `animation.mjs` is by exact string, so real text resolves to nothing:

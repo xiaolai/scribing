@@ -32,6 +32,42 @@ goes furthest at 20,902 ideographs, which is where the YES listings come from. T
 repository's current 9,574 is already past the everyday standard and the gap to 20,902 is
 the long tail, not the common core.
 
+## Japanese: the official standard covers 881 of the 6,636 characters here
+
+Japanese looks like the best-supported group in this repository, because KanjiVG is a
+real database and the coverage is 6,636. Its normative backing is in fact the thinnest of
+the three CJK groups.
+
+Japan's official document is 『筆順指導の手びき』, published by the Ministry of Education
+in 1958. It fixes the stroke order of **881 education kanji** and nothing else. It also
+disclaims exclusivity in its own text: the orders were chosen to prevent confusion when
+teaching, and an order not listed is not thereby wrong. No official standard covers the
+2,136 jōyō kanji, let alone the JIS level 1 and 2 sets that KanjiVG spans. Textbooks and
+dictionaries converged on the 1958 document because nothing else official exists, not
+because it claims that authority.
+
+KanjiVG's own references page sets out exactly the pattern this note describes:
+
+| Layer                  | Source                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------- |
+| Geometry               | two 教科書体 fonts, DynaLab DFKyoKasho-W3 and Morisawa A-OTF Kyoukasho ICA Pro L |
+| Order, education kanji | 『筆順指導の手びき』, Monbushō, 1958                                             |
+| Order, everything else | Emori Kenji, _Kaigyōsō – Hitsujun jitai jiten_, Sanseidō, 2003                   |
+| Radicals               | Kanjidic and the JIS Kanji Jiten                                                 |
+
+Then hand-drawn by linguists and checked against school orthography manuals.
+
+So of the 6,636 Japanese characters here, roughly 881 rest on a government document and
+about 5,750 rest on a commercial reference work plus expert judgement. That is a
+perfectly respectable basis and it is not a national standard. Compare Chinese, where
+GB 13000.1 fixes 20,902. The repository's coverage numbers invert the actual strength of
+the backing.
+
+**Japanese order is also not Chinese order.** 田 and 必 are documented cases where the two
+traditions differ for the same character. KanjiVG is correct for Japanese and must not be
+reused to fill Chinese gaps, which is worth stating because the two groups here overlap
+heavily by codepoint and the temptation is obvious.
+
 ## The architectural point
 
 Hanzi Writer ships Make Me a Hanzi's stroke paths and draws those. Its own framing is
@@ -100,8 +136,24 @@ the font subsystem then fits those as it already fits the existing ones.
 8,105 means everyday Chinese is already covered. What is missing is the tail between
 there and 20,902, which matters for rare characters and not for learners.
 
+**Strength of backing does not follow coverage.** Setting the four groups side by side:
+
+| Group    | Official standard                                   |      It covers |   This repo ships |
+| -------- | --------------------------------------------------- | -------------: | ----------------: |
+| Chinese  | GB 13000.1, and 通用规范汉字笔顺表 for everyday use | 20,902 / 8,105 |             9,574 |
+| Japanese | 『筆順指導の手びき』, 1958                          |            881 |             6,636 |
+| Korean   | 국립국어원 guidance on the letters                  |        40 jamo | 40 jamo, composed |
+| English  | none exists                                         |              0 |       52 authored |
+
+Chinese is the only group where the standard is larger than what is shipped. For the
+other three, most or all of what ships rests on a reference work, a composition rule, or
+authored judgement. None of that is wrong; it just should not be described as national
+standard coverage, and currently the docs do not distinguish them.
+
 ## Sources
 
+- [筆順 (Japanese Wikipedia), on the 1958 手びき and its scope](https://ja.wikipedia.org/wiki/%E7%AD%86%E9%A0%86)
+- [KanjiVG references](https://kanjivg.tagaini.net/ref.html)
 - [Skritter standard references](https://docs.skritter.com/article/219-standard-references-for-skritter-chinese)
 - [Pleco forum, stroke order and character standards](https://www.plecoforums.com/threads/stroke-order-and-character-standards.7000/)
 - [Stroke Order Standard of GB 13000.1 Character Set](https://en.wikipedia.org/wiki/Stroke_Order_Standard_of_GB_13000.1_Character_Set)
