@@ -136,3 +136,75 @@ test('a terminal shaft with no spread is declined rather than guessed', () => {
   assert.ok(fit, 'a straight shaft still produces a fit');
   assert.ok(Math.abs(Math.abs(fit.tangent[0]) - 1) < 1e-9, 'tangent runs along x');
 });
+
+test("a neighbouring stroke's ink does not change this stroke's progress", async () => {
+  // An L with a corner, and two other strokes placed against the two sides that limit
+  // the corner's measured radius. The turn and terminal probes tested the glyph-wide ink
+  // mask, so those neighbours let the radius keep growing and moved stroke one's clock by
+  // up to 1,892 of 65,535 across 275 of its cells. Nothing about stroke one should depend
+  // on whether stroke two and three are beside it.
+  const build = (withNeighbours) => {
+    const owners = new Uint16Array(width * height),
+      ink = new Uint8Array(owners.length),
+      progress = new Uint16Array(owners.length);
+    const box = (x1, y1, x2, y2, owner) => {
+      for (let y = y1; y <= y2; y++)
+        for (let x = x1; x <= x2; x++) {
+          owners[y * width + x] = owner;
+          ink[y * width + x] = 1;
+        }
+    };
+    box(10, 20, 40, 24, 1);
+    box(36, 20, 40, 50, 1);
+    const trails = [
+      [
+        [12, 22],
+        [38, 22],
+        [38, 48],
+      ],
+    ];
+    const kinds = ['curve'];
+    if (withNeighbours) {
+      box(41, 20, 55, 24, 2);
+      box(10, 14, 40, 19, 3);
+      trails.push(
+        [
+          [42, 22],
+          [54, 22],
+        ],
+        [
+          [12, 16],
+          [38, 16],
+        ],
+      );
+      kinds.push('curve', 'curve');
+    }
+    return { assignment: { owners, progress }, ink, trails, kinds };
+  };
+  const run = async (f) => {
+    await projectCurveProgress(
+      f.assignment,
+      f.trails,
+      f.kinds,
+      0,
+      width,
+      undefined,
+      f.ink,
+    );
+    return f.assignment.progress;
+  };
+
+  const alone = await run(build(false));
+  const together = await run(build(true));
+  const ownedByOne = (x, y) =>
+    (y >= 20 && y <= 24 && x >= 10 && x <= 40) ||
+    (x >= 36 && x <= 40 && y >= 20 && y <= 50);
+  for (let y = 20; y <= 50; y++)
+    for (let x = 10; x <= 40; x++)
+      if (ownedByOne(x, y))
+        assert.equal(
+          together[y * width + x],
+          alone[y * width + x],
+          `cell ${x},${y} of stroke one changed when its neighbours were present`,
+        );
+});

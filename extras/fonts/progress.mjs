@@ -5,8 +5,12 @@ const stop = (signal) => {
 };
 // A bounded internal turn cap removes a constant-time vertex wedge. Public guides
 // stay unchanged; the cap is used only to parameterize ink within the same owner.
-function turnField(points, ink, width) {
-  if (!ink || points.length < 3) return points;
+//
+// `contains` answers for one owner rather than for the glyph. Testing the glyph-wide ink
+// mask let a neighbouring stroke's ink widen this stroke's radius, which validated a
+// corner shortcut that does not lie inside it and distorted the progress it produced.
+function turnField(points, contains, width) {
+  if (!contains || points.length < 3) return points;
   const simple = [points[0]];
   for (let i = 1; i < points.length - 1; i++) {
     const a = simple.at(-1),
@@ -22,9 +26,7 @@ function turnField(points, ink, width) {
   const inside = (p) => {
     const x = Math.round(p[0]),
       y = Math.round(p[1]);
-    return (
-      x >= 0 && x < width && y >= 0 && y * width + x < ink.length && ink[y * width + x]
-    );
+    return x >= 0 && x < width && y >= 0 && contains(y * width + x);
   };
   const out = [simple[0]];
   for (let i = 1; i < simple.length - 1; i++) {
@@ -135,14 +137,14 @@ export function fitTerminalShaft(points, atEnd, radius) {
     samples,
   };
 }
-function terminalFits(points, ink, width) {
-  if (!ink || points.length < 4) return [];
+// `contains` is the same single-owner test turnField takes, for the same reason: a
+// neighbour's ink inflated the terminal radius measured here.
+function terminalFits(points, contains, width) {
+  if (!contains || points.length < 4) return [];
   const inside = (rawX, rawY) => {
     const x = Math.round(rawX);
     const y = Math.round(rawY);
-    return (
-      x >= 0 && x < width && y >= 0 && y * width + x < ink.length && ink[y * width + x]
-    );
+    return x >= 0 && x < width && y >= 0 && contains(y * width + x);
   };
   return [false, true].map((end) => {
     const p = end ? points.slice().reverse() : points;
@@ -249,10 +251,18 @@ export async function projectCurveProgress(
   // terminal fit on trail zero, which for a large trail is the expensive part.
   stop(signal);
   const indexes = [];
+  // One containment test per trail, answering only for that trail's own cells.
+  const containsFor = (i) => {
+    if (!ink) return null;
+    const owner = startIndex + i + 1;
+    return (cell) =>
+      cell >= 0 && cell < ink.length && !!ink[cell] && assignment.owners[cell] === owner;
+  };
   for (let i = 0; i < trails.length; i++) {
+    const contains = containsFor(i);
     const tree =
-      kinds[i] === 'curve' ? indexTrail(turnField(trails[i], ink, width)) : null;
-    if (tree && !tree.closed) tree.terminals = terminalFits(trails[i], ink, width);
+      kinds[i] === 'curve' ? indexTrail(turnField(trails[i], contains, width)) : null;
+    if (tree && !tree.closed) tree.terminals = terminalFits(trails[i], contains, width);
     indexes.push(tree);
     // Read the signal every trail, but keep yielding every 32. Indexing one trail costs
     // about 3 ms even at 50,000 points, so the yield cadence is not what delays a

@@ -922,8 +922,12 @@ export async function repairSourceJunctions(
         )
       : null;
   };
-  // Scheduling has its own counter: yielding must not change the repair budget
-  // or which geometric updates survive an uncancelled preparation.
+  // Two counters with two jobs. projectionWork drives only the yield cadence, because
+  // how often this pass yields must not change which repairs survive. work is the budget
+  // maxWork documents as "geometric operations before the run gives up", so every
+  // projection is charged to it: the projection loops are the bulk of the geometry here
+  // and counted against nothing, which left the documented cap unable to bound the work
+  // it names. Overflow is noticed at the next budget checkpoint, as it already was.
   let work = 0,
     projectionWork = 0;
   for (let ai = 0; ai < indices.length; ai++)
@@ -1198,6 +1202,7 @@ export async function repairSourceJunctions(
                 ];
               let best;
               for (const seg of segments) {
+                work++;
                 if (++projectionWork % 8192 === 0) {
                   stop(signal);
                   await yieldWork();
@@ -1267,6 +1272,7 @@ export async function repairSourceJunctions(
                 continue;
               let nearest;
               for (let n = 0; n < profile.length; n++) {
+                work++;
                 if (++projectionWork % 8192 === 0) {
                   stop(signal);
                   await yieldWork();
@@ -1399,6 +1405,7 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 1, Math.ceil(x2));
               x++
             ) {
+              work++;
               if (++projectionWork % 8192 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1412,6 +1419,7 @@ export async function repairSourceJunctions(
                 continue;
               let best;
               for (let n = 1; n < B.length; n++) {
+                work++;
                 if (++projectionWork % 8192 === 0) {
                   stop(signal);
                   await yieldWork();
@@ -1441,6 +1449,7 @@ export async function repairSourceJunctions(
           const within = async (x, y) => {
             let best;
             for (let n = 0; n < profile.length; n++) {
+              work++;
               if (++projectionWork % 8192 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1480,6 +1489,7 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 2, Math.ceil(x2));
               x++
             ) {
+              work++;
               if (++projectionWork % 8192 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1533,6 +1543,7 @@ export async function repairSourceJunctions(
                 }
                 let best;
                 for (let n = 1; n < B.length; n++) {
+                  work++;
                   if (++projectionWork % 8192 === 0) {
                     stop(signal);
                     await yieldWork();
@@ -1682,6 +1693,7 @@ export async function repairSourceJunctions(
               continue;
             let nearest;
             for (let n = 0; n < b.points.length - 1; n++) {
+              work++;
               if (++projectionWork % 8192 === 0) {
                 stop(signal);
                 await yieldWork();
@@ -1807,6 +1819,7 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 1, Math.ceil(endpointA[0] + radius));
               x++
             ) {
+              work++;
               if (++projectionWork % 8192 === 0) {
                 stop(signal);
                 await yieldWork();
