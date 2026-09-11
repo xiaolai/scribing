@@ -191,7 +191,18 @@ export default function validateShape(value: FontShape): FontShape {
     fail();
   }
 
-  shape.bounds = [minX, minY, maxX - minX, maxY - minY];
+  const measured: [number, number, number, number] = [
+    minX,
+    minY,
+    maxX - minX,
+    maxY - minY,
+  ];
+  // The measured bounds have to satisfy the rule the input bounds did. A width is the
+  // difference of two separately permitted coordinates, so it can exceed the per-value
+  // limit even when every coordinate is inside it, and the function then returned a
+  // shape it would itself reject: validateShape(validateShape(value)) threw.
+  if (!measured.every(finite)) fail();
+  shape.bounds = measured;
   Object.freeze(shape.bounds);
   Object.freeze(shape.font);
   shape.glyphs.forEach(Object.freeze);

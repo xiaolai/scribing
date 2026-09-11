@@ -15,7 +15,7 @@
     },
     {
       "file": "scripts/fonts/build-catalog.py",
-      "sha256": "748ebbb6a79fd87a0831b5d1637caf41a35b4a98b4489bb724990e064b7b0175"
+      "sha256": "d03b584a0b26a1259a84cfcf65a988dda033f3d85c78197710fa15f51a061436"
     },
     {
       "file": "scripts/fonts/requirements.txt",

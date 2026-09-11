@@ -220,3 +220,20 @@ export const maxOf = (values: ArrayLike<number>) => {
   }
   return best;
 };
+
+/**
+ * The caller's own properties that actually carry a value.
+ *
+ * Spreading an options object with an explicitly undefined property erases the default
+ * behind it, which is worse than omitting the property: the reader then substitutes its
+ * own fallback, and two readers with different fallbacks disagree about the same option.
+ */
+export const definedEntries = <T extends object>(value: T): T => {
+  const result: Partial<T> = {};
+  for (const key of Object.keys(value) as Array<keyof T>) {
+    if (value[key] !== undefined) result[key] = value[key];
+  }
+  // A required property can only be undefined here if the caller is untyped JavaScript,
+  // which the validation at each call site rejects.
+  return result as T;
+};

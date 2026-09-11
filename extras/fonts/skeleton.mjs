@@ -309,15 +309,52 @@ export function graphTrails(ink, width, height) {
   // thread with nothing able to interrupt it, and thousands of separated strokes stall
   // the page. The outer pass still repeats to a fixed point, so the same set of joins
   // is reachable.
+  //
+  // Candidates now come from an endpoint index rather than from scanning every later
+  // trail. A join needs one of A's endpoints to coincide with one of B's, and trail
+  // points are integer cell coordinates, so sharing a key is the same test the distance
+  // comparison makes. Without the index the pass was still quadratic in the number of
+  // trails and spent all of it rediscovering that unrelated trails cannot join: a noisy
+  // mask yields hundreds of thousands of them, and this function is synchronous with no
+  // checkpoint, so the page simply stopped.
+  //
+  // A consumed trail is left as a hole rather than spliced out. Splicing renumbers every
+  // later trail, which an index would have to chase; leaving holes keeps the surviving
+  // trails in the order the scan visited them, so the same join still wins.
+  const endKey = (point) => `${point[0]},${point[1]}`;
+  const ends = new Map();
+  const addEnd = (k, i) => {
+    const at = ends.get(k);
+    if (at) at.add(i);
+    else ends.set(k, new Set([i]));
+  };
+  const dropEnd = (k, i) => {
+    const at = ends.get(k);
+    if (!at) return;
+    at.delete(i);
+    if (!at.size) ends.delete(k);
+  };
+  const eachEnd = (i, visit) => {
+    const t = merged[i];
+    visit(endKey(t[0]), i);
+    visit(endKey(t[t.length - 1]), i);
+  };
+  for (let i = 0; i < merged.length; i++) eachEnd(i, addEnd);
+
   for (let changed = true; changed;) {
     changed = false;
     for (let a = 0; a < merged.length; a++) {
       for (let joined = true; joined;) {
         joined = false;
-        for (let b = a + 1; b < merged.length && !joined; b++) {
-          const A = merged[a],
-            B = merged[b];
-          if (A.length < 2 || B.length < 2) continue;
+        const A = merged[a];
+        if (!A || A.length < 2) break;
+        const candidates = new Set();
+        for (const k of [endKey(A[0]), endKey(A[A.length - 1])])
+          for (const b of ends.get(k) ?? []) if (b > a) candidates.add(b);
+        for (const b of [...candidates].sort((x, y) => x - y)) {
+          if (joined) break;
+          const B = merged[b];
+          if (!B || B.length < 2) continue;
           for (const ra of [false, true])
             for (const rb of [false, true]) {
               if (joined) continue;
@@ -331,8 +368,11 @@ export function graphTrails(ink, width, height) {
                 v = [r[0] - q[0], r[1] - q[1]],
                 den = Math.hypot(...u) * Math.hypot(...v);
               if (den && (u[0] * v[0] + u[1] * v[1]) / den > 0.75) {
+                eachEnd(a, dropEnd);
+                eachEnd(b, dropEnd);
                 merged[a] = aa.concat(bb.slice(1));
-                merged.splice(b, 1);
+                merged[b] = null;
+                eachEnd(a, addEnd);
                 joined = true;
                 changed = true;
               }
@@ -341,11 +381,13 @@ export function graphTrails(ink, width, height) {
       }
     }
   }
-  return merged.sort(
-    (a, b) =>
-      minOf(a.map((p) => p[1])) - minOf(b.map((p) => p[1])) ||
-      minOf(a.map((p) => p[0])) - minOf(b.map((p) => p[0])),
-  );
+  return merged
+    .filter(Boolean)
+    .sort(
+      (a, b) =>
+        minOf(a.map((p) => p[1])) - minOf(b.map((p) => p[1])) ||
+        minOf(a.map((p) => p[0])) - minOf(b.map((p) => p[0])),
+    );
 }
 /**
  * For every cell, the index of the nearest skeleton cell by 8-connected flood order.
@@ -490,13 +532,15 @@ export async function assignOwnership(
   assertGrid(skeleton, width, height, 'assignOwnership');
   // `owners` is a Uint16Array in which 0 means unowned, so an id past 65535 wraps to
   // zero and reads back as a cell nothing ever draws: startIndex 65535 silently made
-  // the first trail invisible.
+  // the first trail invisible. Ids run `startIndex + index + 1`, so the largest one is
+  // `startIndex + trails.length`; 65535 is representable and only 0 is reserved, so the
+  // bound is that sum, not one below it.
   if (
     !Number.isInteger(startIndex) ||
     startIndex < 0 ||
-    startIndex + trails.length > 65534
+    startIndex + trails.length > 65535
   )
-    throw new RangeError('assignOwnership cannot address more than 65534 strokes');
+    throw new RangeError('assignOwnership cannot address more than 65535 strokes');
   const owners = new Uint16Array(coverage.length),
     progress = new Uint16Array(coverage.length),
     nearest = await nearestSkeletonMap(skeleton, width, height, signal),
@@ -558,6 +602,7 @@ export async function assignOwnership(
         }
       }
   }
+  stop(signal);
   return { owners, progress };
 }
 /**
@@ -621,7 +666,6 @@ export async function componentTrails(ink, trails, width, height, signal) {
         }
     }
     components.push({
-      id,
       area: tail,
       x1,
       y1,
@@ -672,6 +716,7 @@ export async function componentTrails(ink, trails, width, height, signal) {
         kinds.push(trail.length === 1 ? 'dot' : 'curve');
       }
   }
+  stop(signal);
   return { trails: out, kinds };
 }
 /**
@@ -738,6 +783,7 @@ export async function normalizeOwnership(
         : 32767;
     owners[i] = mapping[k];
   }
+  stop(signal);
   return [...used].map((count, i) => (count ? i : -1)).filter((i) => i >= 0);
 }
 // Source-plan crossings share physical ink. Reserve a conservative local portion
@@ -771,6 +817,7 @@ export async function repairSourceJunctions(
   maxWork = 2000000,
 ) {
   assertGrid(ink, width, height, 'repairSourceJunctions');
+  stop(signal);
   const indices = sources.map((source, i) => (source ? i : -1)).filter((i) => i >= 0);
   if (indices.length < 2) return;
   const counts = new Uint32Array(trails.length);

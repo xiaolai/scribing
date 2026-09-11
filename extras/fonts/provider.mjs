@@ -39,8 +39,11 @@ const boundedString = (value, label, max = 160) => {
     typeof value !== 'string' ||
     !value.length ||
     value.length > max ||
+    // C1 included: src/fonts/validateShape.ts rejects U+0080-U+009F because U+0085 is a
+    // line break and U+009B an escape introducer, so metadata that passed here was then
+    // refused by the core validator.
     // eslint-disable-next-line no-control-regex -- rejecting control characters is the point
-    /[\u0000-\u001f\u007f]/u.test(value)
+    /[\u0000-\u001f\u007f\u0080-\u009f]/u.test(value)
   )
     throw error('INVALID_METADATA', `Invalid ${label}`);
   return value;
@@ -145,6 +148,8 @@ export function createFontProvider({
         (cp >= 0xd800 && cp <= 0xdfff) ||
         cp < 0x20 ||
         cp === 0x7f ||
+        // C1, for the same reason the core validator excludes it.
+        (cp >= 0x80 && cp <= 0x9f) ||
         /\p{Line_Separator}|\p{Paragraph_Separator}/u.test(char)
       )
         throw error('INVALID_TEXT', 'Use one line of valid Unicode text.');
@@ -280,6 +285,14 @@ export function createFontProvider({
       cache.set(id, loaded);
       while (cache.size > 4) cache.delete(cache.keys().next().value);
       return loaded;
+    } catch (cause) {
+      // Abandoning a response without cancelling it leaves its body downloading with
+      // nothing able to stop it. A rejected status and an oversized content-length both
+      // throw before anything reads the stream, and the listener removal below then
+      // detaches this request from destroy(), so the transfer ran to completion in the
+      // background. Aborting the linked controller cancels the body on every failure.
+      linked.abort();
+      throw cause;
     } finally {
       signal?.removeEventListener('abort', cancel);
       controller.signal.removeEventListener('abort', cancel);

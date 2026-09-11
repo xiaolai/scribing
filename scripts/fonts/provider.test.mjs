@@ -283,3 +283,38 @@ test('rejects an oversized custom font before copying it', async () => {
     p.destroy();
   }
 });
+
+test('an abandoned response is cancelled rather than left downloading', async () => {
+  // A rejected status throws before anything reads the body, and load() then removed its
+  // abort listeners, detaching the request from destroy(). Nothing could stop the
+  // transfer, so it ran to completion in the background.
+  const seen = [];
+  const refusingFetch = async (url, { signal } = {}) => {
+    seen.push(signal);
+    return {
+      ok: false,
+      status: 503,
+      headers: new Headers(),
+      arrayBuffer: async () => new ArrayBuffer(0),
+    };
+  };
+  const provider = createFontProvider({
+    catalog,
+    scriptRanges,
+    baseUrl,
+    fetch: refusingFetch,
+  });
+  const script = catalog.scripts[0];
+  await assert.rejects(
+    () =>
+      provider.shape({
+        scriptId: script.id,
+        text: script.examples?.[0]?.text ?? 'a',
+        fontId: script.fontIds[0],
+      }),
+    (e) => e.code === 'FONT_LOAD' || e.code === 'INVALID_TEXT',
+  );
+  assert.equal(seen.length, 1, 'the font was requested once');
+  assert.ok(seen[0].aborted, 'the abandoned request was aborted');
+  provider.destroy?.();
+});

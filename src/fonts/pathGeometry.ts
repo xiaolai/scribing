@@ -111,7 +111,14 @@ function extremumParameters(axisValues: number[]): number[] {
     const discriminant = b * b - 4 * a * c;
     if (discriminant < 0) return [];
     const root = Math.sqrt(discriminant);
-    return [(-b + root) / (2 * a), (-b - root) / (2 * a)];
+    // Take the root that does not cancel, then derive the other from their product.
+    // `(-b + root) / (2 * a)` subtracts two nearly equal numbers whenever b dominates,
+    // and most of that root's significant digits go with it: the cubic
+    // `M0 0C1 1100 2 100 3 -2999.99999999999Z` reported a maximum of 431.40 against a
+    // true 432.14, so the bounds every fit and every containment check works from were
+    // understated by three quarters of a unit.
+    const q = -0.5 * (b + (b < 0 ? -root : root));
+    return q === 0 ? [0] : [q / a, c / q];
   }
   return [];
 }
@@ -318,10 +325,28 @@ export function contourProbes(
   box: Contour,
   step: number,
   accept: (x: number, y: number) => boolean,
+  rings: ReadonlyArray<Contour> = [],
 ): Point[] {
   const w = box.maxX - box.minX,
     h = box.maxY - box.minY;
-  if (w >= step * 2 && h >= step * 2 && box.area >= w * h * 0.12) return [];
+  // Discount rings that sit inside this one before judging how densely it is filled.
+  // A ring's own area is the whole region it encloses, so each ring of a thin annulus
+  // reads as nearly solid on its own: the shortcut fired for both, and the sliver of ink
+  // that is actually there was never probed. Passing no rings keeps the old reading,
+  // which is why every caller passes the glyph's complete contour list.
+  const enclosed = rings.reduce(
+    (total, ring) =>
+      ring !== box &&
+      ring.minX >= box.minX &&
+      ring.maxX <= box.maxX &&
+      ring.minY >= box.minY &&
+      ring.maxY <= box.maxY
+        ? total + ring.area
+        : total,
+    0,
+  );
+  const filled = Math.max(0, box.area - enclosed);
+  if (w >= step * 2 && h >= step * 2 && filled >= w * h * 0.12) return [];
   const out: Point[] = [];
   const rows = Math.min(16384, Math.max(1, Math.ceil(h / step)));
   // Bucket each edge into the rows it can cross. Every row used to test every segment,
@@ -329,20 +354,30 @@ export function contourProbes(
   // a 35,231-character fixture spent roughly 64 million comparisons here. The exact
   // crossing test below is unchanged, and the buckets are a superset of the rows it can
   // accept, so the output is identical.
-  const buckets: number[][] = Array.from({ length: rows }, () => []);
+  // Each edge is recorded once, at the first row it can cross, and carried in an active
+  // set while the sweep descends past it. Pushing it into every row it spans instead cost
+  // one entry per edge per row: a 602-point contour over 16,384 rows allocated 189 MB,
+  // from a path of under four thousand characters against a half-million limit.
+  const starting: number[][] = Array.from({ length: rows }, () => []);
+  const lastRow = new Int32Array(box.points.length);
   const rowIndex = (y: number) => ((y - box.minY) * rows) / h - 0.5;
   for (let i = 0; i < box.points.length; i++) {
     const a = box.points[i],
       b = box.points[(i + 1) % box.points.length];
     const first = Math.max(0, Math.floor(rowIndex(Math.min(a[1], b[1]))));
     const last = Math.min(rows - 1, Math.ceil(rowIndex(Math.max(a[1], b[1]))));
-    for (let row = first; row <= last; row++) buckets[row].push(i);
+    if (first > last) continue;
+    starting[first].push(i);
+    lastRow[i] = last;
   }
 
+  let active: number[] = [];
   for (let row = 0; row < rows; row++) {
+    if (starting[row].length) active = active.concat(starting[row]);
+    if (active.length) active = active.filter((i) => lastRow[i] >= row);
     const y = box.minY + (h * (row + 0.5)) / rows,
       xs: number[] = [];
-    for (const i of buckets[row]) {
+    for (const i of active) {
       const a = box.points[i],
         b = box.points[(i + 1) % box.points.length];
       if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y))

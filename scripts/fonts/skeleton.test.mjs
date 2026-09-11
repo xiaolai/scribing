@@ -10,6 +10,7 @@ import {
   holeCount,
   nearestSkeletonMap,
 } from '../../extras/fonts/skeleton.mjs';
+import yieldWork from '../../extras/fonts/yield-work.mjs';
 const mask = (rows) => Uint8Array.from(rows.join(''), (c) => (c === '#' ? 1 : 0));
 test('near disconnected strokes retain a pen lift', () => {
   const rows = [
@@ -119,18 +120,95 @@ test('an already aborted request never builds a nearest map', async () => {
   );
 });
 
+/**
+ * A mask of many trails that can never join.
+ *
+ * Joining compared every trail against every later one, so the cost was quadratic in
+ * their number no matter how few joins were possible, and graphTrails is synchronous
+ * with no checkpoint. This 300x300 mask yields ten thousand two-cell trails and took
+ * over nine seconds of blocked main thread; the permitted tile is two hundred times
+ * larger still. The timeout is the assertion — the endpoint index brings it to tens of
+ * milliseconds, far enough below to be stable, while the scan cannot come close.
+ */
+test('joining stays cheap when no trail can join', { timeout: 3000 }, () => {
+  const w = 300,
+    h = 300;
+  const ink = new Uint8Array(w * h);
+  for (let y = 0; y + 1 < h; y += 3)
+    for (let x = 0; x < w; x += 3) {
+      ink[y * w + x] = 1;
+      ink[(y + 1) * w + x] = 1;
+    }
+  const trails = graphTrails(ink, w, h);
+  assert.equal(trails.length, 10000);
+  assert.ok(
+    trails.every((t) => t.length === 3),
+    'every isolated domino stays one short trail rather than being joined',
+  );
+});
+
+/**
+ * An abort raised while a pass is suspended in its own final yield.
+ *
+ * Every loop here checks the signal before yielding and never after, so the last yield
+ * of a pass had nothing behind it: the remaining work ran and the function resolved
+ * successfully with the caller already cancelled. thinInk and nearestSkeletonMap always
+ * checked before returning; these three did not.
+ *
+ * yieldWork is a MessageChannel post, and those are delivered in order, so awaiting one
+ * tick here lands the abort inside a chosen yield rather than an arbitrary one.
+ */
+test('ownership assignment rejects an abort raised during its final yield', async () => {
+  const coverage = new Uint8Array(9).fill(1);
+  const skeleton = Uint8Array.from([0, 0, 0, 0, 1, 0, 0, 0, 0]);
+  const controller = new AbortController();
+  const pass = assignOwnership(
+    coverage,
+    skeleton,
+    [[[1, 1]]],
+    3,
+    3,
+    0,
+    controller.signal,
+  );
+  await yieldWork();
+  controller.abort();
+  await assert.rejects(() => pass, { name: 'AbortError' });
+});
+
+test('component trails reject an abort raised during their final yield', async () => {
+  const ink = new Uint8Array(9).fill(1);
+  const controller = new AbortController();
+  const pass = componentTrails(ink, [], 3, 3, controller.signal);
+  controller.abort();
+  await assert.rejects(() => pass, { name: 'AbortError' });
+});
+
+test('ownership normalization rejects an abort raised during its final yield', async () => {
+  const assignment = { owners: new Uint16Array(9), progress: new Uint16Array(9) };
+  const controller = new AbortController();
+  const pass = normalizeOwnership(assignment, [], [], 0, 3, controller.signal);
+  await yieldWork();
+  controller.abort();
+  await assert.rejects(() => pass, { name: 'AbortError' });
+});
+
 test('ownership refuses more strokes than a 16-bit owner map can address', async () => {
   // owners is a Uint16Array where 0 means unowned, so an id past 65535 wraps to zero
-  // and reads back as a cell nothing ever draws.
+  // and reads back as a cell nothing ever draws. Ids run `startIndex + index + 1`, so
+  // the largest is `startIndex + trails.length`.
   const coverage = new Uint8Array(9);
   const skeleton = new Uint8Array(9);
+  // 65535 is representable and only 0 is reserved, so this is the last usable id and
+  // must be accepted; the bound used to stop one short and reject it.
+  await assignOwnership(coverage, skeleton, [[[0, 0]]], 3, 3, 65534);
   await assert.rejects(
     () => assignOwnership(coverage, skeleton, [[[0, 0]]], 3, 3, 65535),
-    /65534 strokes/,
+    /65535 strokes/,
   );
   await assert.rejects(
     () => assignOwnership(coverage, skeleton, [[[0, 0]]], 3, 3, -1),
-    /65534 strokes/,
+    /65535 strokes/,
   );
 });
 

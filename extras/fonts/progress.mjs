@@ -109,6 +109,11 @@ export function fitTerminalShaft(points, atEnd, radius) {
     xy += x * y;
     yy += y * y;
   }
+  // A scatter with no spread has no principal axis to find. atan2(0, 0) is 0 in
+  // JavaScript rather than an error, so this handed back a horizontal tangent with no
+  // geometric basis, and the residual test below could not reject it because every
+  // residual is zero too.
+  if (xx + yy <= 1e-12) return null;
   const angle = 0.5 * Math.atan2(2 * xy, xx - yy),
     t = [Math.cos(angle), Math.sin(angle)];
   if ((endpoint[0] - center[0]) * t[0] + (endpoint[1] - center[1]) * t[1] < 0) {
@@ -249,8 +254,13 @@ export async function projectCurveProgress(
       kinds[i] === 'curve' ? indexTrail(turnField(trails[i], ink, width)) : null;
     if (tree && !tree.closed) tree.terminals = terminalFits(trails[i], ink, width);
     indexes.push(tree);
+    // Read the signal every trail, but keep yielding every 32. Indexing one trail costs
+    // about 3 ms even at 50,000 points, so the yield cadence is not what delays a
+    // cancellation; batching the abort check behind it is, because that made the worst
+    // case 32 trails rather than one. An abort check is a field read, while a yield
+    // allocates a promise and burns a macrotask, so only the cheap one belongs per item.
+    stop(signal);
     if (i % 32 === 31) {
-      stop(signal);
       await yieldWork();
       stop(signal);
     }

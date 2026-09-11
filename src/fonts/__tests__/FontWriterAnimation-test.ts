@@ -177,6 +177,151 @@ describe('FontWriter animation and input', () => {
     w.destroy();
   });
 
+  it('leaves valid playback running when a replacement animation is rejected', async () => {
+    const removeGeometryStubs = installGeometryStubs();
+    const w = writer('svg');
+    await w.setShape(shape());
+    await w.setAnimation(animationFor(w.check().shapeId));
+    w.startTrace();
+
+    const playback = w.animate();
+    tick(0);
+
+    // Preparing a replacement counted against the same serial as playback, so merely
+    // starting one invalidated the running tick. The tick bailed at its own supersede
+    // check without resolving this promise, requesting another frame, or restoring
+    // input, and a preparation that then threw left the writer frozen for good.
+    await expect(w.setAnimation(animationFor('not-this-shape'))).rejects.toThrow(
+      'Invalid or mismatched font animation',
+    );
+
+    // A failed preparation leaves playback alone, so it is still asking for frames and
+    // still settles by itself. Before, the tick had stopped requesting them and this
+    // promise stayed pending forever.
+    tick(5000);
+    await expect(playback).resolves.toBeUndefined();
+
+    // And input comes back when playback ends, as it would have without the failure.
+    const surface = document.querySelector('#font svg')!;
+    surface.dispatchEvent(pointerEvent('pointerdown', { clientX: 10, clientY: 10 }));
+    window.dispatchEvent(pointerEvent('pointermove', { clientX: 60, clientY: 90 }));
+    window.dispatchEvent(pointerEvent('pointerup', { clientX: 60, clientY: 90 }));
+    expect(w.check().hasInput).toBe(true);
+
+    w.destroy();
+    removeGeometryStubs();
+  });
+
+  it('keeps the stored padding when an update passes padding: undefined', async () => {
+    document.body.innerHTML = '<div id="font"></div>';
+    const w = Scribing.createFontWriter('font', {
+      width: 300,
+      height: 300,
+      padding: 4,
+    });
+    await w.setShape(shape());
+    // Spreading the caller's object let an explicit undefined erase the stored 4.
+    // validateDimensions then read its own 16 default back and rejected a box that
+    // padding 4 fits, while every render would have drawn that box with no inset at all.
+    expect(() =>
+      w.updateDimensions({ width: 32, height: 32, padding: undefined }),
+    ).not.toThrow();
+    w.destroy();
+  });
+
+  it('gives a borrowed canvas back at the size it was found', async () => {
+    document.body.innerHTML =
+      '<canvas id="font" width="123" height="45" style="width: 61px; height: 22px"></canvas>';
+    const w = Scribing.createFontWriter('font', {
+      width: 300,
+      height: 300,
+      renderer: 'canvas',
+    });
+    await w.setShape(shape());
+    const canvas = document.getElementById('font') as HTMLCanvasElement;
+    expect(canvas.width).not.toBe(123);
+
+    w.destroy();
+
+    // The constructor promises a caller-supplied canvas is put back as it was found.
+    // Only role and aria-label were recorded; render() also writes the drawing-buffer
+    // size and the inline sizing on every frame, and those were left behind.
+    expect(canvas.width).toBe(123);
+    expect(canvas.height).toBe(45);
+    expect(canvas.style.width).toBe('61px');
+    expect(canvas.style.height).toBe('22px');
+  });
+
+  it('rejects a stroke that owns only the gap between two glyphs', async () => {
+    const w = writer('svg');
+    // Two bars with clear space between them: cells 0-1 are the left glyph, cells 4-5 the
+    // right, and cells 2-3 belong to neither.
+    await w.setShape({
+      schemaVersion: 1,
+      text: 'ii',
+      font: { id: 'fixture', name: 'Fixture', sha256: 'c'.repeat(64) },
+      script: 'Latn',
+      language: 'en',
+      direction: 'ltr',
+      em: 1000,
+      bounds: [0, 0, 100, 100],
+      glyphs: [
+        {
+          id: 1,
+          cluster: 0,
+          path: 'M0 0H20V100H0Z',
+          x: 0,
+          y: 0,
+          advanceX: 80,
+          advanceY: 0,
+        },
+        {
+          id: 2,
+          cluster: 1,
+          path: 'M0 0H20V100H0Z',
+          x: 80,
+          y: 0,
+          advanceX: 20,
+          advanceY: 0,
+        },
+      ],
+    });
+
+    // Reachability compared every owned cell against one rectangle spanning both glyphs,
+    // so stroke 2 — which owns nothing but the empty middle — counted as reaching them
+    // and played back as a step that reveals nothing at all.
+    await expect(
+      w.setAnimation({
+        schemaVersion: 1,
+        shapeKey: w.check().shapeId,
+        provenance: 'generated',
+        strokes: [0, 1].map((i) => ({
+          id: `s${i}`,
+          points: [
+            [0, 0],
+            [100, 100],
+          ] as [number, number][],
+          kind: 'curve' as const,
+          provenance: 'generated' as const,
+        })),
+        tiles: [
+          {
+            glyphIndices: [0, 1],
+            bounds: [0, 0, 100, 100],
+            width: 5,
+            height: 1,
+            // Every cell is owned, because the mocked raster reports ink everywhere and
+            // an unowned inked cell fails the coverage proof first. Only cell 2, the
+            // empty middle, belongs to stroke 2.
+            owners: Uint16Array.from([1, 1, 2, 1, 1]),
+            progress: Uint16Array.from([0, 16383, 32767, 49151, 65535]),
+          },
+        ],
+      }),
+    ).rejects.toThrow('Animation step lies entirely outside the glyphs');
+    w.destroy();
+  });
+
   it('refuses to play before an animation is attached', async () => {
     const w = writer();
     await w.setShape(shape());

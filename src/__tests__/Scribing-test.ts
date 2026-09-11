@@ -1601,6 +1601,27 @@ describe('Scribing', () => {
       await expect(second).resolves.toBe(ren);
     });
 
+    it('keeps the default loader when one is passed as an explicit undefined', async () => {
+      // Spreading the caller's object let `{ charDataLoader: undefined }` erase the
+      // default, and LoadingManager calls that option with no fallback of its own, so
+      // the request died on "not a function" instead of using the default loader.
+      const openSpy = jest.spyOn(XMLHttpRequest.prototype, 'open');
+      const sendSpy = jest
+        .spyOn(XMLHttpRequest.prototype, 'send')
+        .mockImplementation(() => undefined);
+      try {
+        // send is stubbed, so nothing settles; what matters is that the default loader
+        // was reached at all rather than an undefined being called.
+        Scribing.loadCharacterData('人', { charDataLoader: undefined }).catch(
+          () => undefined,
+        );
+        expect(openSpy).toHaveBeenCalled();
+      } finally {
+        openSpy.mockRestore();
+        sendSpy.mockRestore();
+      }
+    });
+
     it('calls onLoadCharDataError if provided on loading failure', async () => {
       const onLoadCharDataError = jest.fn();
       const loadingPromise = Scribing.loadCharacterData('人', {

@@ -88,6 +88,7 @@ module.exports = tseslint.config(
       // Generated from src/fonts/pathGeometry.ts; scripts/fonts/check-assets.mjs
       // asserts byte equality, so findings here belong to the TypeScript source.
       'extras/fonts/path-geometry.mjs',
+      'extras/fonts/yield-work.mjs',
       // Unchanged upstream HarfBuzzJS runtime.
       'extras/fonts/vendor/**',
     ],

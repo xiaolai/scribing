@@ -25,11 +25,17 @@ const server = http.createServer((q, r) => {
 });
 (async () => {
   fs.mkdirSync(path.join(root, 'work/fonts/contour-gate'), { recursive: true });
-  await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  const browser = await chromium.launch(),
-    base = `http://127.0.0.1:${server.address().port}`,
-    results = [];
+  // browser is declared outside the scope that closes the server, and assigned inside it,
+  // so a launch that throws still reaches the close. Leaving the launch outside meant a
+  // failure there skipped the cleanup entirely and left the server listening, which hangs
+  // the process instead of reporting the failure. check-font-demo.cjs and its siblings
+  // already did it this way.
+  let browser;
   try {
+    await new Promise((r) => server.listen(0, '127.0.0.1', r));
+    browser = await chromium.launch();
+    const base = `http://127.0.0.1:${server.address().port}`,
+      results = [];
     for (const deviceRatio of [1, 3]) {
       const context = await browser.newContext({ deviceScaleFactor: deviceRatio });
       try {
@@ -191,9 +197,17 @@ const server = http.createServer((q, r) => {
               { size: sizePx, renderer: rendererName },
             );
             for (const c of report.cases) {
+              // finalArea was measured and recorded here and never compared against
+              // anything, so a run that drew nothing finished with both jumps at zero and
+              // no early or late pixels, and passed. The lowest real fill observed across
+              // every configuration is 45% of the surface; a quarter leaves margin while
+              // still failing a blank or mostly blank reveal.
+              // The jumps are compared by magnitude too: only an increase was checked, so
+              // a reveal that lost ink between frames read as a comfortable negative.
               if (
-                c.startJump > (sizePx * deviceRatio) / 128 ||
-                c.finishJump > (sizePx * deviceRatio) / 128 ||
+                c.finalArea < (sizePx * deviceRatio) ** 2 * 0.25 ||
+                Math.abs(c.startJump) > (sizePx * deviceRatio) / 128 ||
+                Math.abs(c.finishJump) > (sizePx * deviceRatio) / 128 ||
                 c.frames.some((f) => f.early || f.late)
               )
                 throw Error(
@@ -203,6 +217,7 @@ const server = http.createServer((q, r) => {
                       renderer: rendererName,
                       ratio: deviceRatio,
                       name: c.name,
+                      finalArea: c.finalArea,
                       start: c.startJump,
                       finish: c.finishJump,
                     }),
@@ -233,8 +248,13 @@ const server = http.createServer((q, r) => {
       JSON.stringify(results, null, 2),
     );
   } finally {
-    await browser.close();
-    await new Promise((r) => server.close(r));
+    // Nested, so a rejecting browser.close() cannot skip the server close and leave the
+    // process listening with nothing to end it.
+    try {
+      if (browser) await browser.close();
+    } finally {
+      await new Promise((r) => server.close(r));
+    }
   }
 })().catch((e) => {
   console.error(e);

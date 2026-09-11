@@ -12,6 +12,7 @@
 # Generated from src/fonts/pathGeometry.ts by scripts/fonts/build-geometry.cjs, then
 # byte-compared by scripts/fonts/check-assets.mjs. Formatting it would break that gate.
 /extras/fonts/path-geometry.mjs
+/extras/fonts/yield-work.mjs
 
 # Unchanged upstream HarfBuzzJS runtime, hash-pinned in its own manifest.
 /extras/fonts/vendor

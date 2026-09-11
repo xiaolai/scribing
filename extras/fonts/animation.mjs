@@ -72,12 +72,21 @@ const sourcePoint = (p) =>
   Array.isArray(p) &&
   p.length === 2 &&
   p.every((n) => typeof n === 'number' && Number.isFinite(n) && Math.abs(n) <= 1e7);
+/**
+ * The label rule src/fonts/validateAnimation.ts applies to every identifier it accepts.
+ *
+ * Repeated here because a source record whose ids are empty or longer than 256 characters
+ * passed this validator and was then rejected downstream, so the loader approved data
+ * that could only ever produce an unusable animation.
+ */
+const sourceLabel = (v) => typeof v === 'string' && v.length > 0 && v.length <= 256;
+
 function validSourceRecord(record) {
   const u = record?.unit;
   if (
     !plain(record) ||
-    typeof record.packId !== 'string' ||
-    typeof record.unitId !== 'string' ||
+    !sourceLabel(record.packId) ||
+    !sourceLabel(record.unitId) ||
     !plain(u) ||
     !plain(u.coordinates) ||
     !Number.isFinite(u.coordinates.em) ||
@@ -87,14 +96,13 @@ function validSourceRecord(record) {
     !u.motorStrokes.length ||
     u.motorStrokes.length > MAX_STROKES ||
     !Array.isArray(u.plans) ||
-    typeof u.defaultPlanId !== 'string'
+    !sourceLabel(u.defaultPlanId)
   )
     return false;
   const ids = new Set();
   let points = 0;
   for (const stroke of u.motorStrokes) {
-    if (!plain(stroke) || typeof stroke.id !== 'string' || ids.has(stroke.id))
-      return false;
+    if (!plain(stroke) || !sourceLabel(stroke.id) || ids.has(stroke.id)) return false;
     ids.add(stroke.id);
     if (stroke.kind === 'dot') {
       if (!sourcePoint(stroke.center)) return false;
@@ -115,8 +123,7 @@ function validSourceRecord(record) {
   for (const plan of u.plans) {
     if (
       !plain(plan) ||
-      typeof plan.id !== 'string' ||
-      !plan.id ||
+      !sourceLabel(plan.id) ||
       planIds.has(plan.id) ||
       !Array.isArray(plan.steps) ||
       plan.steps.length !== ids.size
@@ -178,6 +185,23 @@ async function readCapped(response, max) {
   return bytes;
 }
 
+/**
+ * Which motor group, if any, holds recorded stroke data for a script.
+ *
+ * Exported because scripts/fonts/check-assets.mjs asserts the catalog's stroke-order
+ * claims against it. That check used to repeat this selection instead, which cannot
+ * detect the divergence it exists to prevent: changing the policy here alone left the
+ * copy agreeing with the catalog and the gate green, while the loader no longer looked
+ * up the text the catalog advertised.
+ */
+export function motorGroupFor({ script, language }) {
+  if (script === 'Latn') return 'english';
+  if (script === 'Hang') return 'korean';
+  if (language.startsWith('ja')) return 'japanese';
+  if (language.startsWith('zh')) return 'chinese';
+  return null;
+}
+
 export function createMotorSourceLoader({
   baseUrl = new URL('../../', import.meta.url),
   fetch: fetchImpl = globalThis.fetch,
@@ -186,16 +210,7 @@ export function createMotorSourceLoader({
   const cache = new Map();
   return async ({ text, script, language }, { signal } = {}) => {
     stop(signal);
-    const group =
-      script === 'Latn'
-        ? 'english'
-        : script === 'Hang'
-          ? 'korean'
-          : language.startsWith('ja')
-            ? 'japanese'
-            : language.startsWith('zh')
-              ? 'chinese'
-              : null;
+    const group = motorGroupFor({ script, language });
     if (!group) return null;
     const error = (code, message, cause) =>
       new MotorSourceError(code, group, message, cause);
@@ -227,14 +242,22 @@ export function createMotorSourceLoader({
     try {
       if (!index) {
         const response = await request('fonts/motor/index.json');
-        let candidate;
+        // Read and parse are separate, as they are for a group body below. Folded
+        // together, a stream that failed mid-body was reported as invalid JSON.
+        let raw;
         try {
-          const raw = await readCapped(response, MAX_INDEX_BYTES);
-          candidate = JSON.parse(new TextDecoder().decode(raw));
+          raw = await readCapped(response, MAX_INDEX_BYTES);
         } catch (cause) {
           stop(signal);
           if (cause instanceof RangeError)
             throw error('SCHEMA', 'The stroke source index is larger than 4 MiB.', cause);
+          throw error('NETWORK', 'The stroke source index could not be read.', cause);
+        }
+        stop(signal);
+        let candidate;
+        try {
+          candidate = JSON.parse(new TextDecoder().decode(raw));
+        } catch (cause) {
           throw error('JSON', 'The stroke source index contains invalid JSON.', cause);
         }
         if (
@@ -391,8 +414,11 @@ function raster(shape, indices, bounds, width, height) {
     if (!geometry) continue;
     const path = new Path2D(g.path);
     for (const box of geometry.contours)
-      for (const point of contourProbes(box, h / height, (px, py) =>
-        ctx.isPointInPath(path, px, py, 'nonzero'),
+      for (const point of contourProbes(
+        box,
+        h / height,
+        (px, py) => ctx.isPointInPath(path, px, py, 'nonzero'),
+        geometry.contours,
       )) {
         const anchor = [point[0] + g.x, point[1] + g.y],
           col = Math.max(
@@ -439,12 +465,18 @@ function boundsOfGlyphs(shape, indices) {
  */
 const MAX_RESAMPLED_POINTS = 200000;
 
-function resample(points, step = 2) {
+export function resample(points, step = 2, budget = Infinity) {
   const out = [points[0]];
+  if (out.length > budget) return null;
   for (let i = 1; i < points.length; i++) {
     const a = points[i - 1],
       b = points[i],
       n = Math.max(1, Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / step));
+    // Refuse the segment before allocating it. The caller's budget check ran only
+    // between whole strokes, so one stroke at the source validator's million-point
+    // ceiling expanded to roughly 128 million points here — tens of gigabytes — before
+    // anything compared a total against the limit.
+    if (out.length + n > budget) return null;
     for (let j = 1; j <= n; j++)
       out.push([a[0] + ((b[0] - a[0]) * j) / n, a[1] + ((b[1] - a[1]) * j) / n]);
   }
@@ -456,8 +488,12 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
   const plan = unit.plans?.find((p) => p.id === unit.defaultPlanId);
   if (!plan || plan.steps.length !== unit.motorStrokes.length) return null;
   const sign = unit.coordinates.yAxis === 'up' ? 1 : -1;
+  // Keyed once rather than scanned per step. Stroke ids are unique by validSourceRecord,
+  // and a permitted record can carry 8,192 of them, so the linear find made a record the
+  // validator accepts cost up to 67 million comparisons with no cancellation point.
+  const strokeById = new Map(unit.motorStrokes.map((stroke) => [stroke.id, stroke]));
   const source = plan.steps.map((step) => {
-    const s = unit.motorStrokes.find((stroke) => stroke.id === step.strokeId);
+    const s = strokeById.get(step.strokeId);
     return (
       s && {
         id: s.id,
@@ -506,9 +542,11 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
             : (tx + tr) / 2,
           sh ? tb - ((y - sy) / sh) * (tb - ty) : (ty + tb) / 2,
         ]),
+        2,
+        MAX_RESAMPLED_POINTS - total,
       );
+      if (!trail) return null;
       total += trail.length;
-      if (total > MAX_RESAMPLED_POINTS) return null;
       projected.push(trail);
     }
     return projected;
@@ -719,7 +757,7 @@ const HANGUL_VOWEL_VERTICAL = new Set([...'ㅏㅐㅑㅒㅓㅔㅕㅖㅣ']);
 const HANGUL_VOWEL_HORIZONTAL = new Set([...'ㅗㅛㅜㅠㅡ']);
 
 /** Decompose one modern syllable into the letters that are written, in order. */
-function decomposeHangul(text) {
+export function decomposeHangul(text) {
   if (Array.from(text).length !== 1) return null;
   const n = text.codePointAt(0) - 0xac00;
   if (!Number.isInteger(n) || n < 0 || n > 11171) return null;
@@ -739,7 +777,7 @@ function decomposeHangul(text) {
  * rectangle, so those syllables are declined here and fall back to a generated
  * sequence rather than being fitted wrongly.
  */
-function hangulRegions({ vowel, finals, ink, width, box, cut }) {
+export function hangulRegions({ vowel, finals, ink, width, box, cut }) {
   const [left, top, right, bottom] = box;
   const w = right - left,
     h = bottom - top;
@@ -832,7 +870,12 @@ function horizontalLayout(box, w, h, finals, ink, width, cut) {
   while (first > top && occupied(first - 1)) first--;
   while (last < bottom && occupied(last + 1)) last++;
   const y1 = cut('y', Math.max(top, first - h * 0.12), first - 1, left, right);
-  if (y1 >= first) return null;
+  // cut() reports "nothing found" as -1, which happens here whenever the bar reaches the
+  // top of the box and leaves it an empty range to search. Testing only the upper bound
+  // let that -1 through and produced an inverted first region plus a second one covering
+  // the whole box. The four other cut() call sites compare against a lower bound that is
+  // never negative, so they reject the sentinel already; this one did not.
+  if (y1 < top || y1 >= first) return null;
   if (!finals.length)
     return {
       body: [

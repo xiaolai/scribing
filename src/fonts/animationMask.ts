@@ -23,12 +23,14 @@ export type MaskField = {
  * neighbours belonging to the same stroke. Sharing these estimates is what removes
  * seams between neighbouring cell polygons.
  */
-async function progressGradients(tile: FontAnimationTile, checkpoint: () => void) {
+async function progressGradients(
+  tile: FontAnimationTile,
+  cutoffs: Float64Array,
+  checkpoint: () => void,
+) {
   const { owners } = tile;
   const gx = new Float32Array(owners.length),
     gy = new Float32Array(owners.length);
-
-  const cutoffs = neighbourCutoffs(owners);
 
   for (let i = 0; i < owners.length; i++) {
     if (i % 32768 === 0) {
@@ -52,21 +54,47 @@ async function progressGradients(tile: FontAnimationTile, checkpoint: () => void
 /**
  * Largest progress step between neighbouring cells that still counts as continuous.
  *
- * A stroke's progress advances by about 65535 / cells from one cell to the next, so the
- * fixed 16384 this replaces rejected every neighbour of a stroke shorter than eight
- * cells: no gradient survived, the corner field went flat, and the stroke revealed in
- * whole-cell jumps. The cutoff now follows each stroke's own resolution and never falls
- * below the old constant, which is what still keeps it from bridging a real
- * discontinuity where a long stroke doubles back on itself.
+ * A stroke's progress advances by about 65535 / L from one cell to the next, where L is
+ * how many cells long it is. The fixed 16384 this replaces rejected every neighbour of a
+ * stroke shorter than eight cells: no gradient survived, the corner field went flat, and
+ * the stroke revealed in whole-cell jumps.
+ *
+ * Dividing by the owned-cell count instead of L repeated that failure for thick strokes.
+ * Area is L times the thickness, so `2 * 65535 / area` exceeds the real step only while
+ * the stroke is under two cells thick; at four cells wide and two long it lands back on
+ * the old constant and rejects every advancing neighbour again.
+ *
+ * L is therefore measured rather than inferred. assignOwnership seeds progress along the
+ * trail and floods it sideways unchanged, so cells across a stroke's width hold equal
+ * progress and only cells apart along it differ. The smallest nonzero difference between
+ * neighbours is one longitudinal step, which is exactly what the cutoff needs to admit,
+ * and unlike a mean it cannot be inflated by the large jumps where a stroke doubles back
+ * on itself — which is the discontinuity the cutoff exists to keep out.
  */
-function neighbourCutoffs(owners: FontAnimationTile['owners']) {
+function neighbourCutoffs(tile: FontAnimationTile) {
+  const { width, height, owners, progress } = tile;
   let maxOwner = 0;
   for (let i = 0; i < owners.length; i++) if (owners[i] > maxOwner) maxOwner = owners[i];
-  const cells = new Uint32Array(maxOwner + 1);
-  for (let i = 0; i < owners.length; i++) if (owners[i]) cells[owners[i]] += 1;
+  const finest = new Float64Array(maxOwner + 1).fill(Infinity);
+  const consider = (owner: number, delta: number) => {
+    if (delta > 0 && delta < finest[owner]) finest[owner] = delta;
+  };
+  // Right and down only, so each neighbouring pair is measured once.
+  for (let i = 0; i < owners.length; i++) {
+    const owner = owners[i];
+    if (!owner) continue;
+    const x = i % width;
+    if (x + 1 < width && owners[i + 1] === owner)
+      consider(owner, Math.abs(progress[i + 1] - progress[i]));
+    if (Math.floor(i / width) + 1 < height && owners[i + width] === owner)
+      consider(owner, Math.abs(progress[i + width] - progress[i]));
+  }
   const cutoffs = new Float64Array(maxOwner + 1);
   for (let owner = 1; owner <= maxOwner; owner++) {
-    cutoffs[owner] = cells[owner] ? Math.max(16384, (2 * 65535) / cells[owner]) : 16384;
+    // A stroke whose cells all carry one progress value has no step to measure.
+    cutoffs[owner] = Number.isFinite(finest[owner])
+      ? Math.max(16384, 2 * finest[owner])
+      : 16384;
   }
   return cutoffs;
 }
@@ -111,6 +139,7 @@ const CORNER_OFFSETS = [
 async function cornerProgress(
   tile: FontAnimationTile,
   gradients: { gx: Float32Array; gy: Float32Array },
+  cutoffs: Float64Array,
   checkpoint: () => void,
 ) {
   const { width, height, owners, progress } = tile;
@@ -136,7 +165,10 @@ async function cornerProgress(
             py = vy + dy;
           if (px < 0 || px >= width || py < 0 || py >= height) continue;
           const j = py * width + px;
-          if (owners[j] !== owners[i] || Math.abs(progress[j] - progress[i]) > 16384)
+          if (
+            owners[j] !== owners[i] ||
+            Math.abs(progress[j] - progress[i]) > cutoffs[owners[i]]
+          )
             continue;
           total += progress[j] + gx[j] * (vx - px - 0.5) + gy[j] * (vy - py - 0.5);
           count++;
@@ -254,8 +286,12 @@ export async function prepareMaskField(
   tile: FontAnimationTile,
   checkpoint: () => void,
 ): Promise<MaskField> {
-  const gradients = await progressGradients(tile, checkpoint);
-  const corners = await cornerProgress(tile, gradients, checkpoint);
+  // One cutoff per stroke, shared by both stages. Computed separately, they disagreed
+  // about which neighbours were continuous and assigned different progress to a shared
+  // corner, which stalls playback and detaches the leading fragment of a stroke.
+  const cutoffs = neighbourCutoffs(tile);
+  const gradients = await progressGradients(tile, cutoffs, checkpoint);
+  const corners = await cornerProgress(tile, gradients, cutoffs, checkpoint);
   await normalizeCorners(tile, corners, checkpoint);
   const { first, last, strokeBounds, full } = await completedOutline(tile, checkpoint);
   checkpoint();

@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 """Offline catalog generation. Requires fonttools==4.62.1; never downloads."""
-import collections,hashlib,json,pathlib,sys
+import collections,hashlib,json,pathlib
 from fontTools.ttLib import TTFont
 ROOT=pathlib.Path(__file__).resolve().parents[2]
-def read(p):return json.loads((ROOT/p).read_text())
-def write(p,d):(ROOT/p).write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n')
+def read(p):return json.loads((ROOT/p).read_text(encoding='utf-8'))
+def write(p,d):(ROOT/p).write_text(json.dumps(d,ensure_ascii=False,indent=2)+'\n',encoding='utf-8',newline='\n')
+def need(condition,message):
+ if not condition:raise SystemExit('build-catalog: %s'%(message,))
 def ranges(points):
  out=[]
  for cp in sorted(set(points)):
@@ -12,6 +14,10 @@ def ranges(points):
   else:out.append([cp,cp])
  return out
 lock=read('fonts/assets.lock.json'); scripts=read('scripts/fonts/scripts.json')
+UCD_INPUTS=('fonts/unicode/Scripts.txt','fonts/unicode/UnicodeData.txt')
+ucd_revisions=sorted({e['source']['revision'] for e in lock['unicode'] if e['file'] in UCD_INPUTS})
+need(len(ucd_revisions)==1,('locked UCD inputs disagree about their revision',ucd_revisions))
+UNICODE_VERSION=ucd_revisions[0]
 # Stroke-order availability. The predicate mirrors the group selection in
 # extras/fonts/animation.mjs exactly, so the catalog cannot advertise a group the
 # runtime would not consult. Normative order exists for four scripts and no others;
@@ -26,16 +32,16 @@ def motor_group(entry):
  return None
 for group in ['fonts','notices','unicode']:
  for entry in lock[group]:
-  assert hashlib.sha256((ROOT/entry['file']).read_bytes()).hexdigest()==entry['sha256'],entry['file']
+  need(hashlib.sha256((ROOT/entry['file']).read_bytes()).hexdigest()==entry['sha256'],entry['file'])
 ucd={}; script_ranges=collections.defaultdict(list)
-for line in (ROOT/'fonts/unicode/Scripts.txt').read_text().splitlines():
+for line in (ROOT/'fonts/unicode/Scripts.txt').read_text(encoding='utf-8').splitlines():
  raw=line.split('#')[0].strip()
  if not raw:continue
  span,script=[v.strip() for v in raw.split(';')]; nums=span.split('..');lo,hi=int(nums[0],16),int(nums[-1],16)
  script_ranges[script].append([lo,hi])
  for cp in range(lo,hi+1):ucd[cp]=script
 categories={};names={};first=None
-for line in (ROOT/'fonts/unicode/UnicodeData.txt').read_text().splitlines():
+for line in (ROOT/'fonts/unicode/UnicodeData.txt').read_text(encoding='utf-8').splitlines():
  fields=line.split(';');cp=int(fields[0],16); name,cat=fields[1:3]
  if name.endswith(', First>'):first=cp
  elif name.endswith(', Last>'):
@@ -69,12 +75,12 @@ for entry in scripts:
  if entry['id']=='georgian-asomtavruli':candidates=[cp for cp in candidates if 0x10a0<=cp<=0x10cf]
  candidates=list(dict.fromkeys(cp for cp in candidates if cp != 0x2800))
  entry['inventory']=[chr(cp) for cp in candidates[:160]]
- assert entry['inventory'],(entry['id'],'empty inventory')
+ need(entry['inventory'],(entry['id'],'empty inventory'))
  if not entry['examples']:entry['examples']=[{'text':chr(cp),'label':names.get(cp,'Unicode character')} for cp in candidates[:4]]
  for example in entry['examples']:
   missing=[f'U+{ord(c):04X}' for c in example['text'] if ord(c) not in shared]
-  assert not missing,(entry['id'],example,missing)
- for c in entry['inventory']:assert ord(c) in shared,(entry['id'],c)
+  need(not missing,(entry['id'],example,missing))
+ for c in entry['inventory']:need(ord(c) in shared,(entry['id'],c))
  entry['inventoryStatus']='curated-unicode-inventory'
  entry['inventoryNote']='Encoded character samples; not a complete language alphabet or a certified handwriting sequence.'
  if len(entry['fontIds'])==1:entry['fontChoiceNote']='One bundled family is available for this script; no alternate face is implied.'
@@ -103,7 +109,7 @@ omni={
 'mkhedruli-georgian':'georgian','asomtavruli-georgian':'georgian-asomtavruli'}
 coverage=[]
 for path in sorted((ROOT/'packs/generated').glob('*.manifest.json')):
- manifest=json.loads(path.read_text());id=manifest['packId'];record={'packId':id,'unitCount':manifest['unitCount']}
+ manifest=json.loads(path.read_text(encoding='utf-8'));id=manifest['packId'];record={'packId':id,'unitCount':manifest['unitCount']}
  if id.startswith('omniglot-'):
   sid=omni.get(id[len('omniglot-'):])
   if sid:
@@ -112,18 +118,21 @@ for path in sorted((ROOT/'packs/generated').glob('*.manifest.json')):
     record['reason']+=' The bundled family is a script-level replacement, not a certification of the source historical/style variant.'
   else:record.update(status='unmapped',reason='No verified Unicode text mapping or compatible bundled font is available for this named source collection. No substitute alphabet or Private Use mapping is asserted.')
  else:
-  sid='english' if id.startswith('english-') or id=='kanjivg-latin' else 'korean' if id.startswith('korean-') else 'japanese'
+  if id.startswith('english-') or id=='kanjivg-latin':sid='english'
+  elif id.startswith('korean-'):sid='korean'
+  elif id.startswith('japanese-'):sid='japanese'
+  else:raise SystemExit('build-catalog: pack %r has no declared script; add it to this mapping rather than letting it default'%id)
   units=read('packs/generated/'+id+'.json')['units']
   mappings=[{'unitId':k,'text':v['text']} for k,v in units.items() if isinstance(v.get('text'),str) and v['text']]
-  assert len(mappings)==len(units),(id,'unit without exact text')
+  need(len(mappings)==len(units),(id,'unit without exact text'))
   shared=set.intersection(*(cmaps[f] for f in script_ids[sid]['fontIds']))
   unsupported=sorted(set(m['text'] for m in mappings if any(ord(c) not in shared for c in m['text'])))
   record.update(status='verified-text',scriptId=sid,reason='Exact Unicode text retained from existing pack units. This verifies text identity only, not stroke order, font glyph coverage, or teaching quality.',unitMappings=mappings,supportedTextCount=len(set(m['text'] for m in mappings))-len(unsupported),unsupportedTexts=unsupported)
  coverage.append(record)
-assert len(coverage)==149,len(coverage)
-result={'schemaVersion':1,'description':'Offline formal font outlines and Unicode inventories. Fonts are not handwriting stroke-order sources.','unicodeVersion':'16.0.0','rangeFile':'fonts/script-ranges.json','fonts':fonts,'scripts':scripts,'sourceCoverage':coverage,'totals':{'fonts':len(fonts),'scriptEntries':len(scripts),'fontBytes':sum(f['sizeBytes'] for f in fonts),'sourcePacks':len(coverage),'sourceCoverageStatuses':dict(collections.Counter(c['status'] for c in coverage))}}
+need(len(coverage)==149,len(coverage))
+result={'schemaVersion':1,'description':'Offline formal font outlines and Unicode inventories. Fonts are not handwriting stroke-order sources.','unicodeVersion':UNICODE_VERSION,'rangeFile':'fonts/script-ranges.json','fonts':fonts,'scripts':scripts,'sourceCoverage':coverage,'totals':{'fonts':len(fonts),'scriptEntries':len(scripts),'fontBytes':sum(f['sizeBytes'] for f in fonts),'sourcePacks':len(coverage),'sourceCoverageStatuses':dict(collections.Counter(c['status'] for c in coverage))}}
 write('fonts/catalog.json',result)
-write('fonts/script-ranges.json',{'schemaVersion':1,'unicodeVersion':'16.0.0','scripts':dict(sorted(script_ranges.items())),'common':script_ranges['Common'],'inherited':script_ranges['Inherited']})
+write('fonts/script-ranges.json',{'schemaVersion':1,'unicodeVersion':UNICODE_VERSION,'scripts':dict(sorted(script_ranges.items())),'common':script_ranges['Common'],'inherited':script_ranges['Inherited']})
 print(json.dumps(result['totals'],indent=2))
 print('Missing source text coverage:',[(c['packId'],c.get('unsupportedTexts')) for c in coverage if c.get('unsupportedTexts')])
 

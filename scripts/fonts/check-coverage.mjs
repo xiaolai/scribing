@@ -11,7 +11,7 @@
  */
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -26,35 +26,62 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
  * two are byte-identical. Measuring it here would report the same code twice.
  */
 const FLOORS = {
-  'extras/fonts/animation.mjs': 26,
-  'extras/fonts/progress.mjs': 70,
+  'extras/fonts/animation.mjs': 36,
+  'extras/fonts/progress.mjs': 85,
   'extras/fonts/provider.mjs': 96,
   'extras/fonts/skeleton.mjs': 60,
   'extras/fonts/yield-work.mjs': 80,
 };
 
-const TESTS = [
-  'scripts/fonts/provider.test.mjs',
-  'scripts/fonts/skeleton.test.mjs',
-  'scripts/fonts/source-loader.test.mjs',
-  'scripts/fonts/junction.test.mjs',
-  'scripts/fonts/progress.test.mjs',
-];
+/**
+ * The suites to measure, read from the `test-fonts` script rather than listed again.
+ *
+ * Two lists meant adding a suite in one place and not the other, and a suite missing
+ * here still counted toward nothing while appearing to run.
+ */
+const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
+const TESTS = pkg.scripts['test-fonts'].match(/\S+\.test\.mjs/g) ?? [];
+assert(TESTS.length > 0, 'the test-fonts script lists no suites');
+
+/**
+ * Every shipped module must appear in FLOORS.
+ *
+ * FLOORS was the only inventory, so a module added to extras/fonts and imported by no
+ * test was absent from both and passed without ever being measured. The directory read
+ * is not recursive, which is what leaves vendor/ out.
+ */
+const shipped = readdirSync(join(root, 'extras/fonts'))
+  .filter((f) => f.endsWith('.mjs') && f !== 'path-geometry.mjs')
+  .map((f) => `extras/fonts/${f}`)
+  .sort();
+assert.deepEqual(
+  shipped,
+  Object.keys(FLOORS).sort(),
+  'FLOORS must list exactly the shipped modules',
+);
 
 const scratch = mkdtempSync(join(tmpdir(), 'scribing-coverage-'));
 const lcovPath = join(scratch, 'coverage.lcov');
 try {
-  execFileSync(
-    process.execPath,
-    [
-      '--test',
-      '--experimental-test-coverage',
-      '--test-reporter=lcov',
-      `--test-reporter-destination=${lcovPath}`,
-      ...TESTS,
-    ],
-    { cwd: root, stdio: 'pipe' },
-  );
+  try {
+    execFileSync(
+      process.execPath,
+      [
+        '--test',
+        '--experimental-test-coverage',
+        '--test-reporter=lcov',
+        `--test-reporter-destination=${lcovPath}`,
+        ...TESTS,
+      ],
+      { cwd: root, stdio: 'pipe' },
+    );
+  } catch (cause) {
+    // The lcov reporter carries no assertion events, so a failing suite arrived here as
+    // a bare non-zero exit with the reason captured in the pipe and thrown away.
+    process.stderr.write(String(cause.stdout ?? ''));
+    process.stderr.write(String(cause.stderr ?? ''));
+    throw cause;
+  }
 
   /**
    * Parse the line counters out of lcov: LF is lines found, LH is lines hit.
@@ -70,7 +97,9 @@ try {
   let found = null;
   for (const line of readFileSync(lcovPath, 'utf8').split('\n')) {
     if (line.startsWith('SF:')) {
-      file = line.slice(3).trim();
+      // Node reports platform-native relative paths, so Windows emits backslashes and
+      // every forward-slash key below would miss.
+      file = line.slice(3).trim().split('\\').join('/');
       hit = null;
       found = null;
     } else if (line.startsWith('LF:')) found = Number(line.slice(3));

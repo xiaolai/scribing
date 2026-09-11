@@ -2,6 +2,7 @@ import { prepareMaskField, maskPath, MaskField } from './animationMask';
 import validateShape from './validateShape';
 import validateAnimation from './validateAnimation';
 import pathGeometry, { contourProbes } from './pathGeometry';
+import { definedEntries } from '../utils';
 import {
   FontShape,
   ReadonlyFontShape,
@@ -17,22 +18,6 @@ const MAX_STROKES = 1024;
 const MAX_POINTS = 65536;
 const MASK_SIZE = 192;
 
-/**
- * The caller's own properties that actually carry a value.
- *
- * Spreading an options object with an explicitly undefined property erases the default
- * behind it, which is worse than omitting the property.
- */
-const definedEntries = <T extends object>(value: T): T => {
-  const result: Partial<T> = {};
-  for (const key of Object.keys(value) as Array<keyof T>) {
-    if (value[key] !== undefined) result[key] = value[key];
-  }
-  // A required property can only be undefined here if the caller is untyped JavaScript,
-  // and validateDimensions rejects that on the next line.
-  return result as T;
-};
-
 /** Unordered tracing/copying against filled font outlines; no stroke-order quiz. */
 export default class FontWriter {
   private surface: SVGSVGElement | HTMLCanvasElement;
@@ -42,6 +27,14 @@ export default class FontWriter {
   private animation?: FontAnimation;
   private animationState?: { stroke: number; progress: number };
   private animationSerial = 0;
+  /**
+   * Generation of setAnimation preparations, counted apart from playback.
+   *
+   * A preparation must be able to supersede an earlier one, but starting a preparation
+   * must not disturb a playback that is already running, because a preparation that
+   * fails has to leave it alone.
+   */
+  private preparationSerial = 0;
   private animationRestoreEnabled?: boolean;
   private maskCaches: MaskField[] = [];
   private animationLayer?: HTMLCanvasElement;
@@ -92,6 +85,19 @@ export default class FontWriter {
    * back on destroy. `null` means the attribute was absent and must be removed again.
    */
   private restoreAttributes: [string, string | null][] = [];
+  /**
+   * Drawing-buffer size and inline sizing of a canvas this writer did not create.
+   *
+   * render() writes all four on every frame to fit the device pixel ratio. They are
+   * properties and inline styles rather than plain attributes, so restoreAttributes
+   * cannot carry them, and without this the caller got its canvas back resized.
+   */
+  private restoreCanvas?: {
+    width: number;
+    height: number;
+    styleWidth: string;
+    styleHeight: string;
+  };
 
   constructor(target: string | HTMLElement, options: FontWriterOptions) {
     const host = typeof target === 'string' ? document.getElementById(target) : target;
@@ -121,6 +127,14 @@ export default class FontWriter {
     }
     this.oldTouchAction = this.surface.style.touchAction;
     this.surface.style.touchAction = 'none';
+    if (!this.owned && this.surface instanceof HTMLCanvasElement) {
+      this.restoreCanvas = {
+        width: this.surface.width,
+        height: this.surface.height,
+        styleWidth: this.surface.style.width,
+        styleHeight: this.surface.style.height,
+      };
+    }
     // A caller-supplied canvas belongs to the caller. Record what was there so destroy
     // can put it back, including the case where the attribute was absent entirely.
     this.setOwnedAttribute('role', 'img');
@@ -216,16 +230,23 @@ export default class FontWriter {
   }
   async setAnimation(value: FontAnimation): Promise<void> {
     const shape = this.required();
-    // Claim a serial before any await. Two concurrent calls used to read the same one,
-    // so neither could see the other as superseding it: whichever finished first
-    // attached and then bumped the serial through cancel(), which rejected the newer
-    // request and left the older animation in place.
-    const serial = ++this.animationSerial;
+    // Claim a preparation serial before any await. Two concurrent calls used to read the
+    // same one, so neither could see the other as superseding it: whichever finished
+    // first attached and then bumped the serial through cancel(), which rejected the
+    // newer request and left the older animation in place.
+    //
+    // Preparation and playback are counted separately. Sharing one counter meant merely
+    // starting a preparation invalidated the running tick, which then bailed at its own
+    // supersede check without resolving animate() or restoring input — so a preparation
+    // that went on to throw left playback frozen and that promise pending forever, even
+    // though a failed preparation is supposed to leave valid playback untouched.
+    // Playback is superseded only by cancel(), which the success path below calls.
+    const serial = ++this.preparationSerial;
     const shapeGeneration = this.generation;
     const checkpoint = () => {
       if (
         this.destroyed ||
-        serial !== this.animationSerial ||
+        serial !== this.preparationSerial ||
         shapeGeneration !== this.generation
       )
         throw new Error('Font animation superseded');
@@ -233,7 +254,7 @@ export default class FontWriter {
     const next = await validateAnimation(value, shape, this.shapeId, checkpoint);
     const caches: FontWriter['maskCaches'] = [];
     for (const tile of next.tiles) {
-      if (this.destroyed || serial !== this.animationSerial)
+      if (this.destroyed || serial !== this.preparationSerial)
         throw new Error('Font animation superseded');
       const c = document.createElement('canvas');
       c.width = tile.width;
@@ -261,8 +282,11 @@ export default class FontWriter {
           geometry = pathGeometry(glyph.path);
         if (!geometry) continue;
         for (const box of geometry.contours)
-          for (const [px, py] of contourProbes(box, h / tile.height, (a, b) =>
-            ctx.isPointInPath(this.paths[i], a, b, 'nonzero'),
+          for (const [px, py] of contourProbes(
+            box,
+            h / tile.height,
+            (a, b) => ctx.isPointInPath(this.paths[i], a, b, 'nonzero'),
+            geometry.contours,
           )) {
             const col = Math.max(
               0,
@@ -282,7 +306,7 @@ export default class FontWriter {
       caches.push(await prepareMaskField(tile, checkpoint));
       await new Promise((resolve) => setTimeout(resolve, 0));
     }
-    if (this.destroyed || serial !== this.animationSerial)
+    if (this.destroyed || serial !== this.preparationSerial)
       throw new Error('Font animation superseded');
     if (shapeGeneration !== this.generation) throw new Error('Font animation superseded');
     this.cancel();
@@ -304,26 +328,22 @@ export default class FontWriter {
     shape: FontShape,
   ) {
     const [x, y, w, h] = tile.bounds;
-    let minCol = tile.width,
-      minRow = tile.height,
-      maxCol = -1,
-      maxRow = -1;
+    // One box per glyph, not one box spanning them all. A tile can cover several glyphs
+    // with clear space between them, and a union rectangle counts that gap as reachable,
+    // so a stroke owning nothing but the gap passed and played back as a blank step.
+    const boxes: [number, number, number, number][] = [];
     for (const i of tile.glyphIndices) {
       const glyph = shape.glyphs[i];
       const box = pathGeometry(glyph.path);
       if (!box) continue;
-      minCol = Math.min(minCol, Math.floor(((box.minX + glyph.x - x) * tile.width) / w));
-      maxCol = Math.max(maxCol, Math.floor(((box.maxX + glyph.x - x) * tile.width) / w));
-      minRow = Math.min(
-        minRow,
+      boxes.push([
+        Math.floor(((box.minX + glyph.x - x) * tile.width) / w),
+        Math.floor(((box.maxX + glyph.x - x) * tile.width) / w),
         Math.floor(((y + h - box.maxY - glyph.y) * tile.height) / h),
-      );
-      maxRow = Math.max(
-        maxRow,
         Math.floor(((y + h - box.minY - glyph.y) * tile.height) / h),
-      );
+      ]);
     }
-    if (maxCol < minCol || maxRow < minRow) return;
+    if (!boxes.length) return;
 
     const declared = new Set<number>();
     const reaching = new Set<number>();
@@ -331,9 +351,12 @@ export default class FontWriter {
       const owner = tile.owners[i];
       if (!owner) continue;
       declared.add(owner);
+      if (reaching.has(owner)) continue;
       const col = i % tile.width,
         row = Math.floor(i / tile.width);
-      if (col >= minCol && col <= maxCol && row >= minRow && row <= maxRow)
+      if (
+        boxes.some(([c0, c1, r0, r1]) => col >= c0 && col <= c1 && row >= r0 && row <= r1)
+      )
         reaching.add(owner);
     }
     for (const owner of declared)
@@ -459,7 +482,7 @@ export default class FontWriter {
   }
   updateDimensions(dimensions: { width: number; height: number; padding?: number }) {
     this.alive();
-    const next = { ...this.options, ...dimensions };
+    const next = { ...this.options, ...definedEntries(dimensions) };
     this.validateDimensions(next);
     this.cancel();
     this.options = next;
@@ -995,6 +1018,14 @@ export default class FontWriter {
       this.surface
         .getContext('2d')
         ?.clearRect(0, 0, this.surface.width, this.surface.height);
+    if (this.restoreCanvas && this.surface instanceof HTMLCanvasElement) {
+      // After the clear, because assigning width or height throws the buffer away anyway.
+      this.surface.width = this.restoreCanvas.width;
+      this.surface.height = this.restoreCanvas.height;
+      this.surface.style.width = this.restoreCanvas.styleWidth;
+      this.surface.style.height = this.restoreCanvas.styleHeight;
+      this.restoreCanvas = undefined;
+    }
     this.animation = undefined;
     this.maskCaches = [];
     this.animationLayer = undefined;

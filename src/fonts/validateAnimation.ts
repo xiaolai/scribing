@@ -121,13 +121,24 @@ async function readStrokes(value: unknown, checkpoint: () => void): Promise<Stro
   return strokes;
 }
 
-/** Every glyph the tile claims must fit inside the bounds the tile declares. */
-function assertTileCoversGlyphs(tile: Record<string, unknown>, shape: FontShape) {
+/**
+ * Every glyph the tile claims must fit inside the bounds the tile declares.
+ *
+ * Returns whether any of them had outline geometry at all. A pathless glyph has nothing
+ * to contain, so it is skipped, and a tile whose glyphs are all pathless was therefore
+ * left entirely unconstrained by this check.
+ */
+function assertTileCoversGlyphs(
+  tile: Record<string, unknown>,
+  shape: FontShape,
+): boolean {
   const [x, y, w, h] = tile.bounds as number[];
+  let drawable = false;
   for (const index of tile.glyphIndices as number[]) {
     const glyph = shape.glyphs[index];
     const box = pathGeometry(glyph.path);
     if (!box) continue;
+    drawable = true;
     if (
       x > box.minX + glyph.x + BOUNDS_EPSILON ||
       y > box.minY + glyph.y + BOUNDS_EPSILON ||
@@ -137,6 +148,7 @@ function assertTileCoversGlyphs(tile: Record<string, unknown>, shape: FontShape)
       fail();
     }
   }
+  return drawable;
 }
 
 /** Bookkeeping carried across every tile of one animation. */
@@ -150,12 +162,13 @@ type TileState = {
   tile: number;
 };
 
-function readTile(
+async function readTile(
   value: unknown,
   shape: FontShape,
   strokeCount: number,
   state: TileState,
-): Tile {
+  checkpoint: () => void,
+): Promise<Tile> {
   const tile = object(value, [
     'glyphIndices',
     'bounds',
@@ -202,16 +215,30 @@ function readTile(
       return index as number;
     }),
   );
-  assertTileCoversGlyphs(tile, shape);
+  const drawable = assertTileCoversGlyphs(tile, shape);
 
   const cells = (tile.width as number) * (tile.height as number);
+  // A tile is permitted two million cells, and each of these reads materializes one own
+  // property name per cell to prove the instance carries no extra properties. That is
+  // a fifth of a second apiece and cannot be broken up, so cancellation is checked
+  // either side of them and the scan below is paced like every other loop here.
+  checkpoint();
   const owners = readUint16Array(tile.owners, cells, fail);
+  checkpoint();
   const progress = readUint16Array(tile.progress, cells, fail);
+  checkpoint();
   for (let i = 0; i < owners.length; i += 1) {
+    if (shouldYield(i, 32768)) {
+      await yieldWork();
+      checkpoint();
+    }
     const owner = owners[i];
     if (owner > strokeCount) fail();
     // Progress outside conservative coverage is meaningless and would be read anyway.
     if (owner) {
+      // A tile with no outline anywhere in it has nothing to reveal, so a stroke it owns
+      // is a timed playback step that shows the viewer nothing at all.
+      if (!drawable) fail();
       // A stroke may not span tiles. Each tile rescales its strokes' progress to the
       // full clock range on its own, so the two halves of a split stroke would be
       // revealed over the same interval instead of one after the other. There is no
@@ -276,7 +303,7 @@ export default async function validateAnimation(
   for (const entry of readPlainArray(data.tiles, fail, { min: 1, max: MAX_TILES })) {
     await yieldWork();
     checkpoint();
-    tiles.push(readTile(entry, shape, strokes.length, state));
+    tiles.push(await readTile(entry, shape, strokes.length, state, checkpoint));
     state.tile += 1;
   }
 

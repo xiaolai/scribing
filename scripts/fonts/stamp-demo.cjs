@@ -9,18 +9,26 @@ const hash = (file) =>
     .update(fs.readFileSync(path.join(root, file)))
     .digest('hex')
     .slice(0, 12);
+// The vendored HarfBuzz entry points are here too: provider.mjs imports index.mjs, which
+// imports harfbuzz.js, and neither was versioned, so a vendor update could stay cached
+// behind a fresh demo. harfbuzz.wasm cannot join them — it is resolved from
+// `new URL('harfbuzz.wasm', import.meta.url)` at runtime rather than imported, and a
+// relative URL drops the query of the module that resolves it. Every server in this
+// repository therefore sends `Cache-Control: no-store`, which is what revalidates it.
 const modules = [
-  'animation',
-  'progress',
-  'skeleton',
-  'path-geometry',
-  'yield-work',
-  'provider',
+  'animation.mjs',
+  'progress.mjs',
+  'skeleton.mjs',
+  'path-geometry.mjs',
+  'yield-work.mjs',
+  'provider.mjs',
+  'vendor/index.mjs',
+  'vendor/harfbuzz.js',
 ];
 const imports = Object.fromEntries(
   modules.map((name) => {
-    const key = `../../extras/fonts/${name}.mjs`;
-    return [key, `${key}?v=${hash(`extras/fonts/${name}.mjs`)}`];
+    const key = `../../extras/fonts/${name}`;
+    return [key, `${key}?v=${hash(`extras/fonts/${name}`)}`];
   }),
 );
 const file = path.join(root, 'demo/multilingual/index.html'),

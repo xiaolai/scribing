@@ -24,6 +24,9 @@ const server = http.createServer((request, response) => {
     if (fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
     const content = fs.readFileSync(file);
     response.writeHead(200, {
+      // This gate rebuilds dist/ and the demo between runs, so a cached response would
+      // let the assertions below pass against superseded bytes.
+      'Cache-Control': 'no-store',
       'Content-Type': mime[path.extname(file)] || 'application/octet-stream',
     });
     response.end(content);

@@ -159,3 +159,63 @@ describe('yieldWork', () => {
     expect(closed.sort()).toEqual(['port1', 'port2']);
   });
 });
+
+describe('numerical conditioning', () => {
+  it('finds a curve extremum that the direct quadratic formula loses', () => {
+    // The derivative's roots come from a quadratic whose linear term dominates here, so
+    // `(-b + sqrt(d)) / 2a` subtracts two nearly equal numbers and most of that root's
+    // digits go with it. The reported maximum was 431.4049586776862 against a true
+    // 432.1428571428564, and these bounds are what every fit and containment check uses.
+    const g = pathGeometry('M0 0C1 1100 2 100 3 -2999.99999999999Z')!;
+    expect(g.maxY).toBeCloseTo(432.1428571428564, 6);
+  });
+
+  it('sweeps a tall sparse contour without an entry per edge per row', () => {
+    // Every edge here spans the full height, so recording each one in every row it
+    // crosses cost 602 edges times 16,384 rows. This path is under four thousand
+    // characters against a half-million limit and allocated 189 MB; the active-edge
+    // sweep holds each edge once.
+    const H = 100000;
+    const parts: string[] = ['M0 0'];
+    for (let i = 1; i <= 600; i++) parts.push(`L${i % 2 ? 1 : 0} ${i % 2 ? H : 0}`);
+    const box = pathGeometry(parts.join('') + 'Z')!.contours[0];
+
+    global.gc?.();
+    const before = process.memoryUsage().heapUsed;
+    contourProbes(box, 1, () => false);
+    const usedMb = (process.memoryUsage().heapUsed - before) / 1048576;
+    expect(usedMb).toBeLessThan(60);
+  });
+
+  it('probes a thin annulus whose rings are each individually dense', () => {
+    // A ring's own area is the whole region it encloses, so both rings of a thin annulus
+    // look nearly solid and the density shortcut fired for each. The ink actually
+    // present is the sliver between them, and it was never probed at all.
+    const ring = (r: number, cx = 50, cy = 50, n = 64) => {
+      const points: string[] = [];
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        points.push(
+          `${(cx + r * Math.cos(a)).toFixed(4)} ${(cy + r * Math.sin(a)).toFixed(4)}`,
+        );
+      }
+      return 'M' + points.join('L') + 'Z';
+    };
+    const geometry = pathGeometry(ring(50) + ring(49.7))!;
+    const outer = geometry.contours[0];
+
+    expect(contourProbes(outer, 1, () => true)).toEqual([]);
+    expect(contourProbes(outer, 1, () => true, geometry.contours).length).toBeGreaterThan(
+      0,
+    );
+  });
+
+  it('still skips a solid contour once its holes are discounted', () => {
+    // The discount must not turn every filled shape into a probing job: a square with a
+    // modest hole is still dense enough to skip.
+    const geometry = pathGeometry('M0 0H100V100H0Z M25 25V75H75V25Z')!;
+    expect(contourProbes(geometry.contours[0], 1, () => true, geometry.contours)).toEqual(
+      [],
+    );
+  });
+});

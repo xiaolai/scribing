@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { projectCurveProgress } from '../../extras/fonts/progress.mjs';
+import { projectCurveProgress, fitTerminalShaft } from '../../extras/fonts/progress.mjs';
 const width = 81,
   height = 81;
 const fixture = (rects, points) => {
@@ -106,4 +106,33 @@ test('projection yields and observes cancellation', async () => {
     projectCurveProgress(f.assignment, f.trails, ['curve'], 0, width, controller.signal),
     { name: 'AbortError' },
   );
+});
+
+test('a terminal shaft with no spread is declined rather than guessed', () => {
+  // Repeated source points leave every sample on top of the others, so the covariance is
+  // all zeros. atan2(0, 0) is 0 in JavaScript, which used to yield a horizontal tangent
+  // with no geometric basis; the residual check could not catch it because every residual
+  // is zero as well.
+  const flat = [
+    [0, 0],
+    [10, 0],
+    [10, 0],
+    [10, 0],
+    [10, 0],
+  ];
+  assert.equal(fitTerminalShaft(flat, false, 5), null);
+  // A real shaft still fits: unit spacing puts five samples inside the radius window.
+  const real = [
+    [0, 0],
+    [1, 0],
+    [2, 0],
+    [3, 0],
+    [4, 0],
+    [5, 0],
+    [6, 0],
+    [7, 0],
+  ];
+  const fit = fitTerminalShaft(real, false, 2);
+  assert.ok(fit, 'a straight shaft still produces a fit');
+  assert.ok(Math.abs(Math.abs(fit.tangent[0]) - 1) < 1e-9, 'tangent runs along x');
 });

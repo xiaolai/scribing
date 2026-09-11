@@ -67,6 +67,27 @@ describe('animationMask', () => {
       expect(pathArea(field.full)).toBeCloseTo(1, 9);
     });
 
+    it('reveals a thick short stroke progressively rather than in one jump', async () => {
+      // Four cells wide and two long, so the clock runs down the tile. The cutoff used
+      // to divide 2 * 65535 by the owned-cell count, which is width times length rather
+      // than length, so at this shape it landed back on the old fixed constant and
+      // rejected the only neighbours that advance. The gradient went flat, every corner
+      // collapsed onto its own cell's value, and the mask jumped from four cells of area
+      // to all eight with nothing in between.
+      const t = tile(
+        4,
+        2,
+        [1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 65535, 65535, 65535, 65535],
+      );
+      const field = await prepareMaskField(t, noCancel);
+      // Area tracks the clock: a quarter and three quarters straddle the halfway jump
+      // that a flat field would have produced at all three points.
+      expect(pathArea(maskPath(t, field, 0, 0.25))).toBeCloseTo(2, 6);
+      expect(pathArea(maskPath(t, field, 0, 0.5))).toBeCloseTo(4, 6);
+      expect(pathArea(maskPath(t, field, 0, 0.75))).toBeCloseTo(6, 6);
+    });
+
     it('propagates a cancellation from the checkpoint', async () => {
       const t = tile(2, 1, [1, 1], [0, 65535]);
       await expect(

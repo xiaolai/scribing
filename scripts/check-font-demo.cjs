@@ -24,6 +24,9 @@ const server = http.createServer((req, res) => {
   }
   try {
     if (fs.statSync(file).isDirectory()) file = path.join(file, 'index.html');
+    // These gates rebuild dist/ and the demo between runs, so a cached response
+    // would let the assertions below pass against superseded bytes.
+    res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Content-Type', mime[path.extname(file)] || 'application/octet-stream');
     res.end(fs.readFileSync(file));
   } catch {

@@ -2,7 +2,7 @@
  * Each channel closes immediately after delivery; canceled jobs retain no ports.
  */
 export default function yieldWork() {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     if (typeof MessageChannel !== 'function') {
       setTimeout(resolve, 0);
       return;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Explicit maintenance operation. Normal tests never fetch or repair assets.
 import { readFile, mkdir, writeFile, rename, rm } from 'node:fs/promises';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('../../', import.meta.url));
@@ -31,7 +31,10 @@ for (const entry of [...lock.fonts, ...lock.notices, ...lock.unicode]) {
   if (digest(bytes) !== entry.sha256 || bytes.length !== entry.sizeBytes)
     throw new Error(`Pinned asset mismatch: ${entry.file}`);
   await mkdir(dirname(target), { recursive: true });
-  const temporary = target + '.download';
+  // Unique per invocation. With one shared `.download` name, a second run's exclusive
+  // write failed and its cleanup then deleted the first run's file mid-transfer; now the
+  // only file this block can remove is the one it created.
+  const temporary = `${target}.${randomUUID()}.download`;
   try {
     await writeFile(temporary, bytes, { flag: 'wx' });
     await rename(temporary, target);

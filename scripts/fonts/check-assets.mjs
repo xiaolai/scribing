@@ -4,11 +4,25 @@ import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { motorGroupFor } from '../../extras/fonts/animation.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const json = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
 const lock = await json('fonts/assets.lock.json');
 const catalog = await json('fonts/catalog.json');
 const derived = await json('fonts/catalog.lock.json');
+// The lock listed the files to verify, so deleting an entry from it removed that file
+// from this check and the gate stayed green. The required set is named here instead.
+assert.deepEqual(
+  derived.files.map((entry) => entry.file).sort(),
+  [
+    'fonts/catalog.json',
+    'fonts/script-ranges.json',
+    'scripts/fonts/build-catalog.py',
+    'scripts/fonts/requirements.txt',
+    'scripts/fonts/scripts.json',
+  ],
+  'fonts/catalog.lock.json must cover exactly the catalog inputs and outputs',
+);
 for (const entry of derived.files)
   assert.equal(
     createHash('sha256')
@@ -33,14 +47,28 @@ const vendor = await json('extras/fonts/vendor/manifest.json');
       're-vendor extras/fonts/vendor and update its manifest, or pin the dependency back.',
   );
 }
-for (const entry of vendor.files)
+for (const entry of vendor.files) {
+  const vendored = await readFile(resolve(root, 'extras/fonts/vendor', entry.file));
   assert.equal(
-    createHash('sha256')
-      .update(await readFile(resolve(root, 'extras/fonts/vendor', entry.file)))
-      .digest('hex'),
+    createHash('sha256').update(vendored).digest('hex'),
     entry.sha256,
     `Vendor drift: ${entry.file}`,
   );
+  assert.equal(vendored.byteLength, entry.sizeBytes, `Vendor size drift: ${entry.file}`);
+  // Hashing against this manifest only proves the copy matches itself, and the manifest
+  // is edited by hand alongside it, so bumping the version without re-copying left both
+  // consistent and stale. packagePath is recorded for this comparison; the HarfBuzz
+  // COPYING file has no counterpart in the npm package and carries none.
+  if (entry.packagePath) {
+    const upstream = await readFile(
+      resolve(root, 'node_modules/harfbuzzjs', entry.packagePath),
+    );
+    assert(
+      vendored.equals(upstream),
+      `Vendored ${entry.file} differs from harfbuzzjs/${entry.packagePath}`,
+    );
+  }
+}
 assert.equal(catalog.schemaVersion, 1);
 const fontById = new Map(catalog.fonts.map((f) => [f.id, f]));
 const scriptsById = new Map(catalog.scripts.map((s) => [s.id, s]));
@@ -118,9 +146,22 @@ for (const coverage of catalog.sourceCoverage) {
   ].sort();
   assert.deepEqual(coverage.unsupportedTexts, unsupported, coverage.packId);
 }
-assert.equal(
-  catalog.totals.fontBytes,
-  catalog.fonts.reduce((total, f) => total + f.sizeBytes, 0),
+// Every published total, not only the byte count. The rest were copied from the catalog
+// and trusted, so a stale count survived here and reached the demo, which shows the
+// source-pack figure.
+const statuses = {};
+for (const coverage of catalog.sourceCoverage)
+  statuses[coverage.status] = (statuses[coverage.status] ?? 0) + 1;
+assert.deepEqual(
+  catalog.totals,
+  {
+    fonts: catalog.fonts.length,
+    scriptEntries: catalog.scripts.length,
+    fontBytes: catalog.fonts.reduce((total, f) => total + f.sizeBytes, 0),
+    sourcePacks: manifests.length,
+    sourceCoverageStatuses: statuses,
+  },
+  'catalog totals disagree with the catalog',
 );
 console.log(
   `Offline font assets verified: ${catalog.fonts.length} fonts; ${catalog.scripts.length} script entries; ${manifests.length} source packs; ${catalog.totals.fontBytes} bytes.`,
@@ -167,31 +208,23 @@ for (const group of motor.groups) {
         (await json(`node_modules/hanzi-writer-data/${text}.json`)).medians,
         text,
       );
-    assert.equal(group.unitCount, 9574);
   }
 }
 
 /**
  * Stroke-order availability, asserted against the motor index rather than the catalog.
  *
- * The predicate below is the group selection from extras/fonts/animation.mjs, repeated
- * here on purpose: if the two ever disagree the catalog would advertise stroke order
- * for a script whose text the loader never looks up, which is exactly the overstatement
- * this field exists to prevent. Normative order exists for four groups and no others;
+ * The group selection is imported from extras/fonts/animation.mjs rather than repeated,
+ * so the catalog is compared against the loader's actual policy. A copy could only ever
+ * agree with itself: changing the policy in the runtime alone left this file and the
+ * catalog consistent and the gate green, while the loader no longer looked up the text
+ * the catalog advertised stroke order for, which is exactly the overstatement this field
+ * exists to prevent. Normative order exists for four groups and no others;
  * see dev-docs/research/20260911-normative-stroke-order.md.
  */
 const motorUnits = new Map(motor.groups.map((g) => [g.id, g.unitCount]));
 for (const script of catalog.scripts) {
-  const group =
-    script.script === 'Latn'
-      ? 'english'
-      : script.script === 'Hang'
-        ? 'korean'
-        : script.language.startsWith('ja')
-          ? 'japanese'
-          : script.language.startsWith('zh')
-            ? 'chinese'
-            : null;
+  const group = motorGroupFor(script);
   assert.equal(script.strokeOrder, group ? 'normative' : 'none', `${script.id} order`);
   assert(script.strokeOrderNote?.length > 0, `${script.id} note`);
   if (group) {
@@ -212,19 +245,63 @@ assert.equal(
   'Normative stroke order covers seven script entries across four motor groups',
 );
 
+// The catalog and motor generators write bytes that are hashed into the lock files and
+// compared here, so locale-dependent text IO would make those hashes platform-specific.
+// Python's default encoding follows the locale and its default newline translates on
+// Windows, and the failure is invisible on a machine that happens to be UTF-8 and LF.
+for (const generator of [
+  'scripts/fonts/build-catalog.py',
+  'scripts/fonts/build-motors.py',
+]) {
+  const source = await readFile(resolve(root, generator), 'utf8');
+  const unqualified = source
+    .split('\n')
+    .map((line, i) => [i + 1, line])
+    .filter(
+      ([, line]) => /\b(read_text|write_text)\(/.test(line) && !/encoding\s*=/.test(line),
+    );
+  assert.deepEqual(
+    unqualified,
+    [],
+    `${generator} reads or writes text without an explicit encoding: ` +
+      unqualified.map(([n]) => `line ${n}`).join(', '),
+  );
+}
+
+// Every static server in this repository must refuse caching. harfbuzz.wasm is resolved
+// at runtime from its loader's URL, so no import-map version can reach it, and these
+// gates rebuild dist/ and the demo between runs: a cached response would let them assert
+// against superseded bytes and pass. Three of seven servers were missing the header.
+const servers = (await readdir(resolve(root, 'scripts'), { recursive: true }))
+  .filter((f) => f.endsWith('.cjs'))
+  .map((f) => `scripts/${f}`);
+const uncached = [];
+for (const server of servers) {
+  const source = await readFile(resolve(root, server), 'utf8');
+  if (source.includes('createServer') && !source.includes('no-store'))
+    uncached.push(server);
+}
+assert.deepEqual(
+  uncached,
+  [],
+  `static servers without Cache-Control: no-store: ${uncached}`,
+);
+
 const { createRequire } = await import('node:module');
 const require = createRequire(import.meta.url);
-const expectedGeometry =
-  require('@babel/core').transformFileSync(resolve(root, 'src/fonts/pathGeometry.ts'), {
-    configFile: false,
-    babelrc: false,
-    presets: [require.resolve('@babel/preset-typescript')],
-  }).code + '\n';
-assert.equal(
-  await readFile(resolve(root, 'extras/fonts/path-geometry.mjs'), 'utf8'),
-  expectedGeometry,
-  'Optional geometry module drift; run node scripts/fonts/build-geometry.cjs',
-);
+for (const [source, target] of require('./build-geometry.cjs').DERIVED) {
+  const expected =
+    require('@babel/core').transformFileSync(resolve(root, source), {
+      configFile: false,
+      babelrc: false,
+      presets: [require.resolve('@babel/preset-typescript')],
+    }).code + '\n';
+  assert.equal(
+    await readFile(resolve(root, target), 'utf8'),
+    expected,
+    `Derived optional module drift in ${target}; run node scripts/fonts/build-geometry.cjs`,
+  );
+}
 console.log(
   `Optional motor inventories verified: ${motor.groups.map((g) => `${g.id} ${g.unitCount}`).join(', ')}; ${motor.groups.reduce((n, g) => n + g.sizeBytes, 0)} bytes.`,
 );

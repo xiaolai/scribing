@@ -18,6 +18,9 @@ const server = http.createServer((req, res) => {
   if (!f.startsWith(root + path.sep)) return res.writeHead(403).end();
   try {
     if (fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
+    // These gates rebuild dist/ and the demo between runs, so a cached response
+    // would let the assertions below pass against superseded bytes.
+    res.setHeader('Cache-Control', 'no-store');
     res.setHeader('Content-Type', mime[path.extname(f)] || 'application/octet-stream');
     res.end(fs.readFileSync(f));
   } catch {

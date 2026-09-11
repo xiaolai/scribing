@@ -20,7 +20,7 @@ import canvasRenderer from './renderers/canvas';
 import defaultOptions from './defaultOptions';
 import LoadingManager from './LoadingManager';
 import * as characterActions from './characterActions';
-import { trim, colorStringToVals, selectIndex, fixIndex } from './utils';
+import { trim, colorStringToVals, selectIndex, fixIndex, definedEntries } from './utils';
 import Character from './models/Character';
 import {
   AnyScribingRenderer,
@@ -115,7 +115,12 @@ export default class Scribing {
   ) {
     // Static requests are independent consumers, not successive updates to a writer,
     // so each call gets its own manager and none is retained after it settles.
-    return new LoadingManager({ ...defaultOptions, ...options }).loadCharData(character);
+    // definedEntries, because an explicit `charDataLoader: undefined` would otherwise
+    // erase the default and LoadingManager calls that option with no fallback of its own.
+    return new LoadingManager({
+      ...defaultOptions,
+      ...definedEntries(options),
+    }).loadCharData(character);
   }
 
   static getScalingTransform(width: number, height: number, padding = 0) {
@@ -677,7 +682,7 @@ export default class Scribing {
   _assignOptions(options: Partial<ScribingOptions>): ParsedScribingOptions {
     const mergedOptions = {
       ...defaultOptions,
-      ...options,
+      ...definedEntries(options),
     };
 
     // backfill strokeAnimationSpeed if deprecated strokeAnimationDuration is provided instead

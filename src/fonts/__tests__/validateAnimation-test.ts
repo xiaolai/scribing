@@ -207,6 +207,110 @@ describe('validateAnimation', () => {
 });
 
 describe('limits and cross-tile constraints', () => {
+  it('paces a large tile so cancellation can interrupt its scan', async () => {
+    // Reading a tile's two cell arrays materializes one own property name per cell to
+    // prove the instance carries no extra properties, and the ownership scan then walks
+    // every cell. At the two-million-cell limit that ran as one uninterruptible block,
+    // so a superseding request could not be noticed until it finished.
+    const sized = (edge: number): FontAnimation => ({
+      ...animation(KEY),
+      tiles: [
+        {
+          glyphIndices: [0],
+          bounds: [0, 0, 100, 100],
+          width: edge,
+          height: edge,
+          owners: Uint16Array.from(new Array(edge * edge).fill(1)),
+          progress: new Uint16Array(edge * edge),
+        },
+      ],
+    });
+    const count = async (edge: number) => {
+      let calls = 0;
+      await validateAnimation(sized(edge), shape(), KEY, () => {
+        calls += 1;
+      });
+      return calls;
+    };
+    // The count has to grow with the cell count; before, reading a tile offered no
+    // cancellation point at all and both sizes checked the same number of times.
+    expect(await count(256)).toBeGreaterThan(await count(2));
+  });
+
+  it('rejects a tile whose glyphs are all pathless yet owns a stroke', async () => {
+    // A space carries no outline, so the per-glyph containment check has nothing to
+    // compare against and skips it. A tile made only of such glyphs was therefore
+    // unconstrained, and a stroke it owned became a timed step revealing nothing.
+    const spaced = validateShape({
+      schemaVersion: 1,
+      text: 'o ',
+      font: { id: 'fixture', name: 'Fixture', sha256: 'a'.repeat(64) },
+      script: 'Latn',
+      language: 'en',
+      direction: 'ltr',
+      em: 1000,
+      bounds: [0, 0, 300, 100],
+      glyphs: [
+        {
+          id: 1,
+          cluster: 0,
+          path: 'M0 0H100V100H0Z',
+          x: 0,
+          y: 0,
+          advanceX: 200,
+          advanceY: 0,
+        },
+        { id: 2, cluster: 1, path: '', x: 200, y: 0, advanceX: 100, advanceY: 0 },
+      ],
+    });
+    const blank: FontAnimation = {
+      schemaVersion: 1,
+      shapeKey: `${spaced.font.sha256}:blank`,
+      provenance: 'generated',
+      strokes: [
+        {
+          id: 's1',
+          points: [
+            [0, 0],
+            [100, 100],
+          ],
+          kind: 'curve',
+          provenance: 'generated',
+        },
+        {
+          id: 's2',
+          points: [
+            [200, 0],
+            [300, 100],
+          ],
+          kind: 'curve',
+          provenance: 'generated',
+        },
+      ],
+      tiles: [
+        {
+          glyphIndices: [0],
+          bounds: [0, 0, 100, 100],
+          width: 2,
+          height: 2,
+          owners: Uint16Array.from([1, 1, 1, 1]),
+          progress: Uint16Array.from([0, 21845, 43690, 65535]),
+        },
+        {
+          glyphIndices: [1],
+          bounds: [200, 0, 100, 100],
+          width: 2,
+          height: 2,
+          owners: Uint16Array.from([2, 2, 2, 2]),
+          progress: Uint16Array.from([0, 21845, 43690, 65535]),
+        },
+      ],
+    };
+    await expect(
+      validateAnimation(blank, spaced, `${spaced.font.sha256}:blank`, noCancel),
+    ).rejects.toThrow();
+  });
+
   it('rejects a stroke split across two tiles', async () => {
     // Each tile rescales its strokes' progress to the full clock range on its own, so
     // the two halves of a split stroke would reveal over the same interval instead of

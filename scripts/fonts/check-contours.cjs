@@ -25,11 +25,17 @@ const server = http.createServer((req, res) => {
 });
 (async () => {
   fs.mkdirSync(path.join(root, 'work/fonts/contour-gate'), { recursive: true });
-  await new Promise((r) => server.listen(0, '127.0.0.1', r));
-  const browser = await chromium.launch(),
-    base = `http://127.0.0.1:${server.address().port}`,
-    results = [];
+  // browser is declared outside the scope that closes the server, and assigned inside it,
+  // so a launch that throws still reaches the close. Leaving the launch outside meant a
+  // failure there skipped the cleanup entirely and left the server listening, which hangs
+  // the process instead of reporting the failure. check-font-demo.cjs and its siblings
+  // already did it this way.
+  let browser;
   try {
+    await new Promise((r) => server.listen(0, '127.0.0.1', r));
+    browser = await chromium.launch();
+    const base = `http://127.0.0.1:${server.address().port}`,
+      results = [];
     for (const deviceRatio of process.env.ISO_SMALL ? [1] : [1, 3]) {
       const context = await browser.newContext({ deviceScaleFactor: deviceRatio });
       try {
@@ -341,6 +347,18 @@ const server = http.createServer((req, res) => {
               assert(frame.frontSpan <= 1, 'straight front exceeds one pixel');
             }
             assert.equal(result.finalInteriorMissing, 0, 'final interior gap');
+            assert.equal(result.finalMissing, 0, 'final ink missing from the outline');
+            // Excess ink is the direction the two counts above cannot see: both only
+            // register reference pixels the render failed to cover, so filling a counter
+            // or drawing outside the outline left them at zero and the gate passed.
+            // finalAlphaDelta measures both directions and was computed and logged here
+            // without ever being asserted, which is why it never failed on anything.
+            // Every configuration reports an exact match, so zero is the honest bound.
+            assert.equal(
+              result.finalAlphaDelta,
+              0,
+              'final alpha differs from the outline',
+            );
             results.push(result);
             console.log(
               JSON.stringify({
@@ -367,8 +385,13 @@ const server = http.createServer((req, res) => {
       JSON.stringify(results, null, 2),
     );
   } finally {
-    await browser.close();
-    await new Promise((r) => server.close(r));
+    // Nested, so a rejecting browser.close() cannot skip the server close and leave the
+    // process listening with nothing to end it.
+    try {
+      if (browser) await browser.close();
+    } finally {
+      await new Promise((r) => server.close(r));
+    }
   }
 })().catch((e) => {
   console.error(e);
