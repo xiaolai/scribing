@@ -27,10 +27,11 @@ const root = fileURLToPath(new URL('../../', import.meta.url));
  */
 const FLOORS = {
   'extras/fonts/animation.mjs': 36,
+  'extras/fonts/capped-read.mjs': 100,
   'extras/fonts/progress.mjs': 85,
-  'extras/fonts/provider.mjs': 96,
-  'extras/fonts/skeleton.mjs': 60,
-  'extras/fonts/yield-work.mjs': 80,
+  'extras/fonts/provider.mjs': 97,
+  'extras/fonts/skeleton.mjs': 62,
+  'extras/fonts/yield-work.mjs': 84,
 };
 
 /**

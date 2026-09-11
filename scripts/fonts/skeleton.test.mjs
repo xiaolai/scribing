@@ -233,3 +233,28 @@ test('ownership refuses a trail with non-finite points', async () => {
     /finite trail points/,
   );
 });
+
+test('thinning reaches ink that touches the edge of the grid', async () => {
+  // The passes need all eight neighbours and so skip the first and last row and column.
+  // A mask whose ink runs to the edge kept a solid bar there: this block lost no cells
+  // at all, against the one-cell-wide skeleton thinInk returns.
+  const solid = new Uint8Array(25).fill(1);
+  const touching = await thinInk(solid, 5, 5);
+  assert.equal(
+    Array.from(touching).filter(Boolean).length,
+    1,
+    'a solid block touching two edges thins to a single cell',
+  );
+
+  // A block with a clear border already worked, and must still give the same answer.
+  const padded = mask([
+    '.......',
+    '.#####.',
+    '.#####.',
+    '.#####.',
+    '.#####.',
+    '.#####.',
+    '.......',
+  ]);
+  assert.equal(Array.from(await thinInk(padded, 7, 7)).filter(Boolean).length, 1);
+});

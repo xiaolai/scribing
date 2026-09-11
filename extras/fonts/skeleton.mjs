@@ -60,6 +60,26 @@ const assertGrid = (mask, width, height, label) => {
  */
 export async function thinInk(input, width, height, signal) {
   assertGrid(input, width, height, 'thinInk');
+  // Thin a one-cell-padded copy, then crop it back. The passes below need all eight
+  // neighbours and so never consider the first or last row or column, which left a mask
+  // whose ink reaches the edge with a solid bar there instead of the one-cell-wide
+  // result this promises: a 5x5 block touching two edges lost no cells at all. Padding
+  // moves the real edge inside the examined region without changing any pass.
+  const w = width + 2,
+    h = height + 2;
+  const padded = new Uint8Array(w * h);
+  for (let y = 0; y < height; y++)
+    padded.set(input.subarray(y * width, (y + 1) * width), (y + 1) * w + 1);
+  const thinned = await thinPadded(padded, w, h, signal);
+  const cropped = new Uint8Array(width * height);
+  for (let y = 0; y < height; y++)
+    cropped.set(thinned.subarray((y + 1) * w + 1, (y + 1) * w + 1 + width), y * width);
+  stop(signal);
+  return cropped;
+}
+
+/** The thinning passes themselves, on a grid whose border is known to be clear. */
+async function thinPadded(input, width, height, signal) {
   const ink = input.slice(),
     remove = [];
   let changed = true,

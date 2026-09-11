@@ -60,7 +60,6 @@ function snapshot(value: FontShape | ReadonlyFontShape): FontShape {
 
 function assertFont(font: FontShape['font']) {
   if (
-    !font ||
     !text(font.id, 160) ||
     !text(font.name, 160) ||
     typeof font.sha256 !== 'string' ||
@@ -70,16 +69,21 @@ function assertFont(font: FontShape['font']) {
   }
 }
 
+/**
+ * Only what snapshot has not already settled.
+ *
+ * Everything here runs on the snapshot, which is built from readPlainObject and
+ * readPlainArray: font and every glyph are fresh plain objects, bounds and glyphs are
+ * fresh arrays, and glyphs already has between one and MAX_GLYPHS entries. Re-testing
+ * those made it hard to see which checks still decide anything. bounds keeps its length
+ * test, because the copy admits one to four entries and only four is a rectangle.
+ */
 function assertDeclaredBounds(shape: FontShape) {
   if (
-    !Array.isArray(shape.bounds) ||
     shape.bounds.length !== 4 ||
     !shape.bounds.every(finite) ||
     shape.bounds[2] <= 0 ||
-    shape.bounds[3] <= 0 ||
-    !Array.isArray(shape.glyphs) ||
-    !shape.glyphs.length ||
-    shape.glyphs.length > MAX_GLYPHS
+    shape.bounds[3] <= 0
   ) {
     fail();
   }

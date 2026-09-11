@@ -22,6 +22,7 @@ const modules = [
   'path-geometry.mjs',
   'yield-work.mjs',
   'provider.mjs',
+  'capped-read.mjs',
   'vendor/index.mjs',
   'vendor/harfbuzz.js',
 ];

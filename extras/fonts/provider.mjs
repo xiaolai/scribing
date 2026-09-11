@@ -1,4 +1,5 @@
 import * as hb from './vendor/index.mjs';
+import { readCapped as readCappedStream } from './capped-read.mjs';
 
 const MAX_CODEPOINTS = 32;
 const MAX_FONT_BYTES = 32 * 1024 * 1024;
@@ -196,36 +197,15 @@ export function createFontProvider({
     const declared = Number(response.headers?.get('content-length'));
     if (Number.isFinite(declared) && declared > MAX_FONT_BYTES)
       throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
-    const reader = response.body?.getReader?.();
-    if (!reader) {
-      // A fetch implementation without a readable body, as in tests.
-      const buffered = new Uint8Array(await response.arrayBuffer());
-      if (buffered.byteLength > MAX_FONT_BYTES)
-        throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
-      return buffered;
-    }
-    const chunks = [];
-    let total = 0;
     try {
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        total += value.byteLength;
-        if (total > MAX_FONT_BYTES)
-          throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
-        chunks.push(value);
-      }
+      return await readCappedStream(response, MAX_FONT_BYTES);
     } catch (cause) {
-      await reader.cancel?.().catch(() => undefined);
+      // The shared reader reports an overflow as a RangeError so each caller can name it
+      // in its own vocabulary; everything else propagates unchanged.
+      if (cause instanceof RangeError)
+        throw error('INVALID_FONT', 'The font exceeds 32 MiB.');
       throw cause;
     }
-    const bytes = new Uint8Array(total);
-    let offset = 0;
-    for (const chunk of chunks) {
-      bytes.set(chunk, offset);
-      offset += chunk.byteLength;
-    }
-    return bytes;
   }
 
   async function makeFont(bytes, identity, signal) {

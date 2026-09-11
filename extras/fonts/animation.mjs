@@ -1,5 +1,6 @@
 import { projectCurveProgress } from './progress.mjs';
 import pathGeometry, { contourProbes } from './path-geometry.mjs';
+import { readCapped } from './capped-read.mjs';
 import {
   thinInk,
   graphTrails,
@@ -154,36 +155,6 @@ const MAX_INDEX_BYTES = 4 * 1024 * 1024;
  * response far larger than expected was already in memory by the time its length was
  * compared. Streaming stops at the cap instead.
  */
-async function readCapped(response, max) {
-  const reader = response.body?.getReader?.();
-  if (!reader) {
-    // A fetch implementation without a readable body, as in tests.
-    const buffered = new Uint8Array(await response.arrayBuffer());
-    if (buffered.byteLength > max) throw new RangeError('Response exceeds its cap');
-    return buffered;
-  }
-  const chunks = [];
-  let total = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      total += value.byteLength;
-      if (total > max) throw new RangeError('Response exceeds its cap');
-      chunks.push(value);
-    }
-  } catch (cause) {
-    await reader.cancel?.().catch(() => undefined);
-    throw cause;
-  }
-  const bytes = new Uint8Array(total);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-  return bytes;
-}
 
 /**
  * Which motor group, if any, holds recorded stroke data for a script.

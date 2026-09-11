@@ -69,4 +69,33 @@ describe('validateShape', () => {
     // in threw, which made the function reject its own output.
     expect(() => validateShape(spanning())).toThrow('Invalid FontShape');
   });
+
+  it.each([
+    ['bounds that are not an array', { bounds: 'nope' }],
+    ['bounds with the wrong number of entries', { bounds: [0, 0] }],
+    ['no glyphs at all', { glyphs: [] }],
+    ['a font that is not an object', { font: null }],
+    ['a font that is a string', { font: 'fixture' }],
+  ])('still refuses %s', (_label, override) => {
+    // These were each rejected twice: once by the structural copy and once by a predicate
+    // after it. The predicates are gone; the copy still has to refuse every one of them.
+    expect(() =>
+      validateShape({ ...base(), ...(override as Partial<FontShape>) }),
+    ).toThrow('Invalid FontShape');
+  });
+
+  it('refuses more glyphs than the copy admits', () => {
+    const glyph = base().glyphs[0];
+    expect(() =>
+      validateShape({
+        ...base(),
+        text: 'a'.repeat(64),
+        glyphs: Array.from({ length: 5000 }, (_unused, i) => ({
+          ...glyph,
+          id: i + 1,
+          cluster: 0,
+        })),
+      }),
+    ).toThrow('Invalid FontShape');
+  });
 });
