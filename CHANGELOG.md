@@ -19,7 +19,7 @@ coverage and the check gates. Within the fork's own API nothing was removed or r
 the package name and version did change, and the rebrand from Hanzi Writer before it was
 breaking in its own right. See the migration notes in the README.
 
-**The package is now `@xiaolai/scribing`, at version 4.0.0.** The fork carried
+**The package is now `@lixiaolai/scribing`, at version 4.0.0.** The fork carried
 `hanzi-writer`'s version 3.0.0, which upstream set in January 2021 and which the rebrand
 left untouched. It was also behind this repository's own tags, which run to v3.7.3,
 because upstream's `semantic-release` tagged at publish time without committing

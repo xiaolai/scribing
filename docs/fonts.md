@@ -9,8 +9,8 @@ The local demo at `demo/multilingual/` opens the formal-font view. Its separate 
 The core bundle has no HarfBuzz import, WebAssembly initialization, network font dependency or CSS font fallback. The optional ESM adapter and unchanged 1.6.1 HarfBuzzJS runtime are shipped under `extras/fonts`. Importing that adapter initializes its adjacent local WASM; CJS consumers can use dynamic `import()`.
 
 ```js
-import Scribing from '@xiaolai/scribing';
-import { createFontProvider } from '@xiaolai/scribing/extras/fonts/provider.mjs';
+import Scribing from '@lixiaolai/scribing';
+import { createFontProvider } from '@lixiaolai/scribing/extras/fonts/provider.mjs';
 const provider = createFontProvider({
   catalog,
   scriptRanges,
@@ -62,7 +62,7 @@ Modern browsers must support WebAssembly, ESM with top-level await, WebCrypto in
 import {
   prepareFontAnimation,
   createMotorSourceLoader,
-} from '@xiaolai/scribing/extras/fonts/animation.mjs';
+} from '@lixiaolai/scribing/extras/fonts/animation.mjs';
 const controller = new AbortController();
 const plan = await prepareFontAnimation(writer.getShape(), {
   signal: controller.signal,
