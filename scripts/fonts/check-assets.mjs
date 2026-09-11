@@ -4,7 +4,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { motorGroupFor } from '../../extras/fonts/animation.mjs';
+import { motorGroupFor, motorRecordFor } from '../../extras/fonts/animation.mjs';
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const json = async (path) => JSON.parse(await readFile(resolve(root, path), 'utf8'));
 const lock = await json('fonts/assets.lock.json');
@@ -168,6 +168,26 @@ console.log(
 );
 // Motor inventories are opt-in data; verify every source mapping and derived median offline.
 const motor = await json('fonts/motor/index.json');
+// Index shape, to the same rules the loader applies to the group it selects. It checked
+// only the one group it needed, and this gate checked none of them.
+assert.equal(motor.schemaVersion, 1, 'motor index schemaVersion');
+assert.deepEqual(
+  motor.groups.map((g) => g.id).sort(),
+  [...new Set(motor.groups.map((g) => g.id))].sort(),
+  'motor group ids must be unique',
+);
+for (const g of motor.groups) {
+  assert.match(g.file, /^fonts\/motor\/[a-z-]+\.json$/, `motor group path: ${g.id}`);
+  assert.match(g.sha256, /^[a-f0-9]{64}$/, `motor group digest: ${g.id}`);
+  assert.ok(
+    Number.isInteger(g.sizeBytes) && g.sizeBytes > 0 && g.sizeBytes <= 32 * 1024 * 1024,
+    `motor group size: ${g.id}`,
+  );
+  assert.ok(
+    Number.isInteger(g.unitCount) && g.unitCount > 0,
+    `motor unit count: ${g.id}`,
+  );
+}
 for (const entry of [...motor.groups, ...motor.notices]) {
   const bytes = await readFile(resolve(root, entry.file));
   assert.equal(
@@ -180,6 +200,16 @@ for (const entry of [...motor.groups, ...motor.notices]) {
 for (const group of motor.groups) {
   const units = (await json(group.file)).units;
   assert.equal(Object.keys(units).length, group.unitCount);
+  // Every unit must satisfy the schema the loader enforces at runtime. Hashes, counts and
+  // text mappings were checked here and the schema was not, so this gate could bless an
+  // inventory the runtime would refuse the moment a reader asked for one of its units.
+  for (const [text, value] of Object.entries(units)) {
+    const outcome = motorRecordFor(group.id, text, value);
+    assert.ok(
+      outcome.record,
+      `${group.id}/${text} would be rejected by the loader (${outcome.reason})`,
+    );
+  }
   assert.equal(
     group.unitCount,
     { english: 52, korean: 40, japanese: 6636, chinese: 9574 }[group.id],

@@ -1,5 +1,5 @@
 import yieldWork from './yieldWork';
-import { FontAnimation, FontShape } from './types';
+import { FontAnimation, ReadonlyFontShape } from './types';
 import pathGeometry from './pathGeometry';
 import {
   assertPlainArray,
@@ -130,7 +130,7 @@ async function readStrokes(value: unknown, checkpoint: () => void): Promise<Stro
  */
 function assertTileCoversGlyphs(
   tile: Record<string, unknown>,
-  shape: FontShape,
+  shape: ReadonlyFontShape,
 ): boolean {
   const [x, y, w, h] = tile.bounds as number[];
   let drawable = false;
@@ -164,7 +164,7 @@ type TileState = {
 
 async function readTile(
   value: unknown,
-  shape: FontShape,
+  shape: ReadonlyFontShape,
   strokeCount: number,
   state: TileState,
   checkpoint: () => void,
@@ -267,7 +267,7 @@ async function readTile(
  */
 export default async function validateAnimation(
   value: FontAnimation,
-  shape: FontShape,
+  shape: ReadonlyFontShape,
   shapeKey: string,
   checkpoint: () => void,
 ): Promise<FontAnimation> {

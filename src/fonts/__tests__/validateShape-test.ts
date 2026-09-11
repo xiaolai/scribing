@@ -41,6 +41,22 @@ const spanning = (): FontShape => ({
 });
 
 describe('validateShape', () => {
+  it('types its frozen result as read-only', () => {
+    // The result is deeply frozen, so a write throws at runtime. Typing it mutable
+    // offered callers a write the object refuses. `@ts-expect-error` fails the build if
+    // these ever type-check again.
+    const validated = validateShape(base());
+    const write = () => {
+      // @ts-expect-error a validated shape is read-only.
+      validated.em = 2000;
+      // @ts-expect-error its bounds are read-only too.
+      validated.bounds[0] = 5;
+    };
+    // The compiler refuses both lines above; the object refuses them at run time too.
+    expect(Object.isFrozen(validated)).toBe(true);
+    expect(write).toThrow(TypeError);
+  });
+
   it('returns a shape it would accept again', () => {
     const once = validateShape(base());
     expect(() => validateShape(once)).not.toThrow();

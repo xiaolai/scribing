@@ -1,6 +1,16 @@
-/** Every property, recursively, made read-only. Arrays become readonly arrays. */
-export type DeepReadonly<T> = T extends (infer U)[]
-  ? readonly DeepReadonly<U>[]
+/**
+ * Every property, recursively, made read-only. Arrays become readonly arrays.
+ *
+ * Fixed-length tuples keep their length. Mapping every array through `readonly U[]`
+ * turned `bounds` into `readonly number[]` in the public type, so a consumer lost the
+ * guarantee that it holds exactly four numbers and could index past the end without the
+ * compiler objecting. `number extends T['length']` is what separates the two: a tuple's
+ * length is a literal, an array's is `number`.
+ */
+export type DeepReadonly<T> = T extends readonly (infer U)[]
+  ? number extends T['length']
+    ? readonly DeepReadonly<U>[]
+    : { readonly [K in keyof T]: DeepReadonly<T[K]> }
   : T extends object
     ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
     : T;

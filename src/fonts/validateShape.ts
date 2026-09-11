@@ -1,4 +1,4 @@
-import { FontShape } from './types';
+import { FontShape, ReadonlyFontShape } from './types';
 import pathGeometry from './pathGeometry';
 import { readPlainArray, readPlainObject } from '../validation/plainStructure';
 
@@ -38,7 +38,7 @@ const copyArray = (value: unknown, max: number): any[] =>
   readPlainArray(value, fail, { min: 1, max });
 
 /** Copy the caller's object graph into fresh containers before reading any value. */
-function snapshot(value: FontShape): FontShape {
+function snapshot(value: FontShape | ReadonlyFontShape): FontShape {
   const data = copyObject(value, [
     'schemaVersion',
     'text',
@@ -173,8 +173,14 @@ function measureGlyphs(shape: FontShape, clusters: number[]) {
  *
  * The returned `bounds` are recomputed from the actual outlines rather than trusted
  * from the input, so downstream fitting and rasterization work from measured geometry.
+ *
+ * Typed readonly because the result is deeply frozen. Returning it as a mutable FontShape
+ * invited a caller to write to something that silently refuses the write in sloppy mode
+ * and throws in strict mode, with nothing at compile time to say so.
  */
-export default function validateShape(value: FontShape): FontShape {
+export default function validateShape(
+  value: FontShape | ReadonlyFontShape,
+): ReadonlyFontShape {
   const shape = snapshot(value);
   assertMetadata(shape);
 

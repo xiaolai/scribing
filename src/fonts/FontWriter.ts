@@ -23,7 +23,7 @@ export default class FontWriter {
   private surface: SVGSVGElement | HTMLCanvasElement;
   private owned = true;
   private options: FontWriterOptions;
-  private shape?: FontShape;
+  private shape?: ReadonlyFontShape;
   private animation?: FontAnimation;
   private animationState?: { stroke: number; progress: number };
   private animationSerial = 0;
@@ -56,7 +56,7 @@ export default class FontWriter {
     reference: SVGGElement;
     animation: SVGGElement;
     ink: SVGGElement;
-    referenceShape?: FontShape;
+    referenceShape?: ReadonlyFontShape;
     referenceColor?: string;
   };
   // Declared before the instance field that consumes it: a static initializer runs at
@@ -325,7 +325,7 @@ export default class FontWriter {
    */
   private assertStrokesReachTheGlyphs(
     tile: FontAnimation['tiles'][number],
-    shape: FontShape,
+    shape: ReadonlyFontShape,
   ) {
     const [x, y, w, h] = tile.bounds;
     // One box per glyph, not one box spanning them all. A tile can cover several glyphs
@@ -617,7 +617,7 @@ export default class FontWriter {
    * every frame meant dozens of element allocations and attribute writes per tile at
    * playback frame rate, for identical output.
    */
-  private buildAnimationSvgNodes(animation: FontAnimation, shape: FontShape) {
+  private buildAnimationSvgNodes(animation: FontAnimation, shape: ReadonlyFontShape) {
     return animation.tiles.map((tile, index) => {
       const [x, y, w, h] = tile.bounds;
       const id = `${this.animationId}-${index}`;

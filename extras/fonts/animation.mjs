@@ -194,6 +194,43 @@ async function readCapped(response, max) {
  * copy agreeing with the catalog and the gate green, while the loader no longer looked
  * up the text the catalog advertised.
  */
+/**
+ * The record the loader would build for one unit, or the reason it would refuse it.
+ *
+ * Exported because scripts/fonts/check-assets.mjs verifies the shipped motor inventories
+ * against it. That gate checked hashes, counts and text mappings but never the schema the
+ * loader actually enforces, so it could bless data the runtime then rejected. Mirroring
+ * the rules there would have been a second copy able only to agree with itself.
+ */
+export function motorRecordFor(group, text, value) {
+  if (group !== 'chinese')
+    return validSourceRecord(value) ? { record: value } : { reason: 'unit' };
+  if (
+    !Array.isArray(value) ||
+    !value.length ||
+    value.length > MAX_STROKES ||
+    !value.every(
+      (points) => Array.isArray(points) && points.length && points.every(sourcePoint),
+    )
+  )
+    return { reason: 'median' };
+  const record = {
+    packId: 'hanzi-writer-data-2.0.1',
+    unitId: text,
+    unit: {
+      coordinates: { em: 1024, yAxis: 'up' },
+      motorStrokes: value.map((points, i) => ({
+        id: `s${i + 1}`,
+        kind: 'curve',
+        points,
+      })),
+      defaultPlanId: 'source',
+      plans: [{ id: 'source', steps: value.map((_, i) => ({ strokeId: `s${i + 1}` })) }],
+    },
+  };
+  return validSourceRecord(record) ? { record } : { reason: 'unit' };
+}
+
 export function motorGroupFor({ script, language }) {
   if (script === 'Latn') return 'english';
   if (script === 'Hang') return 'korean';
@@ -338,39 +375,12 @@ export function createMotorSourceLoader({
       }
       const units = cache.get(group);
       if (!Object.prototype.hasOwnProperty.call(units, text)) return null;
-      const value = units[text];
-      let record = value;
-      if (group === 'chinese') {
-        if (
-          !Array.isArray(value) ||
-          !value.length ||
-          value.length > MAX_STROKES ||
-          !value.every(
-            (points) =>
-              Array.isArray(points) && points.length && points.every(sourcePoint),
-          )
-        )
-          throw error('SCHEMA', 'The Chinese stroke source has invalid median data.');
-        record = {
-          packId: 'hanzi-writer-data-2.0.1',
-          unitId: text,
-          unit: {
-            coordinates: { em: 1024, yAxis: 'up' },
-            motorStrokes: value.map((points, i) => ({
-              id: `s${i + 1}`,
-              kind: 'curve',
-              points,
-            })),
-            defaultPlanId: 'source',
-            plans: [
-              { id: 'source', steps: value.map((_, i) => ({ strokeId: `s${i + 1}` })) },
-            ],
-          },
-        };
-      }
-      if (!validSourceRecord(record))
+      const outcome = motorRecordFor(group, text, units[text]);
+      if (outcome.reason === 'median')
+        throw error('SCHEMA', 'The Chinese stroke source has invalid median data.');
+      if (outcome.reason)
         throw error('SCHEMA', `The ${group} stroke source has an invalid writing unit.`);
-      return record;
+      return outcome.record;
     } catch (e) {
       index = undefined;
       cache.delete(group);

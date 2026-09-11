@@ -1,11 +1,11 @@
 import validateAnimation from '../validateAnimation';
 import validateShape from '../validateShape';
-import { FontAnimation, FontShape } from '../types';
+import { FontAnimation, ReadonlyFontShape } from '../types';
 
 const noCancel = () => undefined;
 
 /** A single square glyph, 100x100 at the origin. */
-const shape = (): FontShape =>
+const shape = (): ReadonlyFontShape =>
   validateShape({
     schemaVersion: 1,
     text: 'o',
