@@ -111,6 +111,73 @@ along with a stroke that lies entirely outside the glyphs it claims.
   block whenever a selector appeared in a grouped rule first, and broke outright on a
   whitespace change. It now collects every declaration that applies to a selector.
 
+A third pass audited the font subsystem specifically, which the two earlier passes had
+not covered on its own: `src/fonts`, `extras/fonts` and `scripts/fonts`. Sixty findings,
+all closed. As above they are grouped by what was wrong.
+
+**A rejected animation preparation left the writer frozen.** `cancel()` is what settles
+playback, restores input and resolves the promise `animate()` returned, and it ran only
+on `setAnimation`'s success path. One counter served both the preparation and the
+playback, so merely starting a preparation invalidated the running tick, which then
+bailed at its own supersede check and did none of that work. A preparation that went on
+to throw therefore left the writer stopped mid-animation with drawing disabled and that
+promise pending forever. The two are now counted separately, so a failed preparation
+leaves valid playback running, which is what the browser gate had always asserted.
+
+**Playback steps that reveal nothing were accepted.** Stroke reachability compared every
+owned cell against one rectangle spanning all of a tile's glyphs, so a stroke owning only
+the empty gap between two glyphs counted as reaching them. It is now tested against each
+glyph's own box. Separately, a tile whose glyphs are all pathless has no outline to
+reveal at all, and the containment check skipped it for exactly that reason, leaving it
+free to own a stroke; it is now refused.
+
+**An explicit `undefined` erased the default behind it.** `definedEntries` exists to stop
+that and was applied in `FontWriter`'s constructor but not in `updateDimensions`, so
+`{padding: undefined}` was validated as 16 and rendered as 0. The same shape appeared in
+both of `Scribing`'s option merges, where the default character-data loader is called
+with no fallback of its own. The helper now lives in `src/utils.ts` and is used at all
+four sites.
+
+**Cancellation was checked before yielding and never after.** Three passes in
+`skeleton.mjs` could therefore swallow an abort raised during their final yield and hand
+the caller a successful result. `repairSourceJunctions` also ignored an already-aborted
+signal when it had fewer than two sources to join. Per-tile animation validation reads
+two million cells with two whole-array inspections and offered no cancellation point at
+all across any of it.
+
+**Several measurements answered a wider question than the one being asked.** The turn and
+terminal probes in `progress.mjs` measure how far ink extends sideways from a stroke, in
+order to bound a radius for that stroke, and they tested the glyph-wide ink mask: an L
+with neighbours against the two sides that limit its corner moved 275 of its own cells by
+up to 1,892 of 65,535 purely because those neighbours existed. `repairSourceJunctions`
+documents `maxWork` as "geometric operations before the run gives up" and charged its
+projection loops, which are the bulk of that geometry, to a scheduling counter only.
+`animationMask` derived its continuity cutoff from a stroke's owned-cell area rather than
+its length, which repeated for thick strokes the exact failure the cutoff was added to
+fix: four cells wide and two long, it landed back on the old constant and rejected every
+advancing neighbour, and the stroke revealed in one jump rather than progressively. Its
+two stages also used different cutoffs, so they disagreed about which neighbours were
+continuous.
+
+**Boundary and conditioning errors.** `thinInk` needs all eight neighbours and so never
+considered the first or last row or column, leaving a mask whose ink reached the edge
+with a solid bar there; a 5x5 block touching two edges lost no cells at all. The owner-id
+bound rejected 65535, which is representable and reserved for nothing. A `cut()` call
+site tested only an upper bound and so let the function's -1 "not found" sentinel through
+into a region. `validateShape` wrote its recomputed bounds back unchecked, so it could
+return a width above the limit every input value had to satisfy and then reject its own
+output. And the quadratic root formula lost most of one root's digits to cancellation:
+the cubic `M0 0C1 1100 2 100 3 -2999.99999999999Z` reported a maximum of 431.40 against a
+true 432.14, understating bounds that every fit and containment check works from.
+
+**Two validators disagreed about the same data.** The optional source loader accepted
+identifiers that were empty or longer than 256 characters, which `validateAnimation` then
+rejected, so the loader could approve data that could only ever produce an unusable
+animation. A plan step searched up to 8,192 motor strokes linearly per step, making a
+record the validator accepts cost up to 67 million comparisons with no cancellation
+point. An index read failure was reported as invalid JSON rather than as a network error,
+unlike the equivalent group-body path beside it.
+
 ### Security
 
 - **The four hardened structural validators are now one module.** `validateShape`,
@@ -122,6 +189,24 @@ along with a stroke that lies entirely outside the glyphs it claims.
   `Object.defineProperty`, so a literal `__proto__` data property cannot reparent the
   returned object. The previous copies used assignment; the allowlist made it
   unreachable there, but the dictionary reader used by data packs would have reached it.
+- **Two caps on untrusted input became one.** The capped stream reader existed twice, in
+  the font provider and in the animation source loader, and a bypass fixed in one would
+  have left the other open. They now share `extras/fonts/capped-read.mjs`, which imports
+  nothing, so the provider is still independent of the animation graph. Overflow is a
+  `RangeError` and each caller reports it in its own vocabulary.
+- **A single source stroke could allocate past the browser.** The animation source loader
+  compared its 200,000-point budget only between whole strokes, and `resample` built one
+  stroke's full expansion before returning, so a source at the validator's million-point
+  ceiling produced roughly 128 million points first. The budget is now checked inside the
+  segment loop, before the allocation.
+- **Control characters U+0080 to U+009F were accepted by the provider.** `validateShape`
+  excludes them because U+0085 is a line break and U+009B an escape introducer; the
+  provider's metadata and text checks stopped at C0 and DEL, so it approved labels the
+  core validator refuses.
+- **A rejected or oversized font response was abandoned without being cancelled.** Both
+  paths throw before anything reads the body, and `load` then removed its abort listeners,
+  detaching the request from `destroy()`, so the transfer ran to completion in the
+  background with nothing able to stop it.
 - Error chains are preserved. `MotorSourceError` and the check harness now attach the
   underlying failure as `cause` instead of discarding it.
 - **A caller-supplied canvas is no longer permanently altered.** `FontWriter` set `role`
@@ -138,6 +223,15 @@ along with a stroke that lies entirely outside the glyphs it claims.
 - **Animation frames reuse their mask elements.** The `<mask>`, reveal path and glyph
   outlines are built once per animation instead of once per frame; only the reveal
   path's `d` changes.
+- **Trail joining was quadratic and ran on the main thread with no checkpoint.** It
+  compared every trail against every later one, when a join requires the two to share an
+  endpoint exactly. An endpoint index gives the same candidates: a 300x300 mask of ten
+  thousand isolated two-cell marks went from 9,195 ms to 40 ms, with output verified identical
+  across thirteen masks including noisy ones. A consumed trail is left as a hole rather
+  than spliced out, which keeps the surviving order and so keeps which join wins.
+- **Contour probing stored one entry per edge per row.** A path of under four thousand
+  characters, against a half-million-character limit, allocated 189 MB. An active-edge
+  sweep holds each edge once, at 5.5 MB, with probe output identical across 162 cases.
 - The mask memo key was **not** changed. Quantizing it to a fixed number of reveal
   steps, so consecutive frames could share a cache entry, was implemented and then
   reverted: at 960 px and device pixel ratio 3 the contour gate's analytic tolerance is
@@ -162,13 +256,19 @@ runtime consults, so the catalogue cannot claim a group the loader would never s
 No authority publishes a normative order for the remaining 113 scripts; see
 `dev-docs/research/20260911-normative-stroke-order.md` for the survey behind that.
 
-The public type surface tightened in four places. Nothing was removed or renamed, but a
+The public type surface tightened in six places. Nothing was removed or renamed, but a
 consumer who was relying on one of these will now see a compile error rather than
 behaviour that never worked.
 
 - `FontWriter.getShape()` is typed `ReadonlyFontShape`, which is what it has always
   returned: a deeply frozen object. Writing to it threw in strict mode and was dropped
   silently everywhere else.
+- `validateShape` returns `ReadonlyFontShape` for the same reason, and the readonly type
+  is carried through every reader of a shape rather than stopping at the boundary.
+- `ReadonlyFontShape` keeps its tuples. `DeepReadonly` mapped every array through
+  `readonly U[]`, so `bounds` arrived as `readonly number[]` and a consumer lost the
+  guarantee that it holds exactly four numbers. Both this and the point above are pinned
+  by `@ts-expect-error`, which fails the build if either widens again.
 - `ScribingOptions` no longer offers `bounds`. The writer takes it from the writing unit
   it has loaded, so a caller-supplied value was accepted by the type and then ignored.
 - `strokeWidth` and `outlineWidth` are marked deprecated with the reason. Neither
@@ -221,17 +321,54 @@ fetch-fonts`, which verifies every byte length and SHA-256 against
 
 ### Verification
 
-- **The optional runtime has per-file coverage floors.** `extras/fonts` is 3,684 lines
-  that ship in the package and had no enforced coverage at all. Measured: provider 97.9%,
-  yield-work 84.2%, progress 71.2%, skeleton 56.4%, animation 23.1%. An aggregate
+- **The optional runtime has per-file coverage floors.** `extras/fonts` ships in the
+  package and had no enforced coverage at all. Now measured: capped-read 100%, provider
+  97.7%, progress 86.0%, yield-work 84.2%, skeleton 62.7%, animation 36.7%. An aggregate
   threshold would let one file rot while the total held, so `check-coverage.mjs` asserts
   a floor per file, and asserts the inventory too, since a module no test imports
-  disappears from the report rather than failing.
+  disappears from the report rather than failing. The inventory is now read from the
+  directory rather than from the floor list itself, so a newly shipped module that no
+  test imports fails instead of passing unnoticed; the suite list is read from the
+  `test-fonts` script rather than repeated.
 - **The vendored HarfBuzz runtime is cross-checked against the dependency.**
   `extras/fonts/vendor` is a copy, not a resolved dependency, so bumping `harfbuzzjs`
   left the vendored bytes stale while the vendor manifest and those bytes stayed
   mutually consistent, making the drift invisible. `check-assets.mjs` now fails if the
   manifest version and the installed version disagree.
+- **Five gates could not fail.** `check-contours` computed the measure that detects
+  excess ink and only logged it. Its one assertion counted reference pixels the render
+  failed to cover, so filling a counter or drawing outside the outline left that at zero. `check-endpoints` recorded final coverage and never
+  compared it, so a blank reveal passed, and it tested only for an increase, so a reveal
+  that lost ink read as a comfortable negative. `check-assets` duplicated the runtime's
+  stroke-order policy and so could only ever agree with itself; it now imports the
+  selector, and changing the runtime alone fails the gate. It also verified motor data by
+  hash, count and text mapping but never by the schema the loader enforces, and let the
+  lock file choose which files it was verified against. Each new assertion was confirmed
+  by injecting a wrong value and watching it fire.
+- **Vendored bytes are compared against the installed package.** Hashing them against
+  their own hand-edited manifest proves only that the copy matches itself, so bumping
+  `vendor.version` without re-copying left both consistent and stale. `packagePath` was
+  recorded for this comparison and was not being used.
+- **Two gate scripts launched Chromium outside their cleanup scope**, so a launch failure
+  left the HTTP server listening and hung the process; three sibling scripts already did
+  it correctly. A rejecting `browser.close()` also skipped the server close.
+- **Three of seven static servers allowed caching.** These gates rebuild `dist/` and the
+  demo between runs, so a cached response would let them assert against superseded bytes.
+  A check now refuses any server without `Cache-Control: no-store`, which is also what
+  revalidates `harfbuzz.wasm`: it is resolved from its loader's URL at runtime, and a
+  relative URL drops the query, so no import-map version can reach it.
+- **Both Python generators write platform-dependent bytes unless told not to.** Their
+  output is hashed into the lock files and compared, so locale-dependent decoding and
+  newline translation would make those hashes machine-specific, and the failure is
+  invisible on a machine that happens to be UTF-8 and LF. A check now refuses either
+  generator if it reads or writes text without naming an encoding. `assert` was also
+  doing the data validation, which `python -O` strips before the script writes freshly
+  blessed locks.
+- **`yield-work.mjs` was a hand copy with no gate.** `path-geometry.mjs` is generated
+  from its TypeScript source and byte-compared; this one was not, so the core and
+  optional runtimes could drift. Both are generated and compared now, and the generator
+  writes only when run directly, so the gate cannot regenerate the files it is about to
+  compare.
 - **The performance claims are pinned as behaviour, not timing.** A pointer move below
   the movement threshold must leave the rendered group identical, and consecutive
   animation frames must preserve mask, reveal and ink element identity. A timing
