@@ -4,6 +4,16 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [4.0.0] - 2026-09-11
+
+First release under the Scribing name, and the first release of this fork at all. It
+succeeds Hanzi Writer 3.7.3 and is breaking against it: the default export, the browser
+global and the bundle filenames are all renamed, the Node floor is 20.19, and an
+`exports` map now governs which paths a consumer may import. Replace `HanziWriter` with
+`Scribing` and update bundle paths. The inherited API is otherwise unchanged.
+
 A hardening and modernization pass covering the toolchain, the validation layer, test
 coverage and the check gates. Within the fork's own API nothing was removed or renamed;
 the package name and version did change, and the rebrand from Hanzi Writer before it was
