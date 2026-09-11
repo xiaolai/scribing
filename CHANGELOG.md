@@ -7,6 +7,18 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 A hardening and modernization pass covering the toolchain, the validation layer, test
 coverage and the check gates. No public API was removed or renamed.
 
+**The package is now `@xiaolai/scribing`, at version 1.0.0.** The fork carried
+`hanzi-writer`'s version 3.0.0, which upstream set in January 2021 and which the rebrand
+left untouched, so the number described a lineage this package had left. The unscoped
+name `scribing` also belongs to an unrelated npm package, a collaborative rich-text
+editing model, so it was never available to publish under. Scoping settles both: the
+version line is independent of `hanzi-writer` the moment the name differs, and 3.0.0
+would have implied two earlier majors of Scribing that never existed.
+
+Nothing has been published yet. The repository still carries upstream's tags, v3.4.0
+through v3.7.3, which were created by upstream's `semantic-release`; they are not this
+package's tags, and `git describe` will report one of them until they are dealt with.
+
 ### Fixed
 
 A second audit pass closed every remaining behavioural finding. The entries below group

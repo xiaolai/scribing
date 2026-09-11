@@ -30,7 +30,10 @@ async function main() {
       '-C',
       consumerModules,
     ]);
-    const packageRoot = path.join(consumerModules, 'scribing');
+    // The scope is a real directory inside node_modules, so the extracted package has
+    // to land at @xiaolai/scribing for the consumer's import to resolve.
+    const packageRoot = path.join(consumerModules, '@xiaolai', 'scribing');
+    fs.mkdirSync(path.dirname(packageRoot), { recursive: true });
     fs.renameSync(path.join(consumerModules, 'package'), packageRoot);
     const pkg = JSON.parse(
       fs.readFileSync(path.join(packageRoot, 'package.json'), 'utf8'),
@@ -129,7 +132,7 @@ async function main() {
     const bundleEntry = path.join(temp, 'animation-consumer.mjs');
     fs.writeFileSync(
       bundleEntry,
-      "export {createMotorSourceLoader,prepareFontAnimation,MotorSourceError} from 'scribing/extras/fonts/animation.mjs';\n",
+      "export {createMotorSourceLoader,prepareFontAnimation,MotorSourceError} from '@xiaolai/scribing/extras/fonts/animation.mjs';\n",
     );
     const bundle = await require('rollup').rollup({
       input: bundleEntry,
@@ -209,7 +212,7 @@ async function main() {
     fs.writeFileSync(
       path.join(temp, 'consumer.ts'),
       `
-import Scribing, { ScribingOptions, CharacterJson, WritingUnit, WritingDataPack, UnitStrokeFeedback, FontShape, ReadonlyFontShape, FontWriter, FontComparison, FontAnimation } from 'scribing';
+import Scribing, { ScribingOptions, CharacterJson, WritingUnit, WritingDataPack, UnitStrokeFeedback, FontShape, ReadonlyFontShape, FontWriter, FontComparison, FontAnimation } from '@xiaolai/scribing';
 const options: Partial<ScribingOptions> = { renderer: 'svg', showCharacter: false };
 const writer: Scribing = Scribing.create('target', '我', options);
 const data: Promise<CharacterJson | void> = Scribing.loadCharacterData('我');
@@ -244,7 +247,7 @@ void writer; void data; void unit; void pending; void selected;
         '--moduleResolution',
         'node',
         '--types',
-        'scribing',
+        '@xiaolai/scribing',
         path.join(temp, 'consumer.ts'),
       ],
       { cwd: temp, stdio: 'pipe' },

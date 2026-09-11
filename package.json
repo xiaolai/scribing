@@ -1,6 +1,6 @@
 {
-  "name": "scribing",
-  "version": "3.0.0",
+  "name": "@xiaolai/scribing",
+  "version": "1.0.0",
   "author": "xiaolai <lixiaolai@gmail.com>",
   "description": "Multilingual stroke models, real-font animation, tracing and copying.",
   "repository": "xiaolai/scribing",
@@ -8,6 +8,9 @@
   "module": "dist/index.esm.js",
   "types": "dist/types/index.d.ts",
   "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": false,
   "keywords": [
     "handwriting",
