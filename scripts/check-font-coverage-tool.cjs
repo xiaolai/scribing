@@ -175,6 +175,32 @@ const assetOf = (id) => {
       body.characters[1].strokes.every((s) => s.source?.unitId),
       'an ordered glyph must name the unit that ordered it',
     );
+    // A finished run must say so, and say how much it was asked for. A cancelled run
+    // used to export the same shape, leaving a consumer unable to spot a partial audit.
+    assert.deepEqual(body.run, { complete: true, requested: 2, prepared: 2 });
+
+    // The export must describe the font the run used, not whatever is loaded now.
+    // Running NotoSans, then loading NotoSerif, then downloading reported NotoSerif's
+    // name and digest over NotoSans' strokes.
+    const serif = assetOf('NotoSerif');
+    await page.setInputFiles('#file', serif.file);
+    await page.waitForFunction(
+      (sha) => document.getElementById('font-status').textContent.includes(sha),
+      serif.sha256.slice(0, 12),
+    );
+    const [swapped] = await Promise.all([
+      page.waitForEvent('download'),
+      page.click('#export'),
+    ]);
+    const after = JSON.parse(fs.readFileSync(await swapped.path(), 'utf8'));
+    assert.equal(after.font.sha256, sans.sha256, 'export follows the report, not state');
+    assert.match(swapped.suggestedFilename(), /^NotoSans-Regular\./);
+
+    // `mixed` is a tier the runtime genuinely returns, for a syllable whose components
+    // did not all fit. The page collapsed it into `generated` and so misreported it.
+    await load('NotoSansCJKkr');
+    await page.selectOption('#script', 'korean');
+    assert.deepEqual(await tiersFor('가'), ['mixed']);
 
     assert.deepEqual(errors, []);
     assert.deepEqual(external, []);

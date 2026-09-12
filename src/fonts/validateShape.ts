@@ -211,7 +211,11 @@ export default function validateShape(
   // difference of two separately permitted coordinates, so it can exceed the per-value
   // limit even when every coordinate is inside it, and the function then returned a
   // shape it would itself reject: validateShape(validateShape(value)) threw.
-  if (!measured.every(finite)) fail();
+  // Finiteness alone was not the rule the input bounds satisfied: those also had to be
+  // strictly positive in width and height. At large offsets the translation loses
+  // precision and a real outline measures zero, so the shape this returned still threw
+  // when fed back in, which is the exact round trip this block exists to protect.
+  if (!measured.every(finite) || measured[2] <= 0 || measured[3] <= 0) fail();
   shape.bounds = measured;
   Object.freeze(shape.bounds);
   Object.freeze(shape.font);

@@ -13,10 +13,15 @@ const MAX_FONT_BYTES = 32 * 1024 * 1024;
 const TIERS = {
   'source-adapted': "The model's own geometry was fitted onto the outline.",
   'source-ordered': "The font's skeleton is drawn in the model's order.",
+  mixed: 'Some components came from the model and some were generated.',
   generated: 'Ordered by shape alone; no model applied to this glyph.',
   missing: 'The font has no glyph for this character.',
   failed: 'Preparation raised an error.',
 };
+const codepointOf = (char) =>
+  'U+' + char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0');
+const tally = (rows) =>
+  rows.reduce((acc, r) => ((acc[r.tier] = (acc[r.tier] || 0) + 1), acc), {});
 const el = (id) => document.getElementById(id);
 const dom = {
   drop: el('drop'),
@@ -39,12 +44,15 @@ const dom = {
 
 const state = {
   provider: null,
-  catalog: null,
   scripts: new Map(),
   font: null, // { name, bytes, digest }
   report: null,
   running: false,
-  cancelled: false,
+  // Every asynchronous commit carries the generation it started in. Reading the live
+  // font after an await let a slow load overwrite a newer selection, and let a run
+  // that outlived a font change attribute one font's glyphs to another.
+  generation: 0,
+  controller: null,
 };
 
 function say(node, message, isError) {
@@ -61,7 +69,6 @@ async function init() {
       fetch(new URL('fonts/catalog.json', ROOT)).then((r) => r.json()),
       fetch(new URL('fonts/script-ranges.json', ROOT)).then((r) => r.json()),
     ]);
-    state.catalog = catalog;
     state.provider = createFontProvider({
       catalog,
       scriptRanges,
@@ -103,7 +110,9 @@ function countChars() {
       ? ''
       : ' This script has no motor data, so every glyph will be generated.';
   say(dom.charsStatus, `${n} character${n === 1 ? '' : 's'} queued.` + note);
-  dom.run.disabled = !state.font || !n || state.running;
+  // Without the provider check, Run was clickable before the catalogue finished loading
+  // and after it failed, and every character then died on a null provider.
+  dom.run.disabled = !state.provider || !state.font || !n || state.running;
 }
 
 async function digestOf(bytes) {
@@ -118,46 +127,75 @@ async function loadFont(file) {
     say(dom.fontStatus, 'That font is larger than the 32 MiB limit.', true);
     return;
   }
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  state.font = { name: file.name, bytes, digest: await digestOf(bytes) };
+  const mine = ++state.generation;
+  say(dom.fontStatus, `Reading ${file.name}…`);
+  let font;
+  try {
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    font = { name: file.name, bytes, digest: await digestOf(bytes) };
+  } catch (cause) {
+    // Both the read and the digest can reject. Neither had a handler, so a failure
+    // surfaced only as an unhandled rejection and the page kept its previous font.
+    if (mine === state.generation) say(dom.fontStatus, 'Could not read that font.', true);
+    return;
+  }
+  // A larger file picked first can finish last. Without this the earlier selection won.
+  if (mine !== state.generation) return;
+  state.font = font;
   say(
     dom.fontStatus,
     `${file.name} — ${(file.size / 1024).toFixed(0)} KB${
-      state.font.digest ? ' · sha256 ' + state.font.digest.slice(0, 12) : ''
+      font.digest ? ' · sha256 ' + font.digest.slice(0, 12) : ''
     }`,
   );
   countChars();
 }
 
-/** Shapes one character, or throws the provider's own error. */
-const shapeOne = (text, scriptId) =>
-  state.provider.shapeCustom({
-    text,
-    bytes: state.font.bytes,
-    name: state.font.name,
-    scriptId,
-  });
+/** Shapes one character with an explicit font, or throws the provider's own error. */
+const shapeOne = (text, scriptId, font, signal) =>
+  state.provider.shapeCustom(
+    { text, bytes: font.bytes, name: font.name, scriptId },
+    { signal },
+  );
+
+/** Codes that mean "this font does not cover that character", as opposed to a fault. */
+const COVERAGE_MISS = new Set(['MISSING_GLYPH', 'INVALID_TEXT', 'EMPTY_OUTLINE']);
 
 async function detectScript() {
-  if (!state.font) return;
+  if (!state.font || state.running) return;
+  const font = state.font,
+    mine = state.generation;
   say(dom.runStatus, 'Detecting…');
   // Ask in the order the list is sorted, so a font covering several scripts lands on
-  // one with motor data rather than on whichever range happens to sort first.
+  // one with motor data rather than on whichever range happens to sort first. Probing
+  // several characters matters for subset fonts: the first inventory entry alone
+  // reported "no matching script" for fonts that clearly cover it.
   for (const option of dom.script.options) {
     const script = state.scripts.get(option.value);
-    const sample = script?.inventory?.[0];
-    if (!sample) continue;
-    try {
-      await shapeOne(sample, script.id);
+    const samples = (script?.inventory || []).slice(0, 4);
+    for (const sample of samples) {
+      try {
+        await shapeOne(sample, script.id, font);
+      } catch (cause) {
+        // Only a coverage miss means "try the next script". Anything else is a real
+        // fault, and swallowing it reported a broken font as an unmatched one.
+        if (COVERAGE_MISS.has(cause?.code)) continue;
+        if (mine === state.generation && state.font === font)
+          say(dom.runStatus, 'Detection failed: ' + (cause?.message || cause), true);
+        return;
+      }
+      // The generation alone is not enough: `loadFont` raises it when a read starts and
+      // commits when it finishes, so a font that was already pending when detection
+      // began commits inside the captured generation. Compare the font itself too.
+      if (mine !== state.generation || state.font !== font) return;
       dom.script.value = script.id;
       resetChars();
       say(dom.runStatus, `Detected ${script.name}.`);
       return;
-    } catch {
-      /* the font lacks this script; try the next */
     }
   }
-  say(dom.runStatus, 'No catalogued script matched this font.', true);
+  if (mine === state.generation && state.font === font)
+    say(dom.runStatus, 'No catalogued script matched this font.', true);
 }
 
 function ramp(index, count) {
@@ -238,8 +276,8 @@ function drawCell(char, result) {
   caption.className = 'ch';
   caption.textContent =
     char +
-    '  U+' +
-    char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0') +
+    '  ' +
+    codepointOf(char) +
     (result.strokes ? `  ·  ${result.strokes.length}` : '');
   cell.append(caption);
   const badge = document.createElement('span');
@@ -253,10 +291,9 @@ function drawCell(char, result) {
 function renderSummary(rows) {
   dom.summary.replaceChildren();
   const total = rows.length;
-  const counts = new Map();
-  for (const r of rows) counts.set(r.tier, (counts.get(r.tier) || 0) + 1);
+  const counts = tally(rows);
   for (const tier of Object.keys(TIERS)) {
-    const n = counts.get(tier) || 0;
+    const n = counts[tier] || 0;
     if (!n) continue;
     const tr = document.createElement('tr');
     for (const [text, cls] of [
@@ -276,26 +313,38 @@ function renderSummary(rows) {
 }
 
 async function run() {
+  if (!state.provider || !state.font) return;
   const list = chars(dom.chars.value);
-  const scriptId = dom.script.value;
+  if (!list.length) return;
+  const scriptId = dom.script.value,
+    // The whole run belongs to one font. Reading `state.font` per character let a font
+    // swap mid-run produce a single report describing two different fonts.
+    font = state.font,
+    script = state.scripts.get(scriptId);
+  state.controller = new AbortController();
   state.running = true;
-  state.cancelled = false;
   dom.run.disabled = dom.export.disabled = true;
   dom.cancel.disabled = false;
   dom.grid.replaceChildren();
+  // The old summary described the previous run and sat beside the new results as they
+  // accumulated, which read as though it were describing them.
+  dom.summaryPanel.hidden = true;
   dom.progress.max = list.length;
   dom.progress.value = 0;
   const rows = [];
   const started = performance.now();
   for (const char of list) {
-    if (state.cancelled) break;
+    if (state.controller.signal.aborted) break;
     const row = { char, tier: 'failed' };
     try {
-      const shape = await shapeOne(char, scriptId);
-      const at = performance.now();
-      const animation = await prepareFontAnimation(shape);
-      row.ms = Math.round(performance.now() - at);
-      row.tier = animation.provenance === 'mixed' ? 'generated' : animation.provenance;
+      const shape = await shapeOne(char, scriptId, font, state.controller.signal);
+      const animation = await prepareFontAnimation(shape, {
+        signal: state.controller.signal,
+      });
+      // `mixed` is a tier the runtime really returns, for a syllable whose components
+      // did not all fit. Rewriting it as `generated` contradicted this page's claim to
+      // report the tier a caller actually gets.
+      row.tier = animation.provenance;
       row.em = shape.em;
       row.bounds = shape.bounds;
       row.strokes = animation.strokes.map((s) => ({
@@ -305,6 +354,7 @@ async function run() {
         source: s.source,
       }));
     } catch (cause) {
+      if (state.controller.signal.aborted) break;
       row.tier = cause?.code === 'MISSING_GLYPH' ? 'missing' : 'failed';
       row.error = cause?.message || String(cause);
     }
@@ -316,41 +366,55 @@ async function run() {
     await new Promise((resolve) => requestAnimationFrame(resolve));
   }
   const elapsed = ((performance.now() - started) / 1000).toFixed(1);
+  const cancelled = state.controller.signal.aborted;
   renderSummary(rows);
-  state.report = { scriptId, rows };
+  // The report carries its own font and completion state. Exporting from live state
+  // attributed one font's strokes to whichever font happened to be loaded later.
+  state.report = {
+    scriptId,
+    scriptName: script?.name,
+    strokeOrder: script?.strokeOrder,
+    font: { name: font.name, bytes: font.bytes.byteLength, sha256: font.digest },
+    requested: list.length,
+    complete: !cancelled,
+    rows,
+  };
   state.running = false;
+  state.controller = null;
   dom.cancel.disabled = true;
   dom.export.disabled = false;
   countChars();
   say(
     dom.runStatus,
-    `${state.cancelled ? 'Cancelled after' : 'Prepared'} ${rows.length} character${
-      rows.length === 1 ? '' : 's'
+    `${cancelled ? 'Cancelled after' : 'Prepared'} ${rows.length} of ${list.length} character${
+      list.length === 1 ? '' : 's'
     } in ${elapsed}s.`,
   );
 }
 
 function exportReport() {
   if (!state.report) return;
-  const { scriptId, rows } = state.report;
-  const script = state.scripts.get(scriptId);
+  // Everything here comes from the report, never from live state. Reading the current
+  // font meant that running font A, loading font B, then downloading produced A's
+  // strokes under B's name, digest and filename.
+  const { scriptId, scriptName, strokeOrder, font, rows, requested, complete } =
+    state.report;
   // Points are divided by the em so the export does not depend on the font's units,
   // which differ between families. y stays upward, as the runtime reports it.
   const payload = {
     tool: 'scribing-font-coverage',
     schemaVersion: 1,
     generated: new Date().toISOString(),
-    font: {
-      name: state.font.name,
-      bytes: state.font.bytes.byteLength,
-      sha256: state.font.digest,
-    },
-    script: { id: scriptId, name: script?.name, strokeOrder: script?.strokeOrder },
+    font,
+    script: { id: scriptId, name: scriptName, strokeOrder },
     coordinates: { units: 'em', yAxis: 'up' },
-    summary: rows.reduce((acc, r) => ((acc[r.tier] = (acc[r.tier] || 0) + 1), acc), {}),
+    // A cancelled run exported the same shape as a finished one, so a consumer could
+    // not tell a partial audit from a complete one.
+    run: { complete, requested, prepared: rows.length },
+    summary: tally(rows),
     characters: rows.map((r) => ({
       char: r.char,
-      codepoint: 'U+' + r.char.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'),
+      codepoint: codepointOf(r.char),
       tier: r.tier,
       error: r.error,
       strokes: r.strokes?.map((s) => ({
@@ -367,8 +431,7 @@ function exportReport() {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
-  link.download =
-    state.font.name.replace(/\.[^.]+$/, '') + '.' + scriptId + '.coverage.json';
+  link.download = font.name.replace(/\.[^.]+$/, '') + '.' + scriptId + '.coverage.json';
   link.click();
   URL.revokeObjectURL(link.href);
 }
@@ -391,7 +454,9 @@ dom.resetChars.addEventListener('click', resetChars);
 dom.detect.addEventListener('click', detectScript);
 dom.run.addEventListener('click', run);
 dom.cancel.addEventListener('click', () => {
-  state.cancelled = true;
+  // Aborting the signal stops the shaping and preparation already under way. Setting a
+  // flag only stopped the loop between characters, so a slow glyph ignored Cancel.
+  state.controller?.abort();
 });
 dom.export.addEventListener('click', exportReport);
 

@@ -258,3 +258,22 @@ test('thinning reaches ink that touches the edge of the grid', async () => {
   ]);
   assert.equal(Array.from(await thinInk(padded, 7, 7)).filter(Boolean).length, 1);
 });
+
+test('a Buffer input is copied, not aliased', () => {
+  // Node's Buffer is a Uint8Array subclass whose `slice` returns a view over the same
+  // memory. Both thinning and dilation copy their input with `slice`, so a Buffer
+  // caller had its own grid rewritten and the dilation read cells it had just written.
+  const width = 5,
+    height = 5;
+  const grid = Buffer.alloc(width * height);
+  grid[2 * width + 2] = 1;
+  const before = Uint8Array.from(grid);
+  const out = dilateCoverage(grid, width, height);
+  assert.deepEqual(Uint8Array.from(grid), before, 'the caller’s mask is not modified');
+  assert.notEqual(out.buffer, grid.buffer, 'the result owns its storage');
+  // One cell dilates to exactly its 3x3 neighbourhood, never further.
+  assert.equal(
+    out.reduce((n, v) => n + v, 0),
+    9,
+  );
+});

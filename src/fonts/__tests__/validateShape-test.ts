@@ -99,3 +99,24 @@ describe('validateShape', () => {
     ).toThrow('Invalid FontShape');
   });
 });
+
+test('a shape whose outlines measure to zero size is rejected, not returned', () => {
+  // The measured bounds must satisfy the rule the declared bounds did. Checking only
+  // finiteness let a subpixel outline at a large offset measure zero width, so
+  // validateShape returned a shape that validateShape itself would throw on.
+  const shape = base();
+  shape.bounds = [1e7, 1e7, 1, 1];
+  shape.glyphs = [
+    {
+      id: 1,
+      cluster: 0,
+      path: 'M0 0H1e-10V1e-10H0Z',
+      x: 1e7,
+      y: 1e7,
+      advanceX: 10,
+      advanceY: 0,
+    },
+  ];
+  shape.text = 'a';
+  expect(() => validateShape(shape)).toThrow();
+});

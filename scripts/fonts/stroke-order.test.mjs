@@ -268,3 +268,182 @@ test('orderGlyph declines an empty raster', () => {
     null,
   );
 });
+
+/**
+ * Regressions from the September 2026 font-subsystem audit.
+ *
+ * Each of these passed the suite above while being wrong, which is the point: coverage
+ * and continuity were asserted, and everything else about the ordering was not.
+ */
+
+test('a model larger than the engine argument limit is placed, not thrown at', () => {
+  // `Math.min(...points)` threw RangeError here. The loader accepts records far larger
+  // than this, so the ordering tier crashed on input the tier above it had approved.
+  const points = Array.from({ length: 200000 }, (_, i) => [
+    i % 1000,
+    Math.floor(i / 1000),
+  ]);
+  const result = orderByModel(twoBars(), [{ points }], [0, 0, 100, 100], true);
+  assert.ok(result.strokes.length > 0, 'a large model must still produce strokes');
+});
+
+test('with no model stroke left, the next walk starts at the topmost endpoint', () => {
+  // The fallback minimised -y, which selects the largest y. Rows grow downward, so it
+  // took the bottommost endpoint while its comment promised the topmost.
+  const bars = [
+    [
+      [10, 90],
+      [50, 90],
+    ],
+    [
+      [10, 10],
+      [50, 10],
+    ],
+    [
+      [10, 50],
+      [50, 50],
+    ],
+  ];
+  // One model stroke claims a bar; the remaining two are chosen by the fallback alone.
+  const want = [
+    {
+      points: [
+        [0, 0],
+        [1, 0],
+      ],
+    },
+  ];
+  const { strokes } = orderByModel(bars, want, [0, 0, 100, 100], true);
+  assert.deepEqual(
+    strokes.slice(1).map((s) => s[0][1]),
+    [50, 90],
+    'unclaimed walks run top to bottom',
+  );
+});
+
+test('a split tail takes the model position it was split for, not the one beside it', () => {
+  // One connected run answers model strokes 1 and 3, with stroke 2 elsewhere. Splicing
+  // the tail in beside its parent emitted 1, 3, 2.
+  const trails = [
+    [
+      [10, 10],
+      [10, 50],
+      [10, 90],
+    ],
+    [
+      [80, 10],
+      [80, 40],
+    ],
+  ];
+  const want = [
+    {
+      points: [
+        [0, 0],
+        [0, 0.4],
+      ],
+    },
+    {
+      points: [
+        [1, 0],
+        [1, 0.35],
+      ],
+    },
+    {
+      points: [
+        [0, 0.5],
+        [0, 1],
+      ],
+    },
+  ];
+  const { strokes } = orderByModel(trails, want, [0, 0, 100, 100], true);
+  assert.equal(strokes.length, 3);
+  assert.equal(strokes[1][0][0], 80, 'the second stroke is the separate right-hand bar');
+  assert.equal(strokes[2][0][0], 10, 'the split tail is last, where its model stroke is');
+});
+
+test('the stroke floor counts every component, including those with no odd node', () => {
+  // Five disjoint closed loops have no odd-degree node anywhere. Summing odd degrees
+  // across the whole graph reported a floor of one for a skeleton needing five.
+  const loops = [];
+  for (let i = 0; i < 5; i++) {
+    const x = 10 + i * 20;
+    loops.push([
+      [x, 10],
+      [x + 8, 10],
+      [x + 8, 18],
+      [x, 18],
+      [x, 10],
+    ]);
+  }
+  const want = [
+    {
+      points: [
+        [0, 0],
+        [1, 1],
+      ],
+    },
+  ];
+  assert.equal(orderByModel(loops, want, [0, 0, 120, 30], true).floor, 5);
+});
+
+test('an empty skeleton needs no strokes at all', () => {
+  const want = [
+    {
+      points: [
+        [0, 0],
+        [1, 1],
+      ],
+    },
+  ];
+  assert.equal(orderByModel([], want, [0, 0, 100, 100], true).floor, 0);
+});
+
+test('a closed trail can be drawn in either direction, as the model asks', () => {
+  // A loop begins and ends at the same node, so `forward` was always true and the
+  // stored direction always won. The loop is deliberately asymmetric: a symmetric one
+  // cannot tell the two orientations apart, because the heading is a chord from the
+  // first point to the third and those coincide when the shape mirrors.
+  const loop = () => [
+    [
+      [50, 10],
+      [90, 20],
+      [70, 90],
+      [30, 90],
+      [10, 20],
+      [50, 10],
+    ],
+  ];
+  const box = [0, 0, 100, 100];
+  // Each model spans the same normalised box, so the only difference reaching the
+  // traversal is the direction of travel, not the placement.
+  const right = orderByModel(
+    loop(),
+    [
+      {
+        points: [
+          [0.5, 0],
+          [1, 0.25],
+          [0.9, 1],
+        ],
+      },
+    ],
+    box,
+    true,
+  );
+  const left = orderByModel(
+    loop(),
+    [
+      {
+        points: [
+          [0.5, 0],
+          [0, 0.25],
+          [0.1, 1],
+        ],
+      },
+    ],
+    box,
+    true,
+  );
+  assert.deepEqual(right.strokes[0][1], [90, 20], 'aiming right leaves by the right');
+  assert.deepEqual(left.strokes[0][1], [10, 20], 'aiming left leaves by the left');
+});

@@ -80,7 +80,9 @@ export async function thinInk(input, width, height, signal) {
 
 /** The thinning passes themselves, on a grid whose border is known to be clear. */
 async function thinPadded(input, width, height, signal) {
-  const ink = input.slice(),
+  // Same reason as `dilateCoverage`: a Buffer's `slice` is a view, and thinning reads
+  // the grid it is erasing from.
+  const ink = new Uint8Array(input),
     remove = [];
   let changed = true,
     iteration = 0;
@@ -515,7 +517,10 @@ export function holeCount(mask, width, height) {
  */
 export function dilateCoverage(mask, width, height) {
   assertGrid(mask, width, height, 'dilateCoverage');
-  const out = mask.slice();
+  // Not `mask.slice()`. Node's Buffer is a Uint8Array subclass whose `slice` returns a
+  // view over the same memory, so the output aliased the input: the loop then read
+  // cells it had just written and spread coverage further than one cell.
+  const out = new Uint8Array(mask);
   for (let i = 0; i < mask.length; i++)
     if (mask[i]) {
       const x = i % width,
