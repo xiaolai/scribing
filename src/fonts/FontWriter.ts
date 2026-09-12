@@ -81,6 +81,8 @@ export default class FontWriter {
   private svgAnimationNodes?: {
     animation: FontAnimation;
     tiles: { mask: SVGMaskElement; reveal: SVGPathElement; ink: SVGGElement }[];
+    /** The group these nodes are already under, so a frame does not re-attach them. */
+    attachedTo?: SVGGElement;
   };
   /**
    * The persistent SVG scene.
@@ -705,8 +707,10 @@ export default class FontWriter {
   private animationSvg(group: SVGGElement) {
     if (!this.animation || !this.animationState || !this.shape) {
       // Nothing is playing, so drop whatever the previous frame left in place. The
-      // cached elements themselves are kept and re-appended when playback resumes.
+      // cached elements themselves are kept and re-appended when playback resumes,
+      // which is why the record has to forget that they were ever attached.
       while (group.firstChild) group.removeChild(group.firstChild);
+      if (this.svgAnimationNodes) this.svgAnimationNodes.attachedTo = undefined;
       return;
     }
     if (this.svgAnimationNodes?.animation !== this.animation) {
@@ -715,11 +719,17 @@ export default class FontWriter {
         tiles: this.buildAnimationSvgNodes(this.animation, this.shape),
       };
     }
+    // Attach once, then update only the reveal path. appendChild moves a node that is
+    // already attached, so calling it every frame detached and reinserted every mask
+    // and every glyph of every tile for a change that only ever touches `reveal`.
+    const attached = this.svgAnimationNodes.attachedTo === group;
     this.svgAnimationNodes.tiles.forEach(({ mask, reveal, ink }, index) => {
       reveal.setAttribute('d', this.updateMask(index));
+      if (attached) return;
       group.appendChild(mask);
       group.appendChild(ink);
     });
+    this.svgAnimationNodes.attachedTo = group;
   }
   /**
    * Depth of the current public operation.
@@ -844,6 +854,13 @@ export default class FontWriter {
     shape.glyphs.forEach((g) => scene.reference.appendChild(glyphPath(g, color)));
   }
 
+  /**
+   * What was last written to each ink node, so an unchanged stroke is not rewritten.
+   *
+   * Keyed on the element, so a node replaced when a stroke changes shape simply misses.
+   */
+  private inkSignatures = new WeakMap<SVGElement, string>();
+
   /** Update the learner's ink in place, reusing the nodes from the previous frame. */
   private svgInk(group: SVGGElement, ink: Point[][], pen: number) {
     const strokes = ink.filter((stroke) => stroke.length > 0);
@@ -857,13 +874,23 @@ export default class FontWriter {
         if (existing) group.replaceChild(node, existing);
         else group.appendChild(node);
       }
+      // Reusing the node was not enough: every attribute was rewritten for every
+      // stroke on every frame, so one pointer move reserialised every point of every
+      // committed stroke. A stroke that has not changed is left alone.
+      const geometry =
+        wanted === 'circle'
+          ? `${stroke[0].x},${stroke[0].y}`
+          : stroke.map((p) => `${p.x},${p.y}`).join(' ');
+      const signature = `${geometry}|${pen}|${this.options.drawingColor!}`;
+      if (this.inkSignatures.get(node) === signature) return;
+      this.inkSignatures.set(node, signature);
       if (wanted === 'circle') {
         node.setAttribute('cx', String(stroke[0].x));
         node.setAttribute('cy', String(stroke[0].y));
         node.setAttribute('r', String(pen / 2));
         node.setAttribute('fill', this.options.drawingColor!);
       } else {
-        node.setAttribute('points', stroke.map((p) => `${p.x},${p.y}`).join(' '));
+        node.setAttribute('points', geometry);
         node.setAttribute('fill', 'none');
         node.setAttribute('stroke', this.options.drawingColor!);
         node.setAttribute('stroke-width', String(pen));
