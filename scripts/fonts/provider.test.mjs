@@ -221,6 +221,81 @@ test('rejects a catalog whose font entries do not pin a digest and a size', () =
   }
 });
 
+test('rejects a catalog whose structure or script metadata is unusable', () => {
+  // These reached the shaper instead of the constructor. A missing `fonts` array threw
+  // an uncoded TypeError from deep inside a request, a script with no `language` did
+  // the same, and an unrecognised direction produced a successful shape carrying it.
+  const cases = [
+    [(c) => delete c.fonts, /fonts array/],
+    [(c) => delete c.scripts, /scripts array/],
+    [(c) => (c.fonts = {}), /fonts array/],
+    [(c) => delete c.scripts[0].language, /script tag, a language/],
+    [(c) => delete c.scripts[0].unicodeScripts, /script tag, a language/],
+    [(c) => delete c.fonts[0].file, /needs an id and a file/],
+    [(c) => (c.scripts[0].direction = 'sideways'), /unsupported direction/],
+    [(c) => c.fonts.push({ ...c.fonts[0] }), /Duplicate catalog font id/],
+    [(c) => c.scripts.push({ ...c.scripts[0] }), /Duplicate catalog script id/],
+    [(c) => (c.scripts[0].fontIds = ['NoSuchFont']), /names unknown font/],
+  ];
+  for (const [breakIt, expected] of cases) {
+    const broken = JSON.parse(JSON.stringify(catalog));
+    breakIt(broken);
+    assert.throws(
+      () =>
+        createFontProvider({ catalog: broken, scriptRanges, baseUrl, fetch: localFetch }),
+      expected,
+    );
+  }
+});
+
+test('simultaneous misses for one font share a single transfer', async () => {
+  // The cache was written only after a load finished, so every concurrent miss
+  // downloaded, hashed and instantiated the same bytes independently.
+  let downloads = 0;
+  const counting = (url, init) => {
+    if (String(url).endsWith('.ttf')) downloads += 1;
+    return localFetch(url, init);
+  };
+  const provider = createFontProvider({
+    catalog,
+    scriptRanges,
+    baseUrl,
+    fetch: counting,
+  });
+  const text = 'a';
+  await Promise.all(
+    Array.from({ length: 8 }, () =>
+      provider.shape({ text, fontId: 'NotoSans', scriptId: 'english' }),
+    ),
+  );
+  assert.equal(downloads, 1, 'eight concurrent callers must share one download');
+  provider.destroy();
+});
+
+test('one caller giving up does not cancel a transfer the others still need', async () => {
+  // A guard, not a regression pin: this held trivially when every caller had its own
+  // transfer. Coalescing is what could break it, so it is asserted from here on.
+  const provider = createFontProvider({
+    catalog,
+    scriptRanges,
+    baseUrl,
+    fetch: localFetch,
+  });
+  const quitter = new AbortController();
+  const staying = provider.shape({ text: 'a', fontId: 'NotoSerif', scriptId: 'english' });
+  const leaving = provider
+    .shape(
+      { text: 'a', fontId: 'NotoSerif', scriptId: 'english' },
+      { signal: quitter.signal },
+    )
+    .catch((error) => error);
+  quitter.abort();
+  await leaving;
+  const kept = await staying;
+  assert.equal(kept.glyphs.length, 1, 'the remaining caller still gets its shape');
+  provider.destroy();
+});
+
 test('stops reading a font body once it passes the size cap', async () => {
   // content-length is advisory and often absent, and Number(null) is 0, so a response
   // without the header used to reach arrayBuffer() and buffer whatever arrived.

@@ -111,6 +111,18 @@ export function createFontProvider({
   // below into a no-op that still looks like it ran. Reject the catalog instead, once,
   // rather than silently downloading whatever the URL happens to serve.
   const HEX64 = /^[0-9a-f]{64}$/;
+  // Structure before contents. A catalog missing `fonts` or a script missing `language`
+  // used to reach the shaper and fail there as an uncoded TypeError, and a direction
+  // the shaper does not recognise produced a successful shape carrying it. Anything
+  // this constructor is handed that it cannot honour is refused here, once, with the
+  // code the caller already handles.
+  const bad = (why) => {
+    throw error('INVALID_CATALOG', why);
+  };
+  if (!Array.isArray(metadata.fonts) || !Array.isArray(metadata.scripts))
+    bad('A font catalog needs a fonts array and a scripts array.');
+  const DIRECTIONS = new Set(['ltr', 'rtl', 'ttb']);
+  const seenFont = new Set();
   for (const font of metadata.fonts) {
     if (
       !HEX64.test(String(font?.sha256 ?? '')) ||
@@ -118,11 +130,34 @@ export function createFontProvider({
       font.sizeBytes <= 0 ||
       font.sizeBytes > MAX_FONT_BYTES
     )
-      throw error('INVALID_CATALOG', 'Every catalog font must pin a SHA-256 and a size.');
+      bad('Every catalog font must pin a SHA-256 and a size.');
+    if (typeof font.id !== 'string' || !font.id || typeof font.file !== 'string')
+      bad('Every catalog font needs an id and a file.');
+    if (seenFont.has(font.id)) bad(`Duplicate catalog font id ${font.id}.`);
+    seenFont.add(font.id);
+  }
+  const seenScript = new Set();
+  for (const script of metadata.scripts) {
+    if (
+      typeof script?.id !== 'string' ||
+      !script.id ||
+      typeof script.script !== 'string' ||
+      typeof script.language !== 'string' ||
+      !Array.isArray(script.unicodeScripts)
+    )
+      bad('Every catalog script needs an id, a script tag, a language and ranges.');
+    if (!DIRECTIONS.has(script.direction))
+      bad(`Catalog script ${script.id} has an unsupported direction.`);
+    if (seenScript.has(script.id)) bad(`Duplicate catalog script id ${script.id}.`);
+    seenScript.add(script.id);
+    for (const id of script.fontIds || [])
+      if (!seenFont.has(id)) bad(`Catalog script ${script.id} names unknown font ${id}.`);
   }
   const fonts = new Map(metadata.fonts.map((f) => [f.id, f]));
   const scripts = new Map(metadata.scripts.map((s) => [s.id, s]));
   const cache = new Map();
+  /** In-flight transfers by font id, so simultaneous misses share one download. */
+  const pending = new Map();
   const buffer = new hb.Buffer();
   const controller = new AbortController();
   let destroyed = false;
@@ -136,7 +171,15 @@ export function createFontProvider({
     return script;
   }
   function validateText(text, script) {
-    if (typeof text !== 'string' || !text.trim() || [...text].length > MAX_CODEPOINTS)
+    // Length first, in UTF-16 units, before anything spreads the string. A scalar is at
+    // most two units, so more than twice the limit cannot be under it, and rejecting
+    // there means an oversized input is never materialised as an array of scalars.
+    if (
+      typeof text !== 'string' ||
+      !text.trim() ||
+      text.length > MAX_CODEPOINTS * 2 ||
+      [...text].length > MAX_CODEPOINTS
+    )
       throw error('INVALID_TEXT', 'Enter 1–32 Unicode characters.');
     const allowed = [
       ...script.unicodeScripts.flatMap((name) => ranges.scripts[name] || []),
@@ -235,6 +278,43 @@ export function createFontProvider({
       },
     };
   }
+  /** The transfer itself, bound only to the shared controller for this font. */
+  async function fetchFont(record, id, linked) {
+    try {
+      const response = await fetchImpl(new URL(record.file, baseUrl).href, {
+        signal: linked.signal,
+      });
+      if (!response.ok)
+        throw error('FONT_LOAD', `The font could not be loaded (${response.status}).`);
+      const bytes = await readCapped(response);
+      if (bytes.length !== record.sizeBytes)
+        throw error('FONT_INTEGRITY', 'The font file has an unexpected byte length.');
+      const loaded = await makeFont(bytes, record, linked.signal);
+      cache.set(id, loaded);
+      while (cache.size > 4) cache.delete(cache.keys().next().value);
+      return loaded;
+    } catch (cause) {
+      // Abandoning a response without cancelling it leaves its body downloading with
+      // nothing able to stop it. A rejected status and an oversized content-length both
+      // throw before anything reads the stream, so the transfer would otherwise run to
+      // completion in the background. Aborting cancels the body on every failure.
+      linked.abort();
+      throw cause;
+    }
+  }
+
+  /**
+   * One transfer per font, however many callers want it at once.
+   *
+   * The cache was only written after a load finished, so simultaneous misses for the
+   * same id each downloaded, hashed and instantiated their own copy: eight callers
+   * meant eight downloads of the same bytes. Callers now join a shared transfer.
+   *
+   * Cancellation stays per caller. The shared transfer is aborted only when every
+   * caller waiting on it has gone, so one caller giving up cannot pull the bytes out
+   * from under the others, and a lone caller giving up still stops the download as it
+   * always did.
+   */
   async function load(id, signal) {
     alive(signal);
     if (cache.has(id)) {
@@ -245,51 +325,60 @@ export function createFontProvider({
     }
     const record = fonts.get(id);
     if (!record) throw error('UNKNOWN_FONT', 'Choose a catalog font.');
-    const linked = new AbortController();
-    const cancel = () => linked.abort();
-    signal?.addEventListener('abort', cancel, { once: true });
-    controller.signal.addEventListener('abort', cancel, { once: true });
-    try {
-      const response = await fetchImpl(new URL(record.file, baseUrl).href, {
-        signal: linked.signal,
+    let entry = pending.get(id);
+    if (!entry) {
+      const linked = new AbortController();
+      const onDestroy = () => linked.abort();
+      controller.signal.addEventListener('abort', onDestroy, { once: true });
+      entry = { linked, waiters: 0, promise: null };
+      entry.promise = fetchFont(record, id, linked).finally(() => {
+        pending.delete(id);
+        controller.signal.removeEventListener('abort', onDestroy);
       });
+      // A shared rejection with no waiter left would surface as an unhandled rejection;
+      // every real caller still sees it through its own await below.
+      entry.promise.catch(() => {});
+      pending.set(id, entry);
+    }
+    entry.waiters += 1;
+    let released = false;
+    const release = () => {
+      if (released) return;
+      released = true;
+      entry.waiters -= 1;
+      if (entry.waiters === 0) entry.linked.abort();
+    };
+    signal?.addEventListener('abort', release, { once: true });
+    try {
+      const loaded = await entry.promise;
       alive(signal);
-      if (!response.ok)
-        throw error('FONT_LOAD', `The font could not be loaded (${response.status}).`);
-      const bytes = await readCapped(response);
-      alive(signal);
-      if (bytes.length !== record.sizeBytes)
-        throw error('FONT_INTEGRITY', 'The font file has an unexpected byte length.');
-      const loaded = await makeFont(bytes, record, signal);
-      alive(signal);
-      cache.set(id, loaded);
-      while (cache.size > 4) cache.delete(cache.keys().next().value);
       return loaded;
-    } catch (cause) {
-      // Abandoning a response without cancelling it leaves its body downloading with
-      // nothing able to stop it. A rejected status and an oversized content-length both
-      // throw before anything reads the stream, and the listener removal below then
-      // detaches this request from destroy(), so the transfer ran to completion in the
-      // background. Aborting the linked controller cancels the body on every failure.
-      linked.abort();
-      throw cause;
     } finally {
-      signal?.removeEventListener('abort', cancel);
-      controller.signal.removeEventListener('abort', cancel);
+      signal?.removeEventListener('abort', release);
+      release();
     }
   }
   function shapeLoaded(text, script, loaded, signal) {
     alive(signal);
     const { font, face, identity } = loaded;
+    // Which characters the cmap lacks, recorded rather than rejected. HarfBuzz can still
+    // render one by canonical decomposition: a font carrying `e` and a combining acute
+    // but no precomposed `é` shapes `é` correctly, and asking the cmap alone refused it
+    // while accepting the identical `e` followed by the combining mark. The shaped
+    // output decides, and this list only supplies the precise codepoint for the message.
+    const uncovered = [];
     for (const char of text) {
       const cp = char.codePointAt(0);
       if (cp === 0x200c || cp === 0x200d) continue;
-      if (!font.nominalGlyph(cp))
-        throw error(
-          'MISSING_GLYPH',
-          `This font does not contain U+${cp.toString(16).toUpperCase().padStart(4, '0')}.`,
-        );
+      if (!font.nominalGlyph(cp)) uncovered.push(cp);
     }
+    const missing = () =>
+      error(
+        'MISSING_GLYPH',
+        uncovered.length
+          ? `This font does not contain U+${uncovered[0].toString(16).toUpperCase().padStart(4, '0')}.`
+          : 'The shaped text contains a missing glyph.',
+      );
     const rotate = script.writingMode === 'vertical-lr';
     const direction = rotate ? 'ttb' : script.direction;
     buffer.reset();
@@ -314,8 +403,7 @@ export function createFontProvider({
         maxY = -Infinity,
         pathChars = 0;
       const glyphs = shaped.map((g) => {
-        if (!g.codepoint)
-          throw error('MISSING_GLYPH', 'The shaped text contains a missing glyph.');
+        if (!g.codepoint) throw missing();
         const rawX = penX + g.xOffset,
           rawY = penY + g.yOffset;
         const x = rotate ? rawY : rawX,
