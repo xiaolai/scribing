@@ -862,7 +862,11 @@ export function hangulRegions({ vowel, finals, ink, width, box, cut }) {
   if (HANGUL_VOWEL_VERTICAL.has(vowel))
     return withFinal(verticalLayout(box, w, h, finals, cut), finals, cut);
   if (HANGUL_VOWEL_HORIZONTAL.has(vowel))
-    return withFinal(horizontalLayout(box, w, h, finals, ink, width, cut), finals, cut);
+    return withFinal(
+      horizontalLayout(box, w, h, vowel, finals, ink, width, cut),
+      finals,
+      cut,
+    );
   // A wrapping vowel such as ㅘ occupies an L-shape around the initial. Each region is
   // masked out of the ink as a rectangle and fitted on its own, and no rectangle can
   // separate those two, so these are declined and fall back to a generated sequence
@@ -910,6 +914,9 @@ function verticalLayout(box, w, h, finals, cut) {
   };
 }
 
+/** Horizontal vowels whose stem rises above the bar, toward the initial. */
+const HANGUL_VOWEL_STEM_UP = new Set([...'ㅗㅛ']);
+
 /**
  * Horizontal vowel: locate the vowel's wide bar first, then cut above and below it.
  *
@@ -919,12 +926,32 @@ function verticalLayout(box, w, h, finals, cut) {
  * The bar is the widest run of ink rather than a gap, so it is found by span, not by
  * emptiness, or the search puts it inside the initial's region and leaves the vowel
  * with nothing.
+ *
+ * That whole-box search is what this says and, until now, not what it did: the window
+ * was tuned when only 가, 한 and 글 were supported, and all three put their bar inside
+ * it. Without a batchim the vowel drops to the foot of the block, so for ㅗ, ㅛ and ㅡ
+ * the bar sits at about 0.91 of the ink box and the window ended at 0.56. The widest
+ * row it could see then belonged to the INITIAL, and a round initial clears the span
+ * gate below, so the function returned a confident pair of rectangles that cut the
+ * initial in half. Fitting a circle's top third then failed on distance and the
+ * syllable fell through to generation with the cause invisible.
  */
-function horizontalLayout(box, w, h, finals, ink, width, cut) {
+function horizontalLayout(box, w, h, vowel, finals, ink, width, cut) {
   const [left, top, right, bottom] = box;
+  // ㅗ and ㅛ carry their stem above the bar. With a batchim the block compresses and
+  // that stem still clears the initial, but without one the bar drops to the foot and
+  // the stem lengthens to meet it, reaching up into the initial's own band: measured on
+  // Noto Sans CJK KR, 고's ㄱ spans 0.00-0.70 while ㅗ's stem spans 0.45-0.93, so no
+  // horizontal line separates them and no pair of rectangles can hold them apart.
+  // Declining is the same answer this function already gives a wrapping vowel, and for
+  // the same reason. 오 and 요 do separate in this face, because a round initial ends
+  // above the stem, but telling those apart from 고 and 교 needs thresholds on row ink
+  // and row span that only one face's masks are available to justify, and thresholds
+  // fitted to one face are what put the window at 0.56 in the first place.
+  if (!finals.length && HANGUL_VOWEL_STEM_UP.has(vowel)) return null;
   let band = -1,
     span = 0;
-  for (let y = Math.round(top + h * 0.3); y <= Math.round(top + h * 0.56); y++) {
+  for (let y = top; y <= bottom; y++) {
     let a = width,
       b = -1;
     for (let x = left; x <= right; x++)

@@ -6,6 +6,35 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 
 Nothing yet.
 
+## [4.2.0] - 2026-09-12
+
+Supersedes 4.1.0, which was tagged but never published.
+
+### Fixed
+
+- **A batchim-less Korean syllable with ㅗ, ㅛ or ㅡ was cut in the wrong place.**
+  Reported from the native port, which follows `hangulRegions` line for line, and
+  reproduced here against its own rasters.
+
+  `horizontalLayout` looked for the vowel's wide bar only between 0.3 and 0.56 of the
+  ink box. That window was fixed when 가, 한 and 글 were the only supported syllables,
+  and all three put their bar inside it; generalising to all 11,172 added a docstring
+  saying the bar is found across the whole box but left the window alone. Without a
+  batchim the vowel drops to the foot of the block, so for those three vowels the bar
+  sits at about 0.91 and the window could not see it. The widest row it could see
+  belonged to the **initial**, and a round initial clears the span gate, so the
+  function returned a confident pair of rectangles splitting the initial in half.
+
+  Across all 95 batchim-less syllables with a horizontal vowel in Noto Sans CJK KR:
+  ㅜ, ㅠ and ㅡ went from 21 fitted entirely and 30 generated to 51 fitted and none
+  generated. ㅗ and ㅛ went from 9 syllables animating with a boundary drawn through
+  the middle of the initial to 38 declining explicitly, which is the answer this
+  function already gives a wrapping vowel and for the same reason: their stem rises
+  above the bar and, once the bar drops, lengthens into the initial's own band, so no
+  horizontal line separates them. 오 and 요 do separate in this face, but telling them
+  apart from 고 and 교 needs thresholds that one face's rasters cannot justify, and
+  thresholds fitted to one face are what put the window at 0.56 to begin with.
+
 ## [4.1.0] - 2026-09-12
 
 ### Added
