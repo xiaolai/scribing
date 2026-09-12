@@ -9,6 +9,7 @@ import {
   dilateCoverage,
   holeCount,
   nearestSkeletonMap,
+  repairSourceJunctions,
 } from '../../extras/fonts/skeleton.mjs';
 import yieldWork from '../../extras/fonts/yield-work.mjs';
 const mask = (rows) => Uint8Array.from(rows.join(''), (c) => (c === '#' ? 1 : 0));
@@ -150,10 +151,12 @@ test('joining stays cheap when no trail can join', { timeout: 3000 }, () => {
 /**
  * An abort raised while a pass is suspended in its own final yield.
  *
- * Every loop here checks the signal before yielding and never after, so the last yield
- * of a pass had nothing behind it: the remaining work ran and the function resolved
- * successfully with the caller already cancelled. thinInk and nearestSkeletonMap always
- * checked before returning; these three did not.
+ * Every loop here used to check the signal before yielding and never after, so the last
+ * yield of a pass had nothing behind it: the remaining work ran and the function
+ * resolved successfully with the caller already cancelled. thinInk and nearestSkeletonMap
+ * always checked before returning; these three did not. Checking after the yield is now
+ * the rule everywhere in this module, because the flag cannot change while a synchronous
+ * run holds the loop, only while it is handed back.
  *
  * yieldWork is a MessageChannel post, and those are delivered in order, so awaiting one
  * tick here lands the abort inside a chosen yield rather than an arbitrary one.
@@ -275,5 +278,58 @@ test('a Buffer input is copied, not aliased', () => {
   assert.equal(
     out.reduce((n, v) => n + v, 0),
     9,
+  );
+});
+
+test('a budget exit does not swallow an abort raised during the yield', async () => {
+  // The work counter is tested at the top of the loop, before any signal check, so a
+  // pass that hit its ceiling on the iteration after a yield returned as a success
+  // while the caller had already cancelled. Nothing downstream could tell that apart
+  // from a repair that genuinely found nothing to do.
+  const width = 64,
+    height = 8;
+  const ink = new Uint8Array(width * height).fill(1);
+  const assignment = {
+    owners: new Uint16Array(width * height).fill(1),
+    progress: new Uint16Array(width * height),
+  };
+  const trails = [
+    Array.from({ length: 400 }, (_, i) => [i % width, 2]),
+    Array.from({ length: 400 }, (_, i) => [i % width, 5]),
+  ];
+  const controller = new AbortController();
+  const pass = repairSourceJunctions(
+    assignment,
+    ink,
+    trails,
+    [{ strokeId: 'a' }, { strokeId: 'b' }],
+    width,
+    height,
+    0,
+    controller.signal,
+    32768,
+  );
+  // Abort synchronously, while the pass is suspended in the yield it takes at exactly
+  // the budget ceiling. On resuming, the old code tested the work counter first, found
+  // it over, and returned a success.
+  controller.abort();
+  await assert.rejects(() => pass, { name: 'AbortError' });
+});
+
+test('a seed outside the coverage mask never receives ownership', () => {
+  // Ownership was granted to whichever skeleton cell was nearest, without asking the
+  // coverage mask whether that cell counts, so a caller could be handed an owner for a
+  // cell it does not consider covered.
+  const size = 3;
+  const coverage = new Uint8Array(size * size); // nothing covered at all
+  const skeleton = Uint8Array.from([0, 0, 0, 0, 1, 0, 0, 0, 0]);
+  return assignOwnership(coverage, skeleton, [[[1, 1]]], size, size, 0).then(
+    ({ owners }) => {
+      assert.equal(
+        owners.reduce((n, v) => n + v, 0),
+        0,
+        'no cell outside coverage may be owned',
+      );
+    },
   );
 });

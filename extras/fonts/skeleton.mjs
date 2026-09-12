@@ -100,8 +100,8 @@ async function thinPadded(input, width, height, signal) {
       remove.length = 0;
       for (let y = 1; y < height - 1; y++) {
         if (y % Math.max(1, Math.floor(32768 / width)) === 0) {
-          stop(signal);
           await yieldWork();
+          stop(signal);
         }
         for (let x = 1; x < width - 1; x++) {
           const i = y * width + x;
@@ -138,8 +138,8 @@ async function thinPadded(input, width, height, signal) {
       }
     }
     if (++iteration % 4 === 0) {
-      stop(signal);
       await yieldWork();
+      stop(signal);
     }
   }
   // Parallel deletion can consume a compact 2×2 component. Preserve every original
@@ -157,8 +157,8 @@ async function thinPadded(input, width, height, signal) {
     seen[start] = 1;
     while (head < tail) {
       if (head % 32768 === 0) {
-        stop(signal);
         await yieldWork();
+        stop(signal);
       }
       const i = queue[head++],
         x = i % width,
@@ -445,8 +445,8 @@ export async function nearestSkeletonMap(skeleton, width, height, signal) {
     }
   for (let head = 0; head < tail; head++) {
     if (head % 32768 === 0) {
-      stop(signal);
       await yieldWork();
+      stop(signal);
     }
     const i = queue[head],
       x = i % width,
@@ -582,8 +582,10 @@ export async function assignOwnership(
   // diagonal, and an unvalidated point made `steps` non-finite: the loop below then ran
   // forever, synchronously, with no checkpoint able to interrupt it.
   const maxSteps = 2 * (width + height);
-  let tail = 0;
-  trails.forEach((trail, index) => {
+  let tail = 0,
+    sampled = 0;
+  for (let index = 0; index < trails.length; index++) {
+    const trail = trails[index];
     const lengths = [0];
     for (let i = 1; i < trail.length; i++)
       lengths.push(lengths[i - 1] + distance(trail[i - 1], trail[i]));
@@ -600,19 +602,28 @@ export async function assignOwnership(
           x = Math.max(0, Math.min(width - 1, Math.round(a[0] + (b[0] - a[0]) * t))),
           y = Math.max(0, Math.min(height - 1, Math.round(a[1] + (b[1] - a[1]) * t))),
           seed = nearest[y * width + x];
-        if (seed < 0 || owners[seed]) continue;
+        // The nearest skeleton cell can sit outside the coverage mask, and taking it
+        // anyway produced an owner for a cell the caller does not consider covered.
+        if (seed < 0 || owners[seed] || !coverage[seed]) continue;
         owners[seed] = startIndex + index + 1;
         progress[seed] = Math.round(
           ((segment ? lengths[segment - 1] + length * t : 0) / total) * 65535,
         );
         queue[tail++] = seed;
       }
+      // Sampling is bounded per segment but not in total, so one long trail could hold
+      // the loop for half a second with nothing able to interrupt it. Paced on samples
+      // rather than trails, because a single trail was the case that hurt.
+      if (++sampled % 4096 === 0) {
+        await yieldWork();
+        stop(signal);
+      }
     }
-  });
+  }
   for (let head = 0; head < tail; head++) {
     if (head % 32768 === 0) {
-      stop(signal);
       await yieldWork();
+      stop(signal);
     }
     const i = queue[head],
       x = i % width,
@@ -669,8 +680,8 @@ export async function componentTrails(ink, trails, width, height, signal) {
     queue[0] = start;
     while (head < tail) {
       if (head % 32768 === 0) {
-        stop(signal);
         await yieldWork();
+        stop(signal);
       }
       const i = queue[head++],
         x = i % width,
@@ -777,8 +788,8 @@ export async function normalizeOwnership(
   mins.fill(Infinity);
   for (let i = 0; i < owners.length; i++) {
     if (i % 65536 === 0) {
-      stop(signal);
       await yieldWork();
+      stop(signal);
     }
     if (!owners[i]) continue;
     const k = owners[i] - startIndex - 1;
@@ -798,8 +809,8 @@ export async function normalizeOwnership(
   for (let k = 0; k < trails.length; k++) if (used[k]) mapping[k] = startIndex + ++n;
   for (let i = 0; i < owners.length; i++) {
     if (i % 65536 === 0) {
-      stop(signal);
       await yieldWork();
+      stop(signal);
     }
     if (!owners[i]) continue;
     const k = owners[i] - startIndex - 1,
@@ -977,8 +988,8 @@ export async function repairSourceJunctions(
         for (let j = 0; j < b.points.length - 1; j++) {
           if (++work > maxWork) return;
           if (work % 32768 === 0) {
-            stop(signal);
             await yieldWork();
+            stop(signal);
           }
           const p = a.points[i],
             q = a.points[i + 1],
@@ -1079,8 +1090,8 @@ export async function repairSourceJunctions(
           ) {
             if (++work > maxWork) return;
             if (work % 32768 === 0) {
-              stop(signal);
               await yieldWork();
+              stop(signal);
             }
             const cell = y * width + x;
             if (assignment.owners[cell] !== startIndex + later + 1) continue;
@@ -1088,8 +1099,8 @@ export async function repairSourceJunctions(
             for (let n = 0; n < a.points.length - 1; n++) {
               if (++work > maxWork) return;
               if (work % 32768 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const p = projection([x + 0.5, y + 0.5], a.points[n], a.points[n + 1]);
               if (p && (!nearest || p.distance < nearest.distance))
@@ -1147,8 +1158,8 @@ export async function repairSourceJunctions(
             ) {
               if (++work > maxWork) return;
               if (work % 32768 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const cell = y * width + x;
               if (assignment.owners[cell] !== startIndex + later + 1 || !ink[cell])
@@ -1225,8 +1236,8 @@ export async function repairSourceJunctions(
             for (let k = 0; k <= steps; k++) {
               if (++work > maxWork) return;
               if (work % 32768 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const t = k / steps,
                 p = [
@@ -1235,10 +1246,10 @@ export async function repairSourceJunctions(
                 ];
               let best;
               for (const seg of segments) {
-                work++;
+                if (++work > maxWork) return;
                 if (++projectionWork % 8192 === 0) {
-                  stop(signal);
                   await yieldWork();
+                  stop(signal);
                 }
                 const dx = (seg.b[0] - seg.a[0]) / seg.length,
                   dy = (seg.b[1] - seg.a[1]) / seg.length;
@@ -1297,18 +1308,18 @@ export async function repairSourceJunctions(
             ) {
               if (++work > maxWork) return;
               if (work % 32768 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const cell = y * width + x;
               if (!ink[cell] || assignment.owners[cell] !== startIndex + later + 1)
                 continue;
               let nearest;
               for (let n = 0; n < profile.length; n++) {
-                work++;
+                if (++work > maxWork) return;
                 if (++projectionWork % 8192 === 0) {
-                  stop(signal);
                   await yieldWork();
+                  stop(signal);
                 }
                 const seg = profile[n],
                   p = projection([x + 0.5, y + 0.5], seg.p, seg.q);
@@ -1438,10 +1449,10 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 1, Math.ceil(x2));
               x++
             ) {
-              work++;
+              if (++work > maxWork) return;
               if (++projectionWork % 8192 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const cell = y * width + x;
               if (
@@ -1452,10 +1463,10 @@ export async function repairSourceJunctions(
                 continue;
               let best;
               for (let n = 1; n < B.length; n++) {
-                work++;
+                if (++work > maxWork) return;
                 if (++projectionWork % 8192 === 0) {
-                  stop(signal);
                   await yieldWork();
+                  stop(signal);
                 }
                 if (BArc[n] < matched || BArc[n - 1] > matched + 2 * radius) continue;
                 const p = projection([x + 0.5, y + 0.5], B[n - 1], B[n]);
@@ -1482,10 +1493,10 @@ export async function repairSourceJunctions(
           const within = async (x, y) => {
             let best;
             for (let n = 0; n < profile.length; n++) {
-              work++;
+              if (++work > maxWork) return;
               if (++projectionWork % 8192 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const seg = profile[n],
                 p = projection([x, y], seg.p, seg.q);
@@ -1522,10 +1533,10 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 2, Math.ceil(x2));
               x++
             ) {
-              work++;
+              if (++work > maxWork) return;
               if (++projectionWork % 8192 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const cell = y * width + x;
               if (
@@ -1576,10 +1587,10 @@ export async function repairSourceJunctions(
                 }
                 let best;
                 for (let n = 1; n < B.length; n++) {
-                  work++;
+                  if (++work > maxWork) return;
                   if (++projectionWork % 8192 === 0) {
-                    stop(signal);
                     await yieldWork();
+                    stop(signal);
                   }
                   const p = projection([px, py], B[n - 1], B[n]);
                   if (p && (!best || p.distance < best.distance)) best = p;
@@ -1706,8 +1717,8 @@ export async function repairSourceJunctions(
           ) {
             if (++work > maxWork) return;
             if (work % 32768 === 0) {
-              stop(signal);
               await yieldWork();
+              stop(signal);
             }
             const cell = y * width + x;
             if (
@@ -1726,10 +1737,10 @@ export async function repairSourceJunctions(
               continue;
             let nearest;
             for (let n = 0; n < b.points.length - 1; n++) {
-              work++;
+              if (++work > maxWork) return;
               if (++projectionWork % 8192 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               if (
                 b.arc[n] > crossing.other + 2 * radius ||
@@ -1852,10 +1863,10 @@ export async function repairSourceJunctions(
               x <= Math.min(width - 1, Math.ceil(endpointA[0] + radius));
               x++
             ) {
-              work++;
+              if (++work > maxWork) return;
               if (++projectionWork % 8192 === 0) {
-                stop(signal);
                 await yieldWork();
+                stop(signal);
               }
               const cell = y * width + x;
               if (
@@ -1891,6 +1902,11 @@ export async function repairSourceJunctions(
                 returns.set(cell, endB ? 65535 : 0);
             }
         }
+      // The budget is documented as abandoning the pair in progress when it runs out,
+      // so a pair whose analysis overran it must not then commit. Several loops above
+      // only counted their work without testing it, which is how a pair could reach
+      // this point already over the ceiling and change cells anyway.
+      if (work > maxWork) return;
       // A local cosmetic repair must never erase a supplied source stroke.
       if (
         counts[later] - updates.size + returns.size > 0 &&

@@ -34,8 +34,8 @@ async function progressGradients(
 
   for (let i = 0; i < owners.length; i++) {
     if (i % 32768 === 0) {
-      checkpoint();
       await yieldWork();
+      checkpoint();
     }
     if (!owners[i]) continue;
     const { xx, xy, yy, xp, yp } = neighbourMoments(tile, i, cutoffs[owners[i]]);
@@ -176,8 +176,8 @@ async function cornerProgress(
 
   for (let i = 0; i < owners.length; i++) {
     if (i % 32768 === 0) {
-      checkpoint();
       await yieldWork();
+      checkpoint();
     }
     if (!owners[i]) continue;
     const x = i % width,
@@ -241,8 +241,8 @@ async function normalizeCorners(
   }
   for (let i = 0; i < owners.length; i++) {
     if (i % 65536 === 0) {
-      checkpoint();
       await yieldWork();
+      checkpoint();
     }
     if (!owners[i]) continue;
     const min = minima[owners[i]],
@@ -271,8 +271,8 @@ async function completedOutline(tile: FontAnimationTile, checkpoint: () => void)
     // A large guide can have hundreds of thousands of cells here, and this used to run
     // in one uninterruptible burst with no way to observe a superseding request.
     if (y % 256 === 0) {
-      checkpoint();
       await yieldWork();
+      checkpoint();
     }
     let start = -1;
     for (let x = 0; x <= width; x++) {
