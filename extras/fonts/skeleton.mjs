@@ -10,7 +10,15 @@ import yieldWork from './yield-work.mjs';
  * form throws RangeError past roughly 125,000 entries, and source records reach the
  * validator's 1,000,000-point ceiling. NaN propagates as the spread form does.
  */
-const minOf = (values) => {
+/**
+ * Smallest and largest of an array-like, NaN-propagating, without spreading it.
+ *
+ * Exported so animation.mjs can use these rather than keep its own copy. `Math.min(...)`
+ * is not a substitute: it throws RangeError once the array passes the engine's argument
+ * limit, which the point budgets here permit. The core has its own copy in src/utils.ts
+ * on purpose, because extras/fonts must stay importable without the core bundle.
+ */
+export const minOf = (values) => {
   let best = Infinity;
   for (let i = 0; i < values.length; i += 1) {
     const value = values[i];
@@ -19,7 +27,7 @@ const minOf = (values) => {
   }
   return best;
 };
-const maxOf = (values) => {
+export const maxOf = (values) => {
   let best = -Infinity;
   for (let i = 0; i < values.length; i += 1) {
     const value = values[i];

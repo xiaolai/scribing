@@ -158,3 +158,23 @@ for (const kind of ['duplicate', 'omitted'])
       });
     await assert.rejects(loader(input), error('SCHEMA'));
   });
+
+test('a record handed out cannot alter what the next caller receives', async () => {
+  // Records came straight from the parsed cache, so a caller that modified one changed
+  // the next caller's copy with no fetch and no integrity check in between.
+  const f = fixture();
+  const loader = createMotorSourceLoader({
+    baseUrl: 'http://localhost/',
+    fetch: async (url) =>
+      new Response(
+        url.pathname.endsWith('index.json') ? JSON.stringify(f.index) : f.bytes,
+      ),
+  });
+  const first = await loader(input);
+  const before = first.unit.motorStrokes[0].points.length;
+  assert.throws(() => {
+    first.unit.motorStrokes[0].points.push([0, 0]);
+  }, TypeError);
+  const second = await loader(input);
+  assert.equal(second.unit.motorStrokes[0].points.length, before);
+});

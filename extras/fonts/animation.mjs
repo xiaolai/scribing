@@ -12,6 +12,8 @@ import {
   componentTrails,
   normalizeOwnership,
   repairSourceJunctions,
+  minOf,
+  maxOf,
 } from './skeleton.mjs';
 const MAX_CELLS = 2097152,
   MAX_STROKES = 8192,
@@ -29,24 +31,6 @@ import pause from './yield-work.mjs';
  * form throws RangeError past roughly 125,000 entries, and source records reach the
  * validator's 1,000,000-point ceiling. NaN propagates as the spread form does.
  */
-const minOf = (values) => {
-  let best = Infinity;
-  for (let i = 0; i < values.length; i += 1) {
-    const value = values[i];
-    if (Number.isNaN(value)) return NaN;
-    if (value < best) best = value;
-  }
-  return best;
-};
-const maxOf = (values) => {
-  let best = -Infinity;
-  for (let i = 0; i < values.length; i += 1) {
-    const value = values[i];
-    if (Number.isNaN(value)) return NaN;
-    if (value > best) best = value;
-  }
-  return best;
-};
 
 export function fontShapeKey(shape) {
   let hash = 2166136261;
@@ -150,23 +134,6 @@ function validSourceRecord(record) {
 const MAX_INDEX_BYTES = 4 * 1024 * 1024;
 
 /**
- * Read a response body under a hard byte cap.
- *
- * `arrayBuffer()` buffers everything that arrives and only then hands it back, so a
- * response far larger than expected was already in memory by the time its length was
- * compared. Streaming stops at the cap instead.
- */
-
-/**
- * Which motor group, if any, holds recorded stroke data for a script.
- *
- * Exported because scripts/fonts/check-assets.mjs asserts the catalog's stroke-order
- * claims against it. That check used to repeat this selection instead, which cannot
- * detect the divergence it exists to prevent: changing the policy here alone left the
- * copy agreeing with the catalog and the gate green, while the loader no longer looked
- * up the text the catalog advertised.
- */
-/**
  * The record the loader would build for one unit, or the reason it would refuse it.
  *
  * Exported because scripts/fonts/check-assets.mjs verifies the shipped motor inventories
@@ -174,9 +141,26 @@ const MAX_INDEX_BYTES = 4 * 1024 * 1024;
  * loader actually enforces, so it could bless data the runtime then rejected. Mirroring
  * the rules there would have been a second copy able only to agree with itself.
  */
+/**
+ * Freeze a record before it leaves the loader.
+ *
+ * Records are handed out straight from the parsed cache: for every group but Chinese
+ * the cached object itself is returned, and the Chinese wrapper still points at the
+ * cached coordinate arrays. A caller that modified one changed what the next caller
+ * received, with no fetch and no integrity check in between. Freezing what is returned
+ * makes the cache immutable one glyph at a time, which costs a few dozen small arrays
+ * rather than walking the fourteen megabytes of the Japanese group up front.
+ */
+function deepFreeze(value) {
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) return value;
+  Object.freeze(value);
+  for (const key of Object.keys(value)) deepFreeze(value[key]);
+  return value;
+}
+
 export function motorRecordFor(group, text, value) {
   if (group !== 'chinese')
-    return validSourceRecord(value) ? { record: value } : { reason: 'unit' };
+    return validSourceRecord(value) ? { record: deepFreeze(value) } : { reason: 'unit' };
   if (
     !Array.isArray(value) ||
     !value.length ||
@@ -200,9 +184,18 @@ export function motorRecordFor(group, text, value) {
       plans: [{ id: 'source', steps: value.map((_, i) => ({ strokeId: `s${i + 1}` })) }],
     },
   };
-  return validSourceRecord(record) ? { record } : { reason: 'unit' };
+  return validSourceRecord(record) ? { record: deepFreeze(record) } : { reason: 'unit' };
 }
 
+/**
+ * Which motor group, if any, holds recorded stroke data for a script.
+ *
+ * Exported because scripts/fonts/check-assets.mjs asserts the catalog's stroke-order
+ * claims against it. That check used to repeat this selection instead, which cannot
+ * detect the divergence it exists to prevent: changing the policy here alone left the
+ * copy agreeing with the catalog and the gate green, while the loader no longer looked
+ * up the text the catalog advertised.
+ */
 export function motorGroupFor({ script, language }) {
   if (script === 'Latn') return 'english';
   if (script === 'Hang') return 'korean';
@@ -221,6 +214,9 @@ export function createMotorSourceLoader({
     stop(signal);
     const group = motorGroupFor({ script, language });
     if (!group) return null;
+    // What this particular call installed, so its failure path can discard that and
+    // nothing else. Both stay undefined when the call found the state already there.
+    let mine, loadedHere;
     const error = (code, message, cause) =>
       new MotorSourceError(code, group, message, cause);
     const request = async (file) => {
@@ -276,6 +272,7 @@ export function createMotorSourceLoader({
         )
           throw error('SCHEMA', 'The stroke source index has an invalid schema.');
         index = candidate;
+        mine = candidate;
       }
       stop(signal);
       if (!cache.has(group)) {
@@ -323,10 +320,11 @@ export function createMotorSourceLoader({
         let hash;
         try {
           hash = await digest(bytes);
-        } catch {
+        } catch (cause) {
           throw error(
             'CRYPTO',
             `The ${group} stroke source integrity could not be checked.`,
+            cause,
           );
         }
         stop(signal);
@@ -344,6 +342,7 @@ export function createMotorSourceLoader({
         )
           throw error('SCHEMA', `The ${group} stroke source has an invalid schema.`);
         cache.set(group, data.units);
+        loadedHere = data.units;
       }
       const units = cache.get(group);
       if (!Object.prototype.hasOwnProperty.call(units, text)) return null;
@@ -354,11 +353,14 @@ export function createMotorSourceLoader({
         throw error('SCHEMA', `The ${group} stroke source has an invalid writing unit.`);
       return outcome.record;
     } catch (e) {
-      index = undefined;
-      cache.delete(group);
+      // Only discard what this request itself put there. Clearing unconditionally meant
+      // a request that failed or was cancelled threw away an index and a group another
+      // request had already verified, and the next caller paid for both again.
+      if (index === mine) index = undefined;
+      if (cache.get(group) === loadedHere) cache.delete(group);
       stop(signal);
       if (e instanceof MotorSourceError) throw e;
-      throw error('SCHEMA', `The ${group} stroke source could not be validated.`);
+      throw error('SCHEMA', `The ${group} stroke source could not be validated.`, e);
     }
   };
 }
@@ -465,6 +467,31 @@ export function resample(points, step = 2, budget = Infinity) {
   return out;
 }
 /**
+ * The tightest box containing every set cell, or null when there is nothing to box.
+ *
+ * Both callers wrote this scan out, including the degenerate-box rejection, and the two
+ * copies had already drifted in the order they declared their accumulators.
+ *
+ * @returns {[number, number, number, number] | null} `[left, top, right, bottom]`
+ */
+function inkBounds(ink, width, height) {
+  let left = width,
+    top = height,
+    right = 0,
+    bottom = 0;
+  for (let i = 0; i < ink.length; i++)
+    if (ink[i]) {
+      const x = i % width,
+        y = Math.floor(i / width);
+      if (x < left) left = x;
+      if (x > right) right = x;
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+    }
+  return right <= left || bottom <= top ? null : [left, top, right, bottom];
+}
+
+/**
  * Draw the glyph's own skeleton in the model's order, for glyphs a fit cannot reach.
  *
  * Returns the same shape `registerSource` does, so the caller's tiering stays a single
@@ -485,18 +512,9 @@ export function orderGlyph(record, skeleton, ink, width, height) {
   if (model.some((m) => !m)) return null;
   const trails = graphTrails(skeleton, width, height);
   if (!trails.length) return null;
-  let left = width,
-    top = height,
-    right = 0,
-    bottom = 0;
-  for (let i = 0; i < ink.length; i++)
-    if (ink[i]) {
-      left = Math.min(left, i % width);
-      right = Math.max(right, i % width);
-      top = Math.min(top, Math.floor(i / width));
-      bottom = Math.max(bottom, Math.floor(i / width));
-    }
-  if (right <= left || bottom <= top) return null;
+  const bounds = inkBounds(ink, width, height);
+  if (!bounds) return null;
+  const [left, top, right, bottom] = bounds;
   const res = orderByModel(
     trails,
     model,
@@ -609,6 +627,12 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
   if (!trails) return UNTESTED_DECLINED;
   for (const scaleX of [1, 0.95, 0.9, 0.85, 0.8])
     for (const offsetX of [0, -0.025, 0.025]) {
+      // Each candidate projects and sorts every sample, and fifteen of them ran with
+      // nothing in between, so an abort raised while a large record was being fitted
+      // could not be seen until the whole search finished.
+      stop(signal);
+      await pause();
+      stop(signal);
       const candidate = project(scaleX, offsetX);
       if (!candidate) return UNTESTED_DECLINED;
       const d = [];
@@ -962,18 +986,9 @@ async function registerKoreanPilot(
   const decomposed = decomposeHangul(text);
   if (!decomposed) return null;
   const { letters, vowel, finals } = decomposed;
-  let left = width,
-    right = 0,
-    top = height,
-    bottom = 0;
-  for (let i = 0; i < ink.length; i++)
-    if (ink[i]) {
-      left = Math.min(left, i % width);
-      right = Math.max(right, i % width);
-      top = Math.min(top, Math.floor(i / width));
-      bottom = Math.max(bottom, Math.floor(i / width));
-    }
-  if (right <= left || bottom <= top) return null;
+  const bounds = inkBounds(ink, width, height);
+  if (!bounds) return null;
+  const [left, top, right, bottom] = bounds;
   const cut = (axis, lo, hi, otherLo, otherHi) => {
     let best = -1,
       score = Infinity;
