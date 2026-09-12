@@ -71,14 +71,17 @@ async function readStrokePoints(
   return points;
 }
 
+/** Both source-backed provenances must name the unit they came from; generated must not. */
+const FROM_SOURCE = ['source-adapted', 'source-ordered'];
+
 function readStrokeSource(value: unknown, provenance: unknown) {
   if (value === undefined) {
-    if (provenance === 'source-adapted') fail();
+    if (FROM_SOURCE.indexOf(provenance as string) >= 0) fail();
     return undefined;
   }
   const source = object(value, ['packId', 'unitId', 'planId', 'strokeId']);
   if (!Object.keys(source).every((key) => isLabel(source[key]))) fail();
-  if (provenance !== 'source-adapted') fail();
+  if (FROM_SOURCE.indexOf(provenance as string) < 0) fail();
   return Object.freeze(source);
 }
 
@@ -104,7 +107,9 @@ async function readStrokes(value: unknown, checkpoint: () => void): Promise<Stro
       !isLabel(stroke.id) ||
       ids.has(stroke.id) ||
       ['curve', 'dot'].indexOf(stroke.kind as string) < 0 ||
-      ['source-adapted', 'generated'].indexOf(stroke.provenance as string) < 0
+      ['source-adapted', 'source-ordered', 'generated'].indexOf(
+        stroke.provenance as string,
+      ) < 0
     ) {
       fail();
     }
@@ -282,7 +287,9 @@ export default async function validateAnimation(
     data.schemaVersion !== 1 ||
     typeof data.shapeKey !== 'string' ||
     data.shapeKey !== shapeKey ||
-    ['source-adapted', 'generated', 'mixed'].indexOf(data.provenance as string) < 0
+    ['source-adapted', 'source-ordered', 'generated', 'mixed'].indexOf(
+      data.provenance as string,
+    ) < 0
   ) {
     fail();
   }

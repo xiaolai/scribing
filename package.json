@@ -101,7 +101,7 @@
     "check-multilingual-demo": "node scripts/check-multilingual-demo.cjs",
     "fetch-fonts": "node scripts/fonts/fetch-assets.mjs --download",
     "check-fonts": "node scripts/fonts/check-assets.mjs",
-    "test-fonts": "node --test scripts/fonts/provider.test.mjs scripts/fonts/skeleton.test.mjs scripts/fonts/source-loader.test.mjs scripts/fonts/junction.test.mjs scripts/fonts/progress.test.mjs scripts/fonts/animation.test.mjs",
+    "test-fonts": "node --test scripts/fonts/provider.test.mjs scripts/fonts/skeleton.test.mjs scripts/fonts/source-loader.test.mjs scripts/fonts/junction.test.mjs scripts/fonts/progress.test.mjs scripts/fonts/animation.test.mjs scripts/fonts/stroke-order.test.mjs",
     "check-font-demo": "node scripts/check-font-demo.cjs",
     "check-font-animation": "node scripts/check-font-animation.cjs",
     "check-font-contours": "node scripts/fonts/check-contours.cjs && node scripts/fonts/check-endpoints.cjs",

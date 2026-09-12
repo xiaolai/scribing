@@ -1,6 +1,7 @@
 import { projectCurveProgress } from './progress.mjs';
 import pathGeometry, { contourProbes } from './path-geometry.mjs';
 import { readCapped } from './capped-read.mjs';
+import { orderByModel } from './stroke-order.mjs';
 import {
   thinInk,
   graphTrails,
@@ -463,11 +464,75 @@ export function resample(points, step = 2, budget = Infinity) {
   }
   return out;
 }
+/**
+ * Draw the glyph's own skeleton in the model's order, for glyphs a fit cannot reach.
+ *
+ * Returns the same shape `registerSource` does, so the caller's tiering stays a single
+ * expression. Every stroke names the unit that ordered it, which is what distinguishes
+ * `source-ordered` from `generated` downstream.
+ */
+export function orderGlyph(record, skeleton, ink, width, height) {
+  const unit = record?.unit;
+  if (!unit?.motorStrokes?.length) return null;
+  const plan = unit.plans?.find((p) => p.id === unit.defaultPlanId) || unit.plans?.[0];
+  if (!plan) return null;
+  const model = plan.steps.map((step) => {
+    const st = unit.motorStrokes.find((x) => x.id === step.strokeId);
+    return (
+      st && { points: st.kind === 'dot' ? [st.center, st.center] : st.points, id: st.id }
+    );
+  });
+  if (model.some((m) => !m)) return null;
+  const trails = graphTrails(skeleton, width, height);
+  if (!trails.length) return null;
+  let left = width,
+    top = height,
+    right = 0,
+    bottom = 0;
+  for (let i = 0; i < ink.length; i++)
+    if (ink[i]) {
+      left = Math.min(left, i % width);
+      right = Math.max(right, i % width);
+      top = Math.min(top, Math.floor(i / width));
+      bottom = Math.max(bottom, Math.floor(i / width));
+    }
+  if (right <= left || bottom <= top) return null;
+  const res = orderByModel(
+    trails,
+    model,
+    [left, top, right, bottom],
+    unit.coordinates.yAxis === 'down',
+  );
+  if (!res.strokes.length) return null;
+  return {
+    trails: res.strokes,
+    kinds: res.strokes.map((t) => (t.length > 1 ? 'curve' : 'dot')),
+    source: res.strokes.map((_t, i) => ({
+      packId: record.packId,
+      unitId: record.unitId,
+      planId: plan.id,
+      strokeId: (model[Math.min(i, model.length - 1)] || model[0]).id,
+    })),
+  };
+}
+
+// `registerSource` declines in two materially different ways, and the ordering tier
+// depends on which. A `fit` decline means the model does describe this glyph but the
+// affine frame (scaleX and offsetX only) could not place it closely enough, so the
+// model's sequence still applies to the font's own skeleton. An `allograph` decline
+// means the rendered model encloses a different number of holes than the glyph: it is
+// a different letterform, not a badly placed one. NotoSerif's double-storey `g` has two
+// counters where the single-storey model has one, so the model owns no stroke for the
+// lower loop and has no order to lend. Neither tier may claim it.
+const FIT_DECLINED = Object.freeze({ declined: 'fit' }),
+  ALLOGRAPH_DECLINED = Object.freeze({ declined: 'allograph' });
+
 async function registerSource(record, skeleton, ink, width, height, signal) {
   const unit = record?.unit;
-  if (!unit?.motorStrokes?.length || unit.motorStrokes.length > MAX_STROKES) return null;
+  if (!unit?.motorStrokes?.length || unit.motorStrokes.length > MAX_STROKES)
+    return FIT_DECLINED;
   const plan = unit.plans?.find((p) => p.id === unit.defaultPlanId);
-  if (!plan || plan.steps.length !== unit.motorStrokes.length) return null;
+  if (!plan || plan.steps.length !== unit.motorStrokes.length) return FIT_DECLINED;
   const sign = unit.coordinates.yAxis === 'up' ? 1 : -1;
   // Keyed once rather than scanned per step. Stroke ids are unique by validSourceRecord,
   // and a permitted record can carry 8,192 of them, so the linear find made a record the
@@ -483,11 +548,11 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
       }
     );
   });
-  if (source.some((s) => !s)) return null;
+  if (source.some((s) => !s)) return FIT_DECLINED;
   const src = source.flatMap((s) => s.points),
     active = [];
   for (let i = 0; i < skeleton.length; i++) if (skeleton[i]) active.push(i);
-  if (!active.length) return null;
+  if (!active.length) return FIT_DECLINED;
   const sx = minOf(src.map((p) => p[0])),
     sy = minOf(src.map((p) => p[1])),
     sw = maxOf(src.map((p) => p[0])) - sx,
@@ -506,7 +571,7 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
     (sw < 1e-6 && tr - tx > Math.max(8, (tb - ty) * 0.3)) ||
     (sh < 1e-6 && tb - ty > Math.max(8, (tr - tx) * 0.3))
   )
-    return null;
+    return FIT_DECLINED;
   // Fit the source body to stems rather than letting terminal serif tips set its width.
   // This bounded frame search changes registration only; all original ink remains owned.
   const nearest = await nearestSkeletonMap(skeleton, width, height, signal);
@@ -534,11 +599,11 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
   };
   let trails = project(1, 0),
     best = Infinity;
-  if (!trails) return null;
+  if (!trails) return FIT_DECLINED;
   for (const scaleX of [1, 0.95, 0.9, 0.85, 0.8])
     for (const offsetX of [0, -0.025, 0.025]) {
       const candidate = project(scaleX, offsetX);
-      if (!candidate) return null;
+      if (!candidate) return FIT_DECLINED;
       const d = [];
       for (const trail of candidate)
         for (const p of trail) {
@@ -578,7 +643,8 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
     sourceMask[i] = bytes[4 * i + 3] > 0 ? 1 : 0;
   c.width = 0;
   c.height = 0;
-  if (holeCount(sourceMask, width, height) !== holeCount(ink, width, height)) return null;
+  if (holeCount(sourceMask, width, height) !== holeCount(ink, width, height))
+    return ALLOGRAPH_DECLINED;
   const sourceNearest = await nearestSkeletonMap(sourceMask, width, height, signal);
   const distances = [];
   for (const trail of trails)
@@ -601,7 +667,7 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
   const span = Math.max(tr - tx, tb - ty, 1),
     mean = distances.reduce((a, b) => a + b, 0) / distances.length,
     p95 = distances[Math.floor(distances.length * 0.95)];
-  if (mean > span * 0.065 || p95 > span * 0.15) return null;
+  if (mean > span * 0.065 || p95 > span * 0.15) return FIT_DECLINED;
   const snapped = trails.map((trail) =>
     trail
       .map((p) => {
@@ -680,7 +746,7 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
             queue.push(k);
           }
       }
-      if (!parent.has(end)) return null;
+      if (!parent.has(end)) return FIT_DECLINED;
       const route = [];
       for (let k = end; k !== begin; k = parent.get(k))
         route.push([k % width, Math.floor(k / width)]);
@@ -689,7 +755,7 @@ async function registerSource(record, skeleton, ink, width, height, signal) {
     snapped[n] = routed;
   }
   if (snapped.some((trail, i) => source[i].kind === 'curve' && trail.length < 2))
-    return null;
+    return FIT_DECLINED;
   return {
     trails: snapped,
     source: source.map((s) => ({
@@ -953,7 +1019,7 @@ async function registerKoreanPilot(
       height,
       signal,
     );
-    if (fitted) {
+    if (!fitted.declined) {
       result.trails.push(...fitted.trails);
       result.kinds.push(...fitted.kinds);
       result.source.push(...fitted.source);
@@ -1111,16 +1177,21 @@ export async function prepareFontAnimation(
         signal,
       );
     stop(signal);
-    let adapted = null;
+    let adapted = null,
+      sourceRecord = null,
+      orderable = false;
     if (loader && Array.from(spec.text).length === 1) {
       const record = await loader(
         { text: spec.text, script: shape.script, language: shape.language },
         { signal },
       );
       stop(signal);
-      if (record)
-        adapted = await registerSource(record, skeleton, ink, width, height, signal);
-      else if (shape.script === 'Hang')
+      if (record) {
+        sourceRecord = record;
+        const fitted = await registerSource(record, skeleton, ink, width, height, signal);
+        if (fitted.declined) orderable = fitted.declined === 'fit';
+        else adapted = fitted;
+      } else if (shape.script === 'Hang')
         adapted = await registerKoreanPilot(
           spec.text,
           loader,
@@ -1132,9 +1203,18 @@ export async function prepareFontAnimation(
           signal,
         );
     }
-    let trails = adapted?.trails || generated.trails,
-      kinds = adapted?.kinds || generated.kinds,
-      sources = adapted?.source || [];
+    // Three tiers, strongest first. A fit keeps the model's own geometry and is the
+    // only one that can promise the drawn path is the taught path. Ordering keeps the
+    // font's geometry and takes only the sequence from the model, which works on
+    // letterforms no fit can reach. Generation keeps neither and orders by shape alone.
+    // `orderable` is false on an allograph decline, so the middle tier never lends an
+    // order the model does not have; that case falls straight through to generation.
+    let byOrder = null;
+    if (orderable) byOrder = orderGlyph(sourceRecord, skeleton, ink, width, height);
+    const orderedTier = !adapted && !!byOrder;
+    let trails = adapted?.trails || byOrder?.trails || generated.trails,
+      kinds = adapted?.kinds || byOrder?.kinds || generated.kinds,
+      sources = adapted?.source || byOrder?.source || [];
     if (!trails.length) {
       const at = ink.findIndex((n) => n);
       if (at < 0) throw new Error('A visible glyph component could not be rasterized');
@@ -1242,7 +1322,11 @@ export async function prepareFontAnimation(
         id: `stroke-${strokes.length + 1}`,
         points,
         kind: kinds[i],
-        provenance: source ? 'source-adapted' : 'generated',
+        provenance: source
+          ? orderedTier
+            ? 'source-ordered'
+            : 'source-adapted'
+          : 'generated',
         ...(source ? { source } : {}),
       });
     });

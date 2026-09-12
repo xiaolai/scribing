@@ -61,7 +61,8 @@ export interface FontWriterOptions {
   animationColor?: string;
   onChange?: (result: FontComparison) => void;
 }
-export type FontGuideProvenance = 'source-adapted' | 'generated' | 'mixed';
+export type FontGuideProvenance =
+  'source-adapted' | 'source-ordered' | 'generated' | 'mixed';
 export interface FontAnimation {
   schemaVersion: 1;
   shapeKey: string;
@@ -70,7 +71,12 @@ export interface FontAnimation {
     id: string;
     points: [number, number][];
     kind: 'curve' | 'dot';
-    provenance: 'source-adapted' | 'generated';
+    /**
+     * `source-adapted` means the model's own geometry survived the fit.
+     * `source-ordered` means the glyph's skeleton was drawn in the model's order,
+     * used where the letterform differs too much for the geometry to be fitted.
+     */
+    provenance: 'source-adapted' | 'source-ordered' | 'generated';
     source?: { packId: string; unitId: string; planId: string; strokeId: string };
   }>;
   tiles: Array<{

@@ -317,17 +317,33 @@ const server = http.createServer((req, res) => {
           ])
             check(ownerAt(plan, x, y) === owner, 'E future bar core');
         }
-        for (const [fontId, text] of [
-          ['NotoSans', 'J'],
-          ['NotoSans', 'a'],
-          ['NotoSerif', 'a'],
-          ['NotoSerif', 'g'],
+        // A source convention the fit cannot reach splits two ways, and the split is
+        // the whole contract of the middle tier. J and both `a`s enclose the same
+        // number of holes as their model: the model does describe them and only the
+        // affine frame was too crude, so the model still lends its sequence to the
+        // font's own skeleton. NotoSerif's `g` is double-storey where the model is
+        // single-storey, so the rendered model encloses one hole against the glyph's
+        // two; the model owns no stroke for the lower loop. That is a different
+        // letterform, not a misplaced one, and it must reach generation with no unit
+        // named — asserting the absence of a source is what keeps the tier honest.
+        for (const [fontId, text, provenance] of [
+          ['NotoSans', 'J', 'source-ordered'],
+          ['NotoSans', 'a', 'source-ordered'],
+          ['NotoSerif', 'a', 'source-ordered'],
+          ['NotoSerif', 'g', 'generated'],
         ]) {
           await writer.setShape(await p.shape({ fontId, scriptId: 'english', text }));
           const a = await prepareFontAnimation(writer.getShape());
           check(
-            a.provenance === 'generated',
+            a.provenance === provenance,
             'incompatible source convention ' + fontId + text,
+          );
+          const named = a.strokes.filter((s) => s.source);
+          check(
+            provenance === 'generated'
+              ? named.length === 0
+              : named.length === a.strokes.length && named.every((s) => s.source.unitId),
+            'ordered tier names its unit ' + fontId + text,
           );
         }
         await writer.setShape(

@@ -23,6 +23,7 @@ const modules = [
   'yield-work.mjs',
   'provider.mjs',
   'capped-read.mjs',
+  'stroke-order.mjs',
   'vendor/index.mjs',
   'vendor/harfbuzz.js',
 ];
