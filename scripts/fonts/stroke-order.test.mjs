@@ -447,3 +447,36 @@ test('a closed trail can be drawn in either direction, as the model asks', () =>
   assert.deepEqual(right.strokes[0][1], [90, 20], 'aiming right leaves by the right');
   assert.deepEqual(left.strokes[0][1], [10, 20], 'aiming left leaves by the left');
 });
+
+test('a straight run with no interior vertex is still divided when the model asks', () => {
+  // splitAt only ever cut at an existing vertex, so a two-point run could not be
+  // divided at all and the model's second stroke went unfilled in silence, even though
+  // the same geometry can carry it.
+  const trails = [
+    [
+      [10, 10],
+      [10, 90],
+    ],
+  ];
+  const want = [
+    {
+      points: [
+        [0, 0],
+        [0, 0.4],
+      ],
+    },
+    {
+      points: [
+        [0, 0.5],
+        [0, 1],
+      ],
+    },
+  ];
+  const { strokes } = orderByModel(trails, want, [0, 0, 100, 100], true);
+  assert.equal(strokes.length, 2, 'the model asked for two movements');
+  // The seam belongs to both halves, so nothing jumps across it.
+  assert.deepEqual(strokes[0].at(-1), strokes[1][0]);
+  // And the two together still span the original run.
+  assert.deepEqual(strokes[0][0], [10, 10]);
+  assert.deepEqual(strokes[1].at(-1), [10, 90]);
+});

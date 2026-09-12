@@ -1061,6 +1061,44 @@ async function registerKoreanPilot(
   }
   return result;
 }
+/**
+ * Assign ownership to a set of trails, project their progress, and normalise.
+ *
+ * The three stages always run together and in this order, and the fallback below ran
+ * its own copy of them. Two copies of a pipeline can only diverge.
+ */
+async function ownershipFor(
+  coverage,
+  skeleton,
+  ink,
+  trails,
+  kinds,
+  width,
+  height,
+  start,
+  signal,
+) {
+  const assignment = await assignOwnership(
+    coverage,
+    skeleton,
+    trails,
+    width,
+    height,
+    start,
+    signal,
+  );
+  await projectCurveProgress(assignment, trails, kinds, start, width, signal, ink);
+  const retained = await normalizeOwnership(
+    assignment,
+    trails,
+    kinds,
+    start,
+    width,
+    signal,
+  );
+  return { assignment, retained };
+}
+
 export async function prepareFontAnimation(
   shape,
   { signal, sourceLoader, pixelsPerEm = 256, maxCells = MAX_CELLS } = {},
@@ -1302,28 +1340,25 @@ export async function prepareFontAnimation(
       signal,
     );
     if (adapted && adapted.source.some((source, i) => source && !retained.includes(i))) {
-      // Missing ownership means this font does not preserve the source motor plan.
+      // Missing ownership means this font does not preserve the source motor plan, so
+      // the generated trails are assigned and normalised instead. Running the same
+      // three stages as the first pass, written out a second time, is how the two could
+      // have come to differ; only the source-specific junction repair is skipped here,
+      // because there is no longer a source plan to repair against.
       trails = generated.trails;
       kinds = generated.kinds;
       sources = [];
-      assignment = await assignOwnership(
+      ({ assignment, retained } = await ownershipFor(
         coverage,
         skeleton,
+        ink,
         trails,
+        kinds,
         width,
         height,
         start,
         signal,
-      );
-      await projectCurveProgress(assignment, trails, kinds, start, width, signal, ink);
-      retained = await normalizeOwnership(
-        assignment,
-        trails,
-        kinds,
-        start,
-        width,
-        signal,
-      );
+      ));
     }
     trails = retained.map((i) => trails[i]);
     kinds = retained.map((i) => kinds[i]);

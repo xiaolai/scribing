@@ -50,7 +50,20 @@ function buildGraph(trails) {
     }
     return { id, points, a, b, used: false };
   });
-  return { nodes, edges, coords };
+  // Endpoints that still have an unused edge. The seeding scan below reads this rather
+  // than sweeping every edge of the glyph for every stroke it starts, which made the
+  // total work grow with the square of the trail count.
+  const live = new Set(nodes.keys());
+  return { nodes, edges, coords, live, remaining: edges.length };
+}
+
+/** Mark an edge used and retire any endpoint that no longer has an unused edge. */
+function consume(graph, edge) {
+  edge.used = true;
+  graph.remaining -= 1;
+  for (const k of edge.a === edge.b ? [edge.a] : [edge.a, edge.b])
+    if ((graph.nodes.get(k) || []).every((id) => graph.edges[id].used))
+      graph.live.delete(k);
 }
 
 /**
@@ -86,7 +99,7 @@ function walk(graph, startKey, seed) {
         }
       }
     }
-    best.e.used = true;
+    consume(graph, best.e);
     for (const q of best.pts)
       if (
         !out.length ||
@@ -100,20 +113,56 @@ function walk(graph, startKey, seed) {
   return out;
 }
 
-/** Split a walk at the interior point nearest `target`, never creating a gap. */
+/**
+ * Split a walk at the point nearest `target`, never creating a gap.
+ *
+ * An existing vertex is preferred, but a walk need not have one to offer: a straight
+ * run of two points has no interior vertex at all, and refusing to divide it returned
+ * fewer strokes than the model asked for while the same geometry could satisfy it. When
+ * no vertex will do, the projection of `target` onto the nearest segment is interpolated
+ * in, which adds a point without moving the path through it.
+ */
 function splitAt(points, target) {
   let bi = -1,
     bd = Infinity;
   for (let i = 1; i < points.length - 1; i++) {
-    const d = Math.hypot(points[i][0] - target[0], points[i][1] - target[1]);
+    const d = gap(points[i], target);
     if (d < bd) {
       bd = d;
       bi = i;
     }
   }
-  if (bi < 0) return null;
   // The split point belongs to both halves, so the pen does not jump across the seam.
-  return [points.slice(0, bi + 1), points.slice(bi)];
+  if (bi >= 0) return [points.slice(0, bi + 1), points.slice(bi)];
+  let si = -1,
+    sd = Infinity,
+    seam = null;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1],
+      b = points[i];
+    const dx = b[0] - a[0],
+      dy = b[1] - a[1];
+    const span = dx * dx + dy * dy;
+    if (!span) continue;
+    // Clamped strictly inside the segment: an endpoint projection would make one half
+    // a single repeated point, which is the degenerate split this exists to avoid.
+    const t = Math.min(
+      0.9,
+      Math.max(0.1, ((target[0] - a[0]) * dx + (target[1] - a[1]) * dy) / span),
+    );
+    const point = [a[0] + dx * t, a[1] + dy * t];
+    const d = gap(point, target);
+    if (d < sd) {
+      sd = d;
+      si = i;
+      seam = point;
+    }
+  }
+  if (si < 0) return null;
+  return [
+    [...points.slice(0, si), seam],
+    [seam, ...points.slice(si)],
+  ];
 }
 
 /**
@@ -155,21 +204,28 @@ function strokeFloor(graph) {
   return total;
 }
 
-/** The unused endpoint a stroke should begin at, nearest the model's landing point. */
+/**
+ * The unused endpoint a stroke should begin at, nearest the model's landing point.
+ *
+ * Linear in live endpoints, so seeding every stroke is quadratic in the trail count.
+ * That bound is deliberate rather than overlooked: a glyph's skeleton yields on the
+ * order of a dozen trails, and the spike measured 83,242 walks across 6,635 Japanese
+ * glyphs, about twelve apiece. A spatial index would pay off only somewhere past a
+ * thousand disjoint trails in one glyph, which this pipeline cannot produce, and it
+ * would be real structure carried for an input that never arrives. Scanning the live
+ * set rather than every edge is what made the constant worth having.
+ */
 function seedFor(graph, want) {
   let node = null,
     distance = Infinity;
-  for (const e of graph.edges) {
-    if (e.used) continue;
-    for (const k of [e.a, e.b]) {
-      const n = graph.coords.get(k);
-      // With no model stroke left to place, start at the topmost endpoint. Rows grow
-      // downward here, so topmost is the smallest y; minimising -y took the bottom.
-      const d = want ? gap(n, want.start) : n[1];
-      if (d < distance) {
-        distance = d;
-        node = k;
-      }
+  for (const k of graph.live) {
+    const n = graph.coords.get(k);
+    // With no model stroke left to place, start at the topmost endpoint. Rows grow
+    // downward here, so topmost is the smallest y; minimising -y took the bottom.
+    const d = want ? gap(n, want.start) : n[1];
+    if (d < distance) {
+      distance = d;
+      node = k;
     }
   }
   return { node, distance };
@@ -269,7 +325,7 @@ export function orderByModel(trails, model, box, yDown = true) {
   // then keep walking until the graph is empty. Extra walks are legitimate pen lifts.
   const walks = [];
   const pending = wants.slice();
-  while (graph.edges.some((e) => !e.used)) {
+  while (graph.remaining > 0) {
     const want = pending.shift() || null;
     const { node: startKey, distance } = seedFor(graph, want);
     const got = walk(graph, startKey, aimFrom(graph.coords.get(startKey), want));

@@ -723,16 +723,6 @@ export default class FontWriter {
       // and reset the transform. Doing that on every frame discarded a buffer of exactly
       // the same size, so the clear and the transform are explicit now and the buffer is
       // only reallocated when the size really changed.
-      if (!this.surfaceReset) {
-        // The caller's canvas arrives carrying whatever state they left on it, and
-        // setTransform resets none of it: a clip region, a globalAlpha of zero or a
-        // compositing mode all survive, and any of them can make the writer invisible.
-        // Discarding the drawing buffer is the only way to drop a clip, so the width is
-        // zeroed here and the assignment below reallocates it. Once per surface, not
-        // once per frame, which is what the size comparison below exists to avoid.
-        this.surface.width = 0;
-        this.surfaceReset = true;
-      }
       if (this.surface.width !== pixelWidth) this.surface.width = pixelWidth;
       if (this.surface.height !== pixelHeight) this.surface.height = pixelHeight;
       this.surface.style.width = `${width}px`;
@@ -742,6 +732,17 @@ export default class FontWriter {
       // surface is the caller's own element, so a context it cannot provide is a real
       // failure, not a frame to skip.
       if (!ctx) throw new Error('FontWriter could not acquire the surface 2D context');
+      if (!this.surfaceReset) {
+        // The caller's canvas arrives carrying whatever state they left on it, and
+        // setTransform resets none of it: a clip region, a globalAlpha of zero or a
+        // compositing mode all survive, and any of them can make the writer invisible.
+        // `reset()` drops all of it, including the clip, without touching the element's
+        // size. Reassigning the width would do the same, but a canvas whose width is
+        // its layout size would reflow the page, and this runs while the writer is
+        // rendering. Once per surface either way.
+        this.surfaceReset = true;
+        ctx.reset?.();
+      }
       ctx.globalAlpha = 1;
       ctx.globalCompositeOperation = 'source-over';
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
