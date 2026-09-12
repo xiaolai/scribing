@@ -6,9 +6,9 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 
 Nothing yet.
 
-## [4.2.0] - 2026-09-12
+## [4.1.1] - 2026-09-12
 
-Supersedes 4.1.0, which was tagged but never published.
+A fix to 4.1.0, which shipped the defect below. No API changes.
 
 ### Fixed
 
