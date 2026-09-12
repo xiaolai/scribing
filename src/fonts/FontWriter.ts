@@ -18,6 +18,18 @@ const MAX_STROKES = 1024;
 const MAX_POINTS = 65536;
 const MASK_SIZE = 192;
 
+/**
+ * Width of the learner's pen, in font units.
+ *
+ * Rendering, comparison and the comparison's bounds each carried their own copy of this
+ * rule, so changing one would have left the displayed ink and the geometry that scores
+ * it disagreeing about how wide a stroke is.
+ */
+const penWidth = (em: number) => em * 0.035;
+
+/** Replay speed, chosen to match what eight points per frame gave at 60Hz. */
+const REPLAY_POINTS_PER_S = 480;
+
 /** Unordered tracing/copying against filled font outlines; no stroke-order quiz. */
 export default class FontWriter {
   private surface: SVGSVGElement | HTMLCanvasElement;
@@ -65,6 +77,8 @@ export default class FontWriter {
   private static nextAnimationId = 0;
   private animationId = `scribing-font-animation-${FontWriter.nextAnimationId++}`;
   private shapeId = '';
+  /** Whether the caller's canvas has been reset once to drop any state they left on it. */
+  private surfaceReset = false;
   private paths: Path2D[] = [];
   private strokes: Point[][] = [];
   /** Total points across committed strokes; avoids an O(n) reduce per pointer event. */
@@ -76,6 +90,14 @@ export default class FontWriter {
   private destroyed = false;
   private frame?: number;
   private replayDone?: () => void;
+  /**
+   * Rejects the in-flight playback promise.
+   *
+   * A scratch layer the browser refuses to give a context for used to be skipped, so
+   * playback ran to completion and resolved with that tile never drawn. A caller
+   * awaiting animate() cannot tell that apart from a successful run.
+   */
+  private replayFailed?: (error: Error) => void;
   private replayInk?: Point[][];
   private generation = 0;
   private transform = { x: 0, y: 0, scale: 1 };
@@ -392,8 +414,9 @@ export default class FontWriter {
       waiting = false;
     this.animationState = { stroke: 0, progress: 0 };
     this.render();
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       this.replayDone = resolve;
+      this.replayFailed = reject;
       const tick = (now: number) => {
         if (this.destroyed || serial !== this.animationSerial) return;
         if (start === undefined) start = now;
@@ -477,6 +500,7 @@ export default class FontWriter {
     this.replayInk = undefined;
     const done = this.replayDone;
     this.replayDone = undefined;
+    this.replayFailed = undefined;
     if (done) done();
     this.render();
   }
@@ -583,9 +607,17 @@ export default class FontWriter {
       layer.width = pixelWidth;
       layer.height = pixelHeight;
       const layerContext = layer.getContext('2d');
-      // A refused context means the allocation failed; skip rather than throw a
-      // TypeError from inside an animation frame.
-      if (!layerContext) return;
+      // A refused context means the allocation failed. Throwing here would surface as a
+      // TypeError inside an animation frame, so playback is failed instead: skipping
+      // silently let the run finish and resolve with this tile never drawn, which a
+      // caller awaiting animate() cannot tell apart from success.
+      if (!layerContext) {
+        const fail = this.replayFailed;
+        this.replayFailed = undefined;
+        this.replayDone = undefined;
+        if (fail) fail(new Error('Animation surface could not be allocated'));
+        return;
+      }
       layerContext.scale(ratio, ratio);
       layerContext.translate(t.x - left / ratio, t.y - top / ratio);
       layerContext.scale(t.scale, -t.scale);
@@ -682,7 +714,7 @@ export default class FontWriter {
     const ink = this.animationState
       ? []
       : this.replayInk || [...this.strokes, ...(this.gesture ? [this.gesture] : [])];
-    const pen = (this.shape?.em || 1000) * 0.035;
+    const pen = penWidth(this.shape?.em || 1000);
     if (this.surface instanceof HTMLCanvasElement) {
       const ratio = Math.min(window.devicePixelRatio || 1, 3);
       const pixelWidth = Math.round(width * ratio),
@@ -691,12 +723,27 @@ export default class FontWriter {
       // and reset the transform. Doing that on every frame discarded a buffer of exactly
       // the same size, so the clear and the transform are explicit now and the buffer is
       // only reallocated when the size really changed.
+      if (!this.surfaceReset) {
+        // The caller's canvas arrives carrying whatever state they left on it, and
+        // setTransform resets none of it: a clip region, a globalAlpha of zero or a
+        // compositing mode all survive, and any of them can make the writer invisible.
+        // Discarding the drawing buffer is the only way to drop a clip, so the width is
+        // zeroed here and the assignment below reallocates it. Once per surface, not
+        // once per frame, which is what the size comparison below exists to avoid.
+        this.surface.width = 0;
+        this.surfaceReset = true;
+      }
       if (this.surface.width !== pixelWidth) this.surface.width = pixelWidth;
       if (this.surface.height !== pixelHeight) this.surface.height = pixelHeight;
       this.surface.style.width = `${width}px`;
       this.surface.style.height = `${height}px`;
       const ctx = this.surface.getContext('2d');
-      if (!ctx) return;
+      // Rendering into nothing used to look exactly like rendering successfully. The
+      // surface is the caller's own element, so a context it cannot provide is a real
+      // failure, not a frame to skip.
+      if (!ctx) throw new Error('FontWriter could not acquire the surface 2D context');
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = 'source-over';
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, width, height);
       ctx.fillStyle = this.options.referenceColor!;
@@ -799,8 +846,20 @@ export default class FontWriter {
       return undefined;
     let x: number, y: number;
     if (this.surface instanceof HTMLCanvasElement) {
-      x = ((event.clientX - rect.left) * this.options.width) / rect.width;
-      y = ((event.clientY - rect.top) * this.options.height) / rect.height;
+      // getBoundingClientRect measures the border box. A canvas draws in its content
+      // box, so with a ten-pixel border on a three-hundred-pixel canvas the content
+      // origin mapped to 9.375 rather than zero, and every stroke landed offset.
+      const style = getComputedStyle(this.surface);
+      const px = (value: string) => Number.parseFloat(value) || 0;
+      const insetLeft = px(style.borderLeftWidth) + px(style.paddingLeft),
+        insetTop = px(style.borderTopWidth) + px(style.paddingTop),
+        insetRight = px(style.borderRightWidth) + px(style.paddingRight),
+        insetBottom = px(style.borderBottomWidth) + px(style.paddingBottom);
+      const contentWidth = rect.width - insetLeft - insetRight,
+        contentHeight = rect.height - insetTop - insetBottom;
+      if (contentWidth <= 0 || contentHeight <= 0) return undefined;
+      x = ((event.clientX - rect.left - insetLeft) * this.options.width) / contentWidth;
+      y = ((event.clientY - rect.top - insetTop) * this.options.height) / contentHeight;
     } else {
       const matrix = this.surface.getScreenCTM?.();
       if (
@@ -906,7 +965,7 @@ export default class FontWriter {
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas raster comparison is unavailable');
     const [bx, by, bw, bh] = shape.bounds;
-    const radius = (shape.em * 0.035) / 2;
+    const radius = penWidth(shape.em) / 2;
     let x1 = bx,
       y1 = by,
       x2 = bx + bw,
@@ -941,7 +1000,7 @@ export default class FontWriter {
     ctx.clearRect(0, 0, rasterWidth, rasterHeight);
     ctx.fillStyle = '#000';
     ctx.strokeStyle = '#000';
-    this.ink(ctx, fit, this.strokes, shape.em * 0.035);
+    this.ink(ctx, fit, this.strokes, penWidth(shape.em));
     const user = ctx.getImageData(0, 0, rasterWidth, rasterHeight).data;
     let targetPixels = 0,
       userPixels = 0,
@@ -967,7 +1026,8 @@ export default class FontWriter {
     const strokes = this.strokes.map((s) => s.map((p) => ({ ...p })));
     const generation = this.generation;
     let strokeIndex = 0,
-      pointIndex = 0;
+      pointIndex = 0,
+      last: number | undefined;
     this.replayInk = [];
     return new Promise((resolve) => {
       this.replayDone = resolve;
@@ -981,11 +1041,18 @@ export default class FontWriter {
           resolve();
           return;
         }
+        // Advance by elapsed time, not by frame. Eight points per frame meant replay
+        // ran at whatever rate the display refreshes: the same stroke took about a
+        // second at 60Hz and half of that at 120Hz.
+        const now = typeof performance === 'object' ? performance.now() : Date.now();
+        const step = last === undefined ? 8 : ((now - last) / 1000) * REPLAY_POINTS_PER_S;
+        last = now;
+        const take = Math.max(1, Math.min(512, Math.round(step)));
         if (!this.replayInk![strokeIndex]) this.replayInk![strokeIndex] = [];
         this.replayInk![strokeIndex].push(
-          ...strokes[strokeIndex].slice(pointIndex, pointIndex + 8),
+          ...strokes[strokeIndex].slice(pointIndex, pointIndex + take),
         );
-        pointIndex += 8;
+        pointIndex += take;
         if (pointIndex >= strokes[strokeIndex].length) {
           strokeIndex += 1;
           pointIndex = 0;
