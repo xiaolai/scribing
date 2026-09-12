@@ -17,6 +17,15 @@ const fail = () => {
 const COORD_LIMIT = 1e7;
 /** Polyline samples emitted per curve segment when building a contour. */
 const CURVE_SAMPLES = 16;
+/**
+ * Ceiling on interior probes returned for one contour.
+ *
+ * Probes exist to prove a contour encloses ink, so a bounded sample answers that as
+ * well as an unbounded one. Without a ceiling the count grew with crossings times rows:
+ * a 566-character path whose edges are retraced returned 101,000 probes describing
+ * 2,000 distinct places, all of it allocated before the caller saw any of it.
+ */
+const MAX_PROBES = 4096;
 
 /**
  * SVG path whitespace, which is not JavaScript's `\s`.
@@ -296,6 +305,16 @@ export default function pathGeometry(path) {
 }
 
 /** Interior candidates for sparse/thin contours, checked against the exact nonzero path by callers. */
+/** Sorted x where this row's scanline cuts each active edge. */
+function crossings(box, active, y) {
+  const xs = [];
+  for (const i of active) {
+    const a = box.points[i],
+      b = box.points[(i + 1) % box.points.length];
+    if (a[1] <= y && b[1] > y || b[1] <= y && a[1] > y) xs.push(a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
+  }
+  return xs.sort((p, q) => p - q);
+}
 export function contourProbes(box, step, accept, rings = []) {
   const w = box.maxX - box.minX,
     h = box.maxY - box.minY;
@@ -337,16 +356,17 @@ export function contourProbes(box, step, accept, rings = []) {
     if (starting[row].length) active = active.concat(starting[row]);
     if (active.length) active = active.filter(i => lastRow[i] >= row);
     const y = box.minY + h * (row + 0.5) / rows,
-      xs = [];
-    for (const i of active) {
-      const a = box.points[i],
-        b = box.points[(i + 1) % box.points.length];
-      if (a[1] <= y && b[1] > y || b[1] <= y && a[1] > y) xs.push(a[0] + (y - a[1]) * (b[0] - a[0]) / (b[1] - a[1]));
-    }
-    xs.sort((a, b) => a - b);
+      xs = crossings(box, active, y);
     for (let i = 1; i < xs.length; i++) {
+      // A retraced edge crosses this row once per retracing, so the sorted crossings
+      // hold runs of identical values. Those pairs span nothing: their midpoint is the
+      // crossing itself, which lies on the boundary rather than inside it. Skipping
+      // them is what stops one contour returning tens of thousands of probes for a
+      // few thousand distinct places.
+      if (xs[i] === xs[i - 1]) continue;
       const x = (xs[i - 1] + xs[i]) / 2;
       if (accept(x, y)) out.push([x, y]);
+      if (out.length >= MAX_PROBES) return out;
     }
   }
   if (out.length) return out;

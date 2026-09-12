@@ -187,6 +187,24 @@ describe('numerical conditioning', () => {
     expect(usedMb).toBeLessThan(60);
   });
 
+  it('does not return a probe per retracing of the same edge', () => {
+    // Crossings arrive once per retracing, so the sorted list holds runs of identical
+    // values. Pairing neighbours across those runs produced a probe for every pair,
+    // and their midpoint is the crossing itself, which is on the boundary rather than
+    // inside it. A narrow rectangle traced thirty times returned tens of thousands of
+    // probes describing a few thousand distinct places.
+    // One subpath, its edges retraced. Repeating the whole path instead would make
+    // thirty separate contours, each traced once, and reproduce nothing.
+    let d = 'M10 0';
+    for (let i = 0; i < 30; i++) d += 'L11 0L11 100L10 100L10 0';
+    const box = pathGeometry(d + 'Z')!.contours[0];
+    const probes = contourProbes(box, 1, () => true);
+    const distinct = new Set(probes.map((p) => p.join(',')));
+    // Before the fix this returned 4,096 probes, the ceiling, for 208 distinct places.
+    expect(probes.length).toBe(distinct.size);
+    expect(probes.length).toBeLessThan(500);
+  });
+
   it('probes a thin annulus whose rings are each individually dense', () => {
     // A ring's own area is the whole region it encloses, so both rings of a thin annulus
     // look nearly solid and the density shortcut fired for each. The ink actually
