@@ -1,4 +1,19 @@
 import yieldWork from './yield-work.mjs';
+/** Points indexed between yields, so the gap does not depend on how long a trail is. */
+const INDEX_YIELD_POINTS = 16384;
+
+/**
+ * Terminal geometry thresholds, all in raster cells.
+ *
+ * Cells, not em units, because these probe the rasterized mask rather than the outline,
+ * and preparation fixes the raster at a configurable pixels-per-em. They are deliberately
+ * absolute: a half-cell probe step resolves nothing a whole cell does not, and a shaft
+ * wider than MAX_SHAFT_RADIUS is a body rather than a terminal whatever the em.
+ */
+const PROBE_STEP = 0.25,
+  MAX_SHAFT_RADIUS = 32,
+  TERMINAL_LOOKAHEAD = 16;
+
 const stop = (signal) => {
   if (signal?.aborted)
     throw new DOMException('Animation preparation canceled', 'AbortError');
@@ -23,11 +38,7 @@ function turnField(points, contains, width) {
     if (Math.abs(ux * vy - uy * vx) > 1e-7 || ux * vx + uy * vy <= 0) simple.push(b);
   }
   simple.push(points.at(-1));
-  const inside = (p) => {
-    const x = Math.round(p[0]),
-      y = Math.round(p[1]);
-    return x >= 0 && x < width && y >= 0 && contains(y * width + x);
-  };
+  const inside = (p) => cellInside(contains, width, p[0], p[1]);
   const out = [simple[0]];
   for (let i = 1; i < simple.length - 1; i++) {
     const a = simple[i - 1],
@@ -83,17 +94,35 @@ function turnField(points, contains, width) {
   out.push(simple.at(-1));
   return out;
 }
+/**
+ * Whether a raster cell at these coordinates is owned.
+ *
+ * Both callers rounded the coordinates and bounded them the same way, and the two
+ * copies had already drifted apart in how they took their arguments. The convention is
+ * the load-bearing part: rounding, not flooring, and no upper bound on y because
+ * `contains` is indexed by cell and a row past the end simply has none.
+ */
+const cellInside = (contains, width, rawX, rawY) => {
+  const x = Math.round(rawX),
+    y = Math.round(rawY);
+  return x >= 0 && x < width && y >= 0 && contains(y * width + x);
+};
+
+/** Read a trail from either end without copying it. */
+const fromEnd = (points, atEnd, i) => points[atEnd ? points.length - 1 - i : i];
+
 export function fitTerminalShaft(points, atEnd, radius) {
-  const ordered = atEnd ? points.slice().reverse() : points,
-    endpoint = ordered[0],
+  // Indexed by direction rather than reversed into a new array. Only a neighbourhood of
+  // the terminal is ever read, and copying the whole trail to reach it allocated a
+  // second copy of every point in a fifty-thousand-point stroke.
+  const endpoint = fromEnd(points, atEnd, 0),
     samples = [];
   let arc = 0;
-  for (let i = 1; i < ordered.length; i++) {
-    arc += Math.hypot(
-      ordered[i][0] - ordered[i - 1][0],
-      ordered[i][1] - ordered[i - 1][1],
-    );
-    if (arc >= radius && arc <= radius * 3) samples.push(ordered[i]);
+  for (let i = 1; i < points.length; i++) {
+    const previous = fromEnd(points, atEnd, i - 1),
+      current = fromEnd(points, atEnd, i);
+    arc += Math.hypot(current[0] - previous[0], current[1] - previous[1]);
+    if (arc >= radius && arc <= radius * 3) samples.push(current);
     if (arc > radius * 3) break;
   }
   if (samples.length < 3) return null;
@@ -141,33 +170,29 @@ export function fitTerminalShaft(points, atEnd, radius) {
 // neighbour's ink inflated the terminal radius measured here.
 function terminalFits(points, contains, width) {
   if (!contains || points.length < 4) return [];
-  const inside = (rawX, rawY) => {
-    const x = Math.round(rawX);
-    const y = Math.round(rawY);
-    return x >= 0 && x < width && y >= 0 && contains(y * width + x);
-  };
+  const inside = (rawX, rawY) => cellInside(contains, width, rawX, rawY);
   return [false, true].map((end) => {
-    const p = end ? points.slice().reverse() : points;
+    const p = (i) => fromEnd(points, end, i);
     let n = 1,
       arc = 0;
-    while (n < p.length - 1 && arc < 16) {
-      arc += Math.hypot(p[n][0] - p[n - 1][0], p[n][1] - p[n - 1][1]);
+    while (n < points.length - 1 && arc < TERMINAL_LOOKAHEAD) {
+      arc += Math.hypot(p(n)[0] - p(n - 1)[0], p(n)[1] - p(n - 1)[1]);
       n++;
     }
-    const c = p[Math.max(1, n - 1)],
-      dx = c[0] - p[0][0],
-      dy = c[1] - p[0][1],
+    const c = p(Math.max(1, n - 1)),
+      dx = c[0] - p(0)[0],
+      dy = c[1] - p(0)[1],
       length = Math.hypot(dx, dy);
     if (!length) return null;
-    let radius = 32;
+    let radius = MAX_SHAFT_RADIUS;
     for (const sign of [-1, 1]) {
-      let r = 0.25;
+      let r = PROBE_STEP;
       while (
-        r < 32 &&
+        r < MAX_SHAFT_RADIUS &&
         inside(c[0] - (dy / length) * r * sign, c[1] + (dx / length) * r * sign)
       )
-        r += 0.25;
-      radius = Math.min(radius, r - 0.25);
+        r += PROBE_STEP;
+      radius = Math.min(radius, r - PROBE_STEP);
     }
     return radius >= 1 ? { ...fitTerminalShaft(points, end, radius), radius } : null;
   });
@@ -251,6 +276,7 @@ export async function projectCurveProgress(
   // terminal fit on trail zero, which for a large trail is the expensive part.
   stop(signal);
   const indexes = [];
+  let indexed = 0;
   // One containment test per trail, answering only for that trail's own cells.
   const containsFor = (i) => {
     if (!ink) return null;
@@ -264,13 +290,16 @@ export async function projectCurveProgress(
       kinds[i] === 'curve' ? indexTrail(turnField(trails[i], contains, width)) : null;
     if (tree && !tree.closed) tree.terminals = terminalFits(trails[i], contains, width);
     indexes.push(tree);
-    // Read the signal every trail, but keep yielding every 32. Indexing one trail costs
-    // about 3 ms even at 50,000 points, so the yield cadence is not what delays a
-    // cancellation; batching the abort check behind it is, because that made the worst
-    // case 32 trails rather than one. An abort check is a field read, while a yield
-    // allocates a promise and burns a macrotask, so only the cheap one belongs per item.
+    // Read the signal every trail, and yield on points rather than on trails. An abort
+    // check is a field read, while a yield allocates a promise and burns a macrotask,
+    // so only the cheap one belongs per item. Counting trails made the gap between
+    // yields depend on how long they are: thirty-two of thirty thousand points apiece
+    // held the loop for about 180 ms, which a same-tick abort had to wait out, while
+    // thirty-two short ones were not worth a yield at all.
     stop(signal);
-    if (i % 32 === 31) {
+    indexed += trails[i].length;
+    if (indexed >= INDEX_YIELD_POINTS) {
+      indexed = 0;
       await yieldWork();
       stop(signal);
     }
@@ -353,7 +382,10 @@ export async function projectCurveProgress(
       stop(signal);
     }
     const owner = assignment.owners[cell] - startIndex - 1;
-    if (!indexes[owner]) continue;
+    // The same guard the projection pass uses. Testing only that the tree exists let a
+    // curve with no segments, such as one whose points all coincide, reach this line
+    // having projected nothing, and overwrite existing progress with the midpoint.
+    if (!indexes[owner]?.segments.length) continue;
     assignment.progress[cell] =
       maxes[owner] > mins[owner]
         ? Math.round(

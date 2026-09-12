@@ -7,6 +7,13 @@ type Contour = {
   area: number;
   points: Point[];
 };
+/**
+ * The supported subset, and how many numbers each command takes.
+ *
+ * One definition, because the tokenizer's alphabet, the separator check and this table
+ * have to describe the same language. Written out three times, a command added to the
+ * table but not to the two expressions would be accepted here and rejected there.
+ */
 const arity: { [key: string]: number } = {
   M: 2,
   L: 2,
@@ -18,6 +25,10 @@ const arity: { [key: string]: number } = {
   T: 2,
   Z: 0,
 };
+/** Both cases of every supported command, as a character class body. */
+const COMMANDS = Object.keys(arity)
+  .map((c) => c + c.toLowerCase())
+  .join('');
 const fail = (): never => {
   throw new Error('Invalid FontShape outline geometry');
 };
@@ -47,8 +58,9 @@ const MAX_PROBES = 4096;
 const LEADING_MOVE = /^[\t\n\f\r ]*[Mm]/;
 const TRAILING_SPACE = /^[\t\n\f\r ]*$/;
 const SEPARATOR = /^[\t\n\f\r ,]*$/;
-const BAD_SEPARATOR =
-  /,[\t\n\f\r ]*,|[MmLlHhVvCcSsQqTtZz][\t\n\f\r ]*,|,[\t\n\f\r ]*[MmLlHhVvCcSsQqTtZz]|,[\t\n\f\r ]*$/;
+const BAD_SEPARATOR = new RegExp(
+  `,[\\t\\n\\f\\r ]*,|[${COMMANDS}][\\t\\n\\f\\r ]*,|,[\\t\\n\\f\\r ]*[${COMMANDS}]|,[\\t\\n\\f\\r ]*$`,
+);
 
 type CommandGroup = { command: string; values: number[] };
 
@@ -62,7 +74,10 @@ function tokenize(path: string): CommandGroup[] {
   if (!LEADING_MOVE.test(path) || BAD_SEPARATOR.test(path)) {
     fail();
   }
-  const token = /[MmLlHhVvCcSsQqTtZz]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?/g;
+  const token = new RegExp(
+    `[${COMMANDS}]|[-+]?(?:\\d*\\.\\d+|\\d+\\.?\\d*)(?:[eE][-+]?\\d+)?`,
+    'g',
+  );
   const groups: CommandGroup[] = [];
   let match: RegExpExecArray | null;
   let end = 0;
@@ -350,15 +365,15 @@ export default function pathGeometry(path: string) {
 const sortedRings = new WeakMap<ReadonlyArray<Contour>, Contour[]>();
 
 /**
- * Total area of the rings that sit inside `box`.
+ * The rings that sit inside `box`.
  *
  * An enclosed ring cannot begin left of `box` nor start right of its right edge, so
  * only the window between those two bounds can contain one. Scanning the whole list for
  * every contour meant a glyph of N contours performed N squared comparisons even when
  * the contours were disjoint and each was rejected on its first test.
  */
-function enclosedArea(box: Contour, rings: ReadonlyArray<Contour>): number {
-  if (!rings.length) return 0;
+function enclosedRings(box: Contour, rings: ReadonlyArray<Contour>): Contour[] {
+  if (!rings.length) return [];
   let order = sortedRings.get(rings);
   if (!order) {
     order = [...rings].sort((a, b) => a.minX - b.minX);
@@ -371,7 +386,7 @@ function enclosedArea(box: Contour, rings: ReadonlyArray<Contour>): number {
     if (order[mid].minX < box.minX) low = mid + 1;
     else high = mid;
   }
-  let total = 0;
+  const inside: Contour[] = [];
   for (let i = low; i < order.length && order[i].minX <= box.maxX; i++) {
     const ring = order[i];
     if (
@@ -380,17 +395,16 @@ function enclosedArea(box: Contour, rings: ReadonlyArray<Contour>): number {
       ring.minY >= box.minY &&
       ring.maxY <= box.maxY
     )
-      total += ring.area;
+      inside.push(ring);
   }
-  return total;
+  return inside;
 }
 
 /** Sorted x where this row's scanline cuts each active edge. */
-function crossings(box: Contour, active: number[], y: number): number[] {
+function crossings(segments: [Point, Point][], active: number[], y: number): number[] {
   const xs: number[] = [];
   for (const i of active) {
-    const a = box.points[i],
-      b = box.points[(i + 1) % box.points.length];
+    const [a, b] = segments[i];
     if ((a[1] <= y && b[1] > y) || (b[1] <= y && a[1] > y))
       xs.push(a[0] + ((y - a[1]) * (b[0] - a[0])) / (b[1] - a[1]));
   }
@@ -410,8 +424,8 @@ export function contourProbes(
   // reads as nearly solid on its own: the shortcut fired for both, and the sliver of ink
   // that is actually there was never probed. Passing no rings keeps the old reading,
   // which is why every caller passes the glyph's complete contour list.
-  const enclosed = enclosedArea(box, rings);
-  const filled = Math.max(0, box.area - enclosed);
+  const inner = enclosedRings(box, rings);
+  const filled = Math.max(0, box.area - inner.reduce((t, r) => t + r.area, 0));
   if (w >= step * 2 && h >= step * 2 && filled >= w * h * 0.12) return [];
   const out: Point[] = [];
   const rows = Math.min(16384, Math.max(1, Math.ceil(h / step)));
@@ -424,12 +438,21 @@ export function contourProbes(
   // set while the sweep descends past it. Pushing it into every row it spans instead cost
   // one entry per edge per row: a 602-point contour over 16,384 rows allocated 189 MB,
   // from a path of under four thousand characters against a half-million limit.
+  // The enclosed rings' edges join the sweep. Without them a contour's own crossings
+  // are its only interval boundaries, so a square holding a nearly identical square
+  // produced one interval spanning the whole row, whose midpoint lands in the hole.
+  // The sliver of real ink between the two boundaries was never offered to `accept`,
+  // and the fallback probe missed it too, so a thin component got no probes at all.
+  const segments: [Point, Point][] = [];
+  for (const contour of [box, ...inner])
+    for (let i = 0; i < contour.points.length; i++)
+      segments.push([contour.points[i], contour.points[(i + 1) % contour.points.length]]);
+
   const starting: number[][] = Array.from({ length: rows }, () => []);
-  const lastRow = new Int32Array(box.points.length);
+  const lastRow = new Int32Array(segments.length);
   const rowIndex = (y: number) => ((y - box.minY) * rows) / h - 0.5;
-  for (let i = 0; i < box.points.length; i++) {
-    const a = box.points[i],
-      b = box.points[(i + 1) % box.points.length];
+  for (let i = 0; i < segments.length; i++) {
+    const [a, b] = segments[i];
     const first = Math.max(0, Math.floor(rowIndex(Math.min(a[1], b[1]))));
     const last = Math.min(rows - 1, Math.ceil(rowIndex(Math.max(a[1], b[1]))));
     if (first > last) continue;
@@ -442,7 +465,7 @@ export function contourProbes(
     if (starting[row].length) active = active.concat(starting[row]);
     if (active.length) active = active.filter((i) => lastRow[i] >= row);
     const y = box.minY + (h * (row + 0.5)) / rows,
-      xs = crossings(box, active, y);
+      xs = crossings(segments, active, y);
     for (let i = 1; i < xs.length; i++) {
       // A retraced edge crosses this row once per retracing, so the sorted crossings
       // hold runs of identical values. Those pairs span nothing: their midpoint is the

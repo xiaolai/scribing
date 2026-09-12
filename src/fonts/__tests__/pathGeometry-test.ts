@@ -187,6 +187,23 @@ describe('numerical conditioning', () => {
     expect(usedMb).toBeLessThan(60);
   });
 
+  it('probes the sliver between a contour and a nearly identical inner ring', () => {
+    // A contour's own crossings were its only interval boundaries, so this produced one
+    // interval spanning the row whose midpoint lands in the hole. The ink is the
+    // hundredth-unit sliver between the two boundaries, and it was offered to `accept`
+    // nowhere: the fallback probe missed it too, so the component got no probes at all.
+    const geometry = pathGeometry('M0 0H100V100H0Z M0.01 0.01V99.99H99.99V0.01Z')!;
+    const inInk = (x: number, y: number) =>
+      x >= 0 &&
+      x <= 100 &&
+      y >= 0 &&
+      y <= 100 &&
+      !(x > 0.01 && x < 99.99 && y > 0.01 && y < 99.99);
+    const probes = contourProbes(geometry.contours[0], 1, inInk, geometry.contours);
+    expect(probes.length).toBeGreaterThan(0);
+    for (const [x, y] of probes) expect(inInk(x, y)).toBe(true);
+  });
+
   it('measures the same area wherever the contour sits', () => {
     // The shoelace sum was taken about the origin, so for a small contour far from it
     // each term was a difference of large nearly-equal products. A hundredth-unit
