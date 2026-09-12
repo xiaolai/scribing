@@ -4,6 +4,10 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 
 ## [Unreleased]
 
+Nothing yet.
+
+## [4.1.0] - 2026-09-12
+
 ### Added
 
 - **A middle tier between fitting a stroke model and giving up on it.** A fit registers
@@ -30,6 +34,41 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 - Documented behaviour that had fallen behind the code: Korean composes any of the 11,172
   modern syllables rather than three fixed ones, and the single-storey `a` against a
   double-storey font is ordered rather than generated.
+
+An independent audit of the twelve shipped font-subsystem files followed, and 83 of its
+98 findings are fixed here. Each carries a regression test or gate assertion that was
+confirmed to fail against the previous code.
+
+- **The reveal gradient read all eight neighbours of a cell while the cutoff deciding
+  which ones count measured only the two orthogonal ones.** A stroke whose cells touch at
+  their corners had no pair measured at all, so it appeared in one jump instead of
+  growing. The same solver treated a singular system as two independent axes, which
+  predicted twice the step a single diagonal neighbour actually had.
+- **Contour area was summed about the origin.** For a small contour far from it, each
+  cross product was a difference of large nearly-equal numbers: a hundredth-unit square
+  measures zero at ten million, inside the accepted coordinate range, and a zero area
+  suppresses every probe for that contour.
+- **A contour's own crossings were the only scanline boundaries.** A square holding a
+  nearly identical square produced one interval whose midpoint lands in the hole, so the
+  sliver of real ink between them received no probes at all.
+- **Playback resolved over a surface it never drew.** A scratch layer the browser refused
+  a context for was skipped, so the run finished and resolved with that tile missing.
+- **Pointer input was mapped against the border box** rather than the content box, so any
+  border or padding offset every sample.
+- **Cancellation was checked immediately before each yield**, where nothing could have
+  changed the flag, across twenty-eight sites. At a budget boundary a pass returned
+  success while the caller had already cancelled.
+- **Concurrent misses for one font each downloaded, hashed and instantiated it.** Callers
+  share one transfer now, and it is abandoned only when every caller waiting on it has
+  gone. Catalogue structure, script metadata and font references are validated at
+  construction instead of failing later as an uncoded TypeError.
+- **Glyph coverage was decided by asking the cmap**, which refuses a character HarfBuzz
+  can still render by canonical decomposition. The shaped output decides now.
+- Smaller: a failed source request no longer discards what a successful one verified,
+  records are frozen on their way out of the loader, a straight run the model asks twice
+  of is divided rather than silently left short, degenerate curves no longer overwrite
+  real progress, ownership seeding honours the coverage mask, and unchanged SVG is not
+  rewritten on every frame.
 
 ## [4.0.1] - 2026-09-12
 
