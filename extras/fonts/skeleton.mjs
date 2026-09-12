@@ -773,6 +773,22 @@ export async function componentTrails(ink, trails, width, height, signal) {
  * @param {number} width positive integer
  * @param {AbortSignal} [signal] aborting it throws AbortError
  */
+/**
+ * How far through its stroke a cell is, before normalisation.
+ *
+ * A dot grows from its centre, so distance from that centre is its progress; a curve
+ * carries the value the projection pass already wrote. The two normalisation passes
+ * must agree on this exactly, and they each had their own copy of it.
+ */
+function progressValue(kinds, trails, progress, width, stroke, cell) {
+  return kinds[stroke] === 'dot'
+    ? Math.hypot(
+        (cell % width) - trails[stroke][0][0],
+        Math.floor(cell / width) - trails[stroke][0][1],
+      )
+    : progress[cell];
+}
+
 export async function normalizeOwnership(
   assignment,
   trails,
@@ -794,13 +810,7 @@ export async function normalizeOwnership(
     if (!owners[i]) continue;
     const k = owners[i] - startIndex - 1;
     used[k]++;
-    const p =
-      kinds[k] === 'dot'
-        ? Math.hypot(
-            (i % width) - trails[k][0][0],
-            Math.floor(i / width) - trails[k][0][1],
-          )
-        : progress[i];
+    const p = progressValue(kinds, trails, progress, width, k, i);
     mins[k] = Math.min(mins[k], p);
     maxes[k] = Math.max(maxes[k], p);
   }
@@ -814,13 +824,7 @@ export async function normalizeOwnership(
     }
     if (!owners[i]) continue;
     const k = owners[i] - startIndex - 1,
-      p =
-        kinds[k] === 'dot'
-          ? Math.hypot(
-              (i % width) - trails[k][0][0],
-              Math.floor(i / width) - trails[k][0][1],
-            )
-          : progress[i];
+      p = progressValue(kinds, trails, progress, width, k, i);
     progress[i] =
       maxes[k] > mins[k]
         ? Math.round(((p - mins[k]) / (maxes[k] - mins[k])) * 65535)
@@ -849,6 +853,81 @@ export async function normalizeOwnership(
  * @param {AbortSignal} [signal] aborting it throws AbortError
  * @param {number} [maxWork] geometric operations before the run gives up
  */
+/**
+ * Least-squares line through a set of points: its centre and its unit direction.
+ *
+ * The principal axis of the covariance, which is the direction that minimises squared
+ * perpendicular distance. Three sites computed the centroid, the three second moments
+ * and the same half-arctangent independently, so a correction to the fit had to be
+ * made three times to take effect.
+ *
+ * @returns {{ center: number[], tangent: number[], normal: number[] }}
+ */
+function fitLine(points) {
+  const center = [
+    points.reduce((sum, p) => sum + p[0], 0) / points.length,
+    points.reduce((sum, p) => sum + p[1], 0) / points.length,
+  ];
+  let xx = 0,
+    xy = 0,
+    yy = 0;
+  for (const p of points) {
+    const x = p[0] - center[0],
+      y = p[1] - center[1];
+    xx += x * x;
+    xy += x * y;
+    yy += y * y;
+  }
+  const angle = 0.5 * Math.atan2(2 * xy, xx - yy),
+    tangent = [Math.cos(angle), Math.sin(angle)];
+  return { center, tangent, normal: [-tangent[1], tangent[0]] };
+}
+
+const PROBE_STEP = 0.25,
+  PROBE_LIMIT = 40;
+
+/**
+ * How far the ink reaches from `point` along `direction`, in cells.
+ *
+ * Steps outward in quarter cells to a fixed ceiling. Returns the last step still inside,
+ * or null when the ceiling was reached without ever leaving: callers disagree about what
+ * that means, some treating it as no measurement and some as the ceiling itself, so the
+ * exhausted case stays theirs to decide. Eight sites wrote this loop out, which is eight
+ * places a correction to the step or the ceiling would have had to be made.
+ */
+function probeRadius(inside, point, direction, sign) {
+  let r = PROBE_STEP;
+  while (
+    r < PROBE_LIMIT &&
+    inside(point[0] + direction[0] * r * sign, point[1] + direction[1] * r * sign)
+  )
+    r += PROBE_STEP;
+  return r >= PROBE_LIMIT ? null : r - PROBE_STEP;
+}
+
+/**
+ * Where a point falls along a profile, once its nearest segment is known.
+ *
+ * `along` is the parameter on that segment, negative before its start; `beyond` is
+ * positive past the profile's final cap. Together they are the corridor's end caps, and
+ * both call sites computed them from the same four dot products. The nearest-segment
+ * search stays with each caller, because the two charge their work budgets differently
+ * and collapsing that difference would change when a repair is abandoned.
+ */
+function profilePlacement(profile, point, nearest) {
+  const seg = nearest.seg,
+    cap = profile[profile.length - 1];
+  return {
+    along:
+      ((point[0] - seg.p[0]) * (seg.q[0] - seg.p[0]) +
+        (point[1] - seg.p[1]) * (seg.q[1] - seg.p[1])) /
+      (nearest.length * nearest.length),
+    beyond:
+      (point[0] - cap.q[0]) * (cap.q[0] - cap.p[0]) +
+      (point[1] - cap.q[1]) * (cap.q[1] - cap.p[1]),
+  };
+}
+
 export async function repairSourceJunctions(
   assignment,
   ink,
@@ -915,10 +994,7 @@ export async function repairSourceJunctions(
       if (!t || !inside(...c)) continue;
       const pair = [];
       for (const sign of [-1, 1]) {
-        let r = 0.25;
-        while (r < 40 && inside(c[0] - t[1] * r * sign, c[1] + t[0] * r * sign))
-          r += 0.25;
-        pair.push(r >= 40 ? 0 : Math.max(0, r - 0.25));
+        pair.push(probeRadius(inside, c, [-t[1], t[0]], sign) ?? 0);
       }
       if (pair.every((r) => r >= 0.5)) samples.push(pair);
     }
@@ -947,13 +1023,7 @@ export async function repairSourceJunctions(
           normal = [-(b[1] - a[1]) / length, (b[0] - a[0]) / length],
           pair = [];
         for (const side of [-1, 1]) {
-          let r = 0.25;
-          while (
-            r < 40 &&
-            inside(c[0] + normal[0] * r * side, c[1] + normal[1] * r * side)
-          )
-            r += 0.25;
-          pair.push(r >= 40 ? 0 : r - 0.25);
+          pair.push(probeRadius(inside, c, normal, side) ?? 0);
         }
         if (pair.every((r) => r >= 0.5)) samples.push(pair);
       }
@@ -1132,13 +1202,8 @@ export async function repairSourceJunctions(
           for (const p of fit.samples)
             for (let side = 0; side < 2; side++) {
               const sign = side ? 1 : -1;
-              let r = 0.25;
-              while (
-                r < 40 &&
-                inside(p[0] + normal[0] * r * sign, p[1] + normal[1] * r * sign)
-              )
-                r += 0.25;
-              if (r < 40) measured[side].push(Math.max(0, r - 0.25));
+              const reach = probeRadius(inside, p, normal, sign);
+              if (reach !== null) measured[side].push(reach);
             }
           if (measured.some((side) => side.length < 3)) continue;
           const bounds = measured.map(
@@ -1201,13 +1266,7 @@ export async function repairSourceJunctions(
               normal = [-(next[1] - B[0][1]) / length, (next[0] - B[0][0]) / length];
             baseWidths = [];
             for (const sign of [-1, 1]) {
-              let r = 0.25;
-              while (
-                r < 40 &&
-                inside(B[0][0] + normal[0] * r * sign, B[0][1] + normal[1] * r * sign)
-              )
-                r += 0.25;
-              baseWidths.push(r >= 40 ? 0 : Math.max(0, r - 0.25));
+              baseWidths.push(probeRadius(inside, B[0], normal, sign) ?? 0);
             }
             if (baseWidths.some((r) => r < 0.5)) continue;
           }
@@ -1278,13 +1337,13 @@ export async function repairSourceJunctions(
               center = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2],
               radii = [];
             for (const sign of [-1, 1]) {
-              let r = 0.25;
-              while (
-                r < 40 &&
-                inside(center[0] + normal[0] * r * sign, center[1] + normal[1] * r * sign)
-              )
-                r += 0.25;
-              radii.push(Math.min(2 * Math.max(...baseWidths), Math.max(0, r - 0.25)));
+              radii.push(
+                Math.min(
+                  2 * Math.max(...baseWidths),
+                  // The ceiling counts as a measurement here, unlike the sites above.
+                  probeRadius(inside, center, normal, sign) ?? PROBE_LIMIT - PROBE_STEP,
+                ),
+              );
             }
             // The normal is what sizes `radii` above; the consumers below take theirs
             // from `projection`, so carrying it on the entry served nothing.
@@ -1327,16 +1386,13 @@ export async function repairSourceJunctions(
                   nearest = { ...p, n, seg };
               }
               if (!nearest) continue;
-              const { seg, n } = nearest,
-                raw =
-                  ((x + 0.5 - seg.p[0]) * (seg.q[0] - seg.p[0]) +
-                    (y + 0.5 - seg.p[1]) * (seg.q[1] - seg.p[1])) /
-                  (nearest.length * nearest.length);
-              const cap = profile.at(-1),
-                beyond =
-                  (x + 0.5 - cap.q[0]) * (cap.q[0] - cap.p[0]) +
-                  (y + 0.5 - cap.q[1]) * (cap.q[1] - cap.p[1]);
-              if ((n === 0 && raw < 0) || beyond > 0) continue;
+              const { seg, n } = nearest;
+              const { along, beyond } = profilePlacement(
+                profile,
+                [x + 0.5, y + 0.5],
+                nearest,
+              );
+              if ((n === 0 && along < 0) || beyond > 0) continue;
               if (nearest.normal >= -seg.radii[0] && nearest.normal <= seg.radii[1])
                 updates.set(cell, endA ? 65535 : 0);
             }
@@ -1385,22 +1441,7 @@ export async function repairSourceJunctions(
           for (let skip = 0; skip <= frameSamples.length - 3 && !barFrame; skip++) {
             const samples = frameSamples.slice(skip);
             if (distance(samples[0], samples.at(-1)) < frameRadius) continue;
-            const center = [
-              samples.reduce((s, p) => s + p[0], 0) / samples.length,
-              samples.reduce((s, p) => s + p[1], 0) / samples.length,
-            ];
-            let xx = 0,
-              xy = 0,
-              yy = 0;
-            for (const p of samples) {
-              const x = p[0] - center[0],
-                y = p[1] - center[1];
-              xx += x * x;
-              xy += x * y;
-              yy += y * y;
-            }
-            const angle = 0.5 * Math.atan2(2 * xy, xx - yy),
-              normal = [-Math.sin(angle), Math.cos(angle)];
+            const { center, normal } = fitLine(samples);
             if (
               samples.some(
                 (p) =>
@@ -1415,13 +1456,7 @@ export async function repairSourceJunctions(
             for (const p of samples) {
               const bounds = [];
               for (const sign of [-1, 1]) {
-                let r = 0.25;
-                while (
-                  r < 40 &&
-                  inside(p[0] + normal[0] * r * sign, p[1] + normal[1] * r * sign)
-                )
-                  r += 0.25;
-                bounds.push(r >= 40 ? 0 : r - 0.25);
+                bounds.push(probeRadius(inside, p, normal, sign) ?? 0);
               }
               if (bounds.every((r) => r >= 0.5)) {
                 const at = p[0] * normal[0] + p[1] * normal[1];
@@ -1503,17 +1538,10 @@ export async function repairSourceJunctions(
               if (p && (!best || p.distance < best.distance)) best = { ...p, n, seg };
             }
             if (!best) return false;
-            const { seg, n } = best,
-              raw =
-                ((x - seg.p[0]) * (seg.q[0] - seg.p[0]) +
-                  (y - seg.p[1]) * (seg.q[1] - seg.p[1])) /
-                (best.length * best.length);
-            const lastSegment = profile.at(-1),
-              beyond =
-                (x - lastSegment.q[0]) * (lastSegment.q[0] - lastSegment.p[0]) +
-                (y - lastSegment.q[1]) * (lastSegment.q[1] - lastSegment.p[1]);
+            const { seg, n } = best;
+            const { along, beyond } = profilePlacement(profile, [x, y], best);
             return (
-              !((n === 0 && raw < 0) || beyond > 0) &&
+              !((n === 0 && along < 0) || beyond > 0) &&
               best.normal >= -seg.radii[0] &&
               best.normal <= seg.radii[1]
             );
@@ -1639,22 +1667,7 @@ export async function repairSourceJunctions(
             ]);
           }
         if (samples.length < 3) continue;
-        const center = [
-          samples.reduce((s, p) => s + p[0], 0) / samples.length,
-          samples.reduce((s, p) => s + p[1], 0) / samples.length,
-        ];
-        let xx = 0,
-          xy = 0,
-          yy = 0;
-        for (const p of samples) {
-          const x = p[0] - center[0],
-            y = p[1] - center[1];
-          xx += x * x;
-          xy += x * y;
-          yy += y * y;
-        }
-        const angle = 0.5 * Math.atan2(2 * xy, xx - yy),
-          t = [Math.cos(angle), Math.sin(angle)];
+        const { center, tangent: t } = fitLine(samples);
         const at = a.arc.findIndex(
             (v, n) =>
               n < a.arc.length - 1 && v <= crossing.arc && a.arc[n + 1] >= crossing.arc,
@@ -1693,13 +1706,8 @@ export async function repairSourceJunctions(
         for (const p of samples)
           for (let side = 0; side < 2; side++) {
             const sign = side ? 1 : -1;
-            let r = 0.25;
-            while (
-              r < 40 &&
-              inside(p[0] + normal[0] * r * sign, p[1] + normal[1] * r * sign)
-            )
-              r += 0.25;
-            if (r < 40) measured[side].push(r - 0.25);
+            const reach = probeRadius(inside, p, normal, sign);
+            if (reach !== null) measured[side].push(reach);
           }
         if (measured.some((s) => s.length < 3)) continue;
         const limits = measured.map(
@@ -1789,23 +1797,8 @@ export async function repairSourceJunctions(
               if (arc > 5 * radius) break;
             }
             if (continuation.length < 3) break;
-            const center = [
-              continuation.reduce((s, p) => s + p[0], 0) / continuation.length,
-              continuation.reduce((s, p) => s + p[1], 0) / continuation.length,
-            ];
-            let xx = 0,
-              xy = 0,
-              yy = 0;
-            for (const p of continuation) {
-              const x = p[0] - center[0],
-                y = p[1] - center[1];
-              xx += x * x;
-              xy += x * y;
-              yy += y * y;
-            }
-            const angle = 0.5 * Math.atan2(2 * xy, xx - yy),
-              next = [Math.cos(angle), Math.sin(angle)],
-              t = [-fit.tangent[0], -fit.tangent[1]],
+            const { center, tangent: next } = fitLine(continuation);
+            const t = [-fit.tangent[0], -fit.tangent[1]],
               normal = [-t[1], t[0]];
             if (
               Math.abs(next[0] * t[0] + next[1] * t[1]) < 0.95 ||
@@ -1821,13 +1814,7 @@ export async function repairSourceJunctions(
             for (const p of fit.samples) {
               const pair = [];
               for (const sign of [-1, 1]) {
-                let r = 0.25;
-                while (
-                  r < 40 &&
-                  inside(p[0] + normal[0] * r * sign, p[1] + normal[1] * r * sign)
-                )
-                  r += 0.25;
-                pair.push(r >= 40 ? 0 : r - 0.25);
+                pair.push(probeRadius(inside, p, normal, sign) ?? 0);
               }
               if (pair.every((r) => r >= 0.5)) {
                 const at = p[0] * normal[0] + p[1] * normal[1];

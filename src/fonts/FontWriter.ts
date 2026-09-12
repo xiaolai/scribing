@@ -30,6 +30,33 @@ const penWidth = (em: number) => em * 0.035;
 /** Replay speed, chosen to match what eight points per frame gave at 60Hz. */
 const REPLAY_POINTS_PER_S = 480;
 
+/** Fill one glyph on a canvas at its own offset, leaving the transform as found. */
+const fillGlyph = (
+  ctx: CanvasRenderingContext2D,
+  glyph: { x: number; y: number },
+  path: Path2D,
+) => {
+  ctx.save();
+  ctx.translate(glyph.x, glyph.y);
+  ctx.fill(path, 'nonzero');
+  ctx.restore();
+};
+
+/**
+ * One filled glyph as an SVG path element, positioned by its own offset.
+ *
+ * The animation layer and the reference layer each built this, five attributes apiece,
+ * and a change to the fill rule or the transform would have had to be made in both.
+ */
+const glyphPath = (glyph: { path: string; x: number; y: number }, fill: string) => {
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', glyph.path);
+  path.setAttribute('transform', `translate(${glyph.x} ${glyph.y})`);
+  path.setAttribute('fill', fill);
+  path.setAttribute('fill-rule', 'nonzero');
+  return path;
+};
+
 /** Unordered tracing/copying against filled font outlines; no stroke-order quiz. */
 export default class FontWriter {
   private surface: SVGSVGElement | HTMLCanvasElement;
@@ -213,12 +240,7 @@ export default class FontWriter {
       (256 - height * scale) / 2 + (y + height) * scale,
     );
     context.scale(scale, -scale);
-    next.glyphs.forEach((glyph, index) => {
-      context.save();
-      context.translate(glyph.x, glyph.y);
-      context.fill(paths[index], 'nonzero');
-      context.restore();
-    });
+    next.glyphs.forEach((glyph, index) => fillGlyph(context, glyph, paths[index]));
     const pixels = context.getImageData(0, 0, 256, 256).data;
     let hasInk = false;
     for (let i = 3; i < pixels.length; i += 4)
@@ -286,13 +308,7 @@ export default class FontWriter {
       const [x, y, w, h] = tile.bounds;
       ctx.translate((-x * tile.width) / w, ((y + h) * tile.height) / h);
       ctx.scale(tile.width / w, -tile.height / h);
-      tile.glyphIndices.forEach((i) => {
-        const g = shape.glyphs[i];
-        ctx.save();
-        ctx.translate(g.x, g.y);
-        ctx.fill(this.paths[i], 'nonzero');
-        ctx.restore();
-      });
+      tile.glyphIndices.forEach((i) => fillGlyph(ctx, shape.glyphs[i], this.paths[i]));
       const ink = ctx.getImageData(0, 0, tile.width, tile.height).data;
       for (let i = 0; i < tile.owners.length; i++)
         if (ink[i * 4 + 3] > 0 && !tile.owners[i])
@@ -456,17 +472,21 @@ export default class FontWriter {
   }
   startTrace() {
     this.required();
-    this.clear();
-    this.visible = true;
-    this.enabled = true;
-    this.render();
+    this.renderOnce(() => {
+      this.clear();
+      this.visible = true;
+      this.enabled = true;
+      this.render();
+    });
   }
   startCopy() {
     this.required();
-    this.clear();
-    this.visible = false;
-    this.enabled = true;
-    this.render();
+    this.renderOnce(() => {
+      this.clear();
+      this.visible = false;
+      this.enabled = true;
+      this.render();
+    });
   }
   showReference() {
     this.alive();
@@ -480,10 +500,12 @@ export default class FontWriter {
   }
   clear() {
     this.alive();
-    this.cancel();
-    this.strokes = [];
-    this.committedPoints = 0;
-    this.render();
+    this.renderOnce(() => {
+      this.cancel();
+      this.strokes = [];
+      this.committedPoints = 0;
+      this.render();
+    });
   }
   cancel() {
     this.alive();
@@ -508,9 +530,12 @@ export default class FontWriter {
     this.alive();
     const next = { ...this.options, ...definedEntries(dimensions) };
     this.validateDimensions(next);
-    this.cancel();
-    this.options = next;
-    this.render();
+    // Without folding, cancel() painted the old dimensions before the new ones landed.
+    this.renderOnce(() => {
+      this.cancel();
+      this.options = next;
+      this.render();
+    });
   }
   /** Scale and offset that centre the shape's bounds inside the padded box. */
   private fitToBox(width: number, height: number, padding: number) {
@@ -532,13 +557,9 @@ export default class FontWriter {
     ctx.save();
     ctx.translate(fit.x, fit.y);
     ctx.scale(fit.scale, -fit.scale);
-    (indices || this.shape.glyphs.map((_, i) => i)).forEach((i) => {
-      const g = this.shape!.glyphs[i];
-      ctx.save();
-      ctx.translate(g.x, g.y);
-      ctx.fill(this.paths[i], 'nonzero');
-      ctx.restore();
-    });
+    (indices || this.shape.glyphs.map((_, i) => i)).forEach((i) =>
+      fillGlyph(ctx, this.shape!.glyphs[i], this.paths[i]),
+    );
     ctx.restore();
   }
   private ink(
@@ -674,13 +695,7 @@ export default class FontWriter {
       const ink = document.createElementNS(NS, 'g');
       ink.setAttribute('mask', `url(#${id})`);
       tile.glyphIndices.forEach((i) => {
-        const glyph = shape.glyphs[i];
-        const path = document.createElementNS(NS, 'path');
-        path.setAttribute('d', glyph.path);
-        path.setAttribute('transform', `translate(${glyph.x} ${glyph.y})`);
-        path.setAttribute('fill', this.options.animationColor!);
-        path.setAttribute('fill-rule', 'nonzero');
-        ink.appendChild(path);
+        ink.appendChild(glyphPath(shape.glyphs[i], this.options.animationColor!));
       });
 
       return { mask, reveal, ink };
@@ -706,8 +721,38 @@ export default class FontWriter {
       group.appendChild(ink);
     });
   }
+  /**
+   * Depth of the current public operation.
+   *
+   * `cancel()` repaints as part of its own contract, and most callers then change more
+   * state and repaint again: `startTrace` went through `clear()` and painted three
+   * times, and a resize painted the old dimensions before the new ones. Nested renders
+   * are folded into one, which still happens before the public method returns, so
+   * nothing that reads the DOM straight afterwards sees a different order.
+   */
+  private renderDepth = 0;
+  private renderPending = false;
+
+  /** Run `body` with its intermediate repaints folded into a single one at the end. */
+  private renderOnce<T>(body: () => T): T {
+    this.renderDepth += 1;
+    try {
+      return body();
+    } finally {
+      this.renderDepth -= 1;
+      if (!this.renderDepth && this.renderPending) {
+        this.renderPending = false;
+        this.render();
+      }
+    }
+  }
+
   private render() {
     if (this.destroyed) return;
+    if (this.renderDepth) {
+      this.renderPending = true;
+      return;
+    }
     const { width, height } = this.options,
       padding = this.options.padding || 0;
     this.transform = this.fitToBox(width, height, padding);
@@ -796,14 +841,7 @@ export default class FontWriter {
     while (scene.reference.firstChild)
       scene.reference.removeChild(scene.reference.firstChild);
     if (!shape) return;
-    shape.glyphs.forEach((g) => {
-      const path = document.createElementNS(NS, 'path');
-      path.setAttribute('d', g.path);
-      path.setAttribute('transform', `translate(${g.x} ${g.y})`);
-      path.setAttribute('fill', color);
-      path.setAttribute('fill-rule', 'nonzero');
-      scene.reference.appendChild(path);
-    });
+    shape.glyphs.forEach((g) => scene.reference.appendChild(glyphPath(g, color)));
   }
 
   /** Update the learner's ink in place, reusing the nodes from the previous frame. */
