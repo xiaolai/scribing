@@ -4,7 +4,32 @@ All notable changes to this project are recorded here. Dates are ISO 8601.
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **A middle tier between fitting a stroke model and giving up on it.** A fit registers
+  the model's own geometry onto the glyph, so it serves only letterforms the model
+  already matches; everything else fell straight to generation, which orders by shape
+  alone. Where a fit is rejected, the glyph's own skeleton is now traversed in the order
+  the model implies and reported as `source-ordered`: the shape is the font's and the
+  sequence is the model's. Verified on 36,955 CJK glyphs and 338 Latin renderings at full
+  ink coverage with no discontinuities.
+- **A coverage page for fonts the package does not ship.** `/tools/font-coverage/` takes
+  a TTF or OTF, prepares every character through the shipped runtime, and reports the
+  tier each one reached with its strokes drawn in order. The font is read locally and
+  never leaves the page. `npm run check-font-coverage-tool` drives it in a real browser.
+
+### Fixed
+
+- **The ordering tier was offered even when the model described a different letterform.**
+  Rejecting a fit has two causes that had been collapsed into one. A rejection on
+  placement means the model does describe the glyph, so its order still applies; a
+  rejection on topology means it does not. A double-storey `g` encloses two counters
+  where the single-storey model encloses one, leaving the lower loop with no stroke to
+  name. Those now reach generation with no unit named, and the browser gate asserts the
+  absence rather than only the provenance.
+- Documented behaviour that had fallen behind the code: Korean composes any of the 11,172
+  modern syllables rather than three fixed ones, and the single-storey `a` against a
+  double-storey font is ordered rather than generated.
 
 ## [4.0.1] - 2026-09-12
 

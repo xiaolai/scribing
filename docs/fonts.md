@@ -77,7 +77,7 @@ Use `writer.getShape()` after `setShape`: it returns the immutable, validated sh
 
 The optional preparer uses actual per-cluster nonzero glyph masks, medial graph trails and per-pixel stroke/progress ownership. Each reveal tile is clipped only to its original glyphs. Holes, disconnected marks and thin contours remain part of the final masked frame; completion does not reveal previously uncovered areas. Curve timing follows geometric arc projection onto each path, with bounded internal turn caps and continuous open endpoints; supplied paths and their stroke order stay unchanged. SVG and Canvas render native vector reveal contours with shared internal edges removed, rather than scaling a pixelated binary mask. Adjacent loop phases remain separate, and the reconstructed boundary participates in the full progress range, avoiding an end-frame catch-up fill. Dots grow from their centers. Generated body components precede small detached marks, with deterministic order among peers; this is a drawing sequence, not a claim about conventional handwriting order. Contextual ligatures or unmatched forms remain generated. Logical cluster order also applies to RTL and vertical runs.
 
-Plans report `source-adapted`, `generated`, or `mixed`. Source adaptation requires compatible topology, bounded bidirectional distances, continuous in-ink paths and preservation of every supplied source stroke. Short branch/corner detours follow the same skeleton within a bounded corridor; disconnected or excessive detours reject adaptation. Both bundled Latin A faces retain the supplied three-stroke apex-down plan. At true crossings of source paths, a bounded local ownership correction completes the earlier stroke through the shared ink; later branch cores keep their later turn. It preserves the supplied paths and their order, and leaves generated guides and nearby disconnected or parallel paths unchanged. Allograph mismatches such as the supplied single-storey a versus a double-storey font remain generated. Korean syllable pilots are limited to Unicode-checked 가, 한 and 글, with each actual component independently matched to existing jamo plans; incompatible components remain generated. This is not a general 11,172-syllable handwriting model.
+Plans report `source-adapted`, `source-ordered`, `generated`, or `mixed`. Source adaptation requires compatible topology, bounded bidirectional distances, continuous in-ink paths and preservation of every supplied source stroke. Short branch/corner detours follow the same skeleton within a bounded corridor; disconnected or excessive detours reject adaptation. Both bundled Latin A faces retain the supplied three-stroke apex-down plan. At true crossings of source paths, a bounded local ownership correction completes the earlier stroke through the shared ink; later branch cores keep their later turn. It preserves the supplied paths and their order, and leaves generated guides and nearby disconnected or parallel paths unchanged. Where a fit is rejected, a middle tier draws the font's own skeleton in the order the model implies and reports `source-ordered`: the geometry is the font's and only the sequence comes from the model. It is offered only when the rendered model encloses the same number of holes as the glyph, which means the model does describe this letterform and merely could not be placed on it. The supplied single-storey a against a double-storey font is that case, and is ordered rather than generated. A true allograph mismatch is not: the supplied single-storey g encloses one counter where a double-storey font encloses two, so the model owns no stroke for the lower loop and the glyph reaches `generated` with no unit named. Korean composes any of the 11,172 modern syllables rather than a fixed list, decomposing each into the letters that are written and matching every component independently against the existing jamo plans; an incompatible component stays generated while its neighbours do not, which is what `mixed` reports. Fourteen of the twenty-one vowels place the initial beside or above them and can be separated by a rectangle. The other seven wrap around the initial in an L-shape, which no rectangle separates, so the 3,724 syllables using them decline rather than fit wrongly. Across a 211-syllable even spread of the block in Noto Sans CJK KR, every wrapping-vowel syllable was generated, and of the laid-out ones 36 fitted entirely, 75 fitted in part and 30 were generated. This is a per-component fit against jamo plans, not a certified syllable-level handwriting curriculum.
 
 Optional source assets in `fonts/motor/` contain English 52, Korean 40, Japanese 6,636 unique texts from the existing KanjiVG packs, and Chinese 9,574 median sets from pinned Hanzi Writer Data 2.0.1. They total 21,419,753 bytes: Chinese 6,522,643 and Japanese 14,817,675 bytes account for most of this. These files and their notices are opt-in repository assets, excluded from the npm package. The loader fetches only a relevant group and verifies its byte length and SHA-256. Known-group transport, HTTP, JSON, schema, cryptographic and integrity failures throw `MotorSourceError` with `code`, `group`, and `recoverable: true`; they never silently become a generated plan. `null` means an unhandled script or a missing text in a successfully verified inventory. Failed requests clear the affected cached data so a later call can retry. Passing `sourceLoader: null` explicitly requests generated guides without loading source plans. The main repository demo serves all assets locally.
 
@@ -98,10 +98,32 @@ See [font assets and notices](../fonts/README.md). All 149 old packs are account
 - `npm run check-font-demo`: real browser rendering, practice, switching, cancellation and local-only requests.
 - `npm run check-multilingual-demo`: retained ordered/source workflow.
 - `npm run check-package`: actual packed CJS/ESM/browser/type consumers, including the optional provider.
+- `npm run check-font-coverage-tool`: the bring-your-own-font coverage page, driven through its real controls.
 
 To regenerate derived catalog data, install the maintenance-only pinned `scripts/fonts/requirements.txt` and run `python3 scripts/fonts/build-catalog.py`. To deliberately restore original locked font bytes, use `node scripts/fonts/fetch-assets.mjs --download`. Neither operation changes source revisions automatically.
 
 Regenerate motor inventories offline with `python3 scripts/fonts/build-motors.py` (the installed `hanzi-writer-data` must be exactly 2.0.1). Regenerate the optional geometry copy with `node scripts/fonts/build-geometry.cjs`; normal checks compare it to the TypeScript source.
+
+## Checking a font you already have
+
+The package ships no fonts, so any font works as long as the caller supplies its bytes.
+`provider.shapeCustom({ text, bytes, name, scriptId })` shapes a font that is not in the
+catalogue, and the preparer treats it exactly like a catalogued one.
+
+To see what a font will actually produce before wiring it up, run `npm run serve-demo` and
+open `/tools/font-coverage/`. Drop in a TTF or OTF, pick a script, and every character is
+prepared by the shipped runtime and reported with the tier it reached, its strokes drawn in
+order. Nothing leaves the page: the font is read locally and the only requests are this
+repository's motor data and the shaper.
+
+Preparation costs roughly 40-80 ms per glyph on a development machine, so on-demand
+preparation is usually enough and no precomputed cache is required. The tool's JSON export
+exists for the cases where one is: auditing coverage in CI, or handing computed stroke
+order to a port that does not run this pipeline. Points in the export are divided by the em
+and keep the runtime's Y-up convention.
+
+`npm run check-font-coverage-tool` drives that page in a real browser against real font
+bytes and asserts the tiers, the missing-glyph path and the export's units.
 
 ## Running the local demo
 

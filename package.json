@@ -107,7 +107,8 @@
     "check-font-contours": "node scripts/fonts/check-contours.cjs && node scripts/fonts/check-endpoints.cjs",
     "check-font-sources": "node scripts/check-font-sources.cjs",
     "serve-demo": "node scripts/serve-demo.cjs",
-    "check-font-coverage": "node scripts/fonts/check-coverage.mjs"
+    "check-font-coverage": "node scripts/fonts/check-coverage.mjs",
+    "check-font-coverage-tool": "node scripts/check-font-coverage-tool.cjs"
   },
   "files": [
     "dist",

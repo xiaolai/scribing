@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scribing · Font coverage</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fbfaf8;
+        --surface: #ffffff;
+        --line: #e3ded6;
+        --ink: #1c1a17;
+        --ink-2: #55504a;
+        --ink-3: #8a837a;
+        --accent: #2f6f4e;
+        --adapted: #2f6f4e;
+        --ordered: #8a5a12;
+        --generated: #6b6b6b;
+        --bad: #a03028;
+        --radius: 10px;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #16181a;
+          --surface: #1e2124;
+          --line: #32373b;
+          --ink: #eceef0;
+          --ink-2: #b3b8bd;
+          --ink-3: #7d858c;
+          --accent: #74c79b;
+          --adapted: #74c79b;
+          --ordered: #e0a955;
+          --generated: #9aa0a6;
+          --bad: #ef8b82;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font:
+          15px/1.55 ui-sans-serif,
+          -apple-system,
+          Segoe UI,
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px 20px 96px;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin: 0 0 6px;
+        letter-spacing: -0.01em;
+      }
+      .lede {
+        color: var(--ink-2);
+        margin: 0 0 28px;
+        max-width: 68ch;
+      }
+      .panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 18px;
+        margin-bottom: 18px;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        align-items: flex-end;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        font-size: 0.8rem;
+        color: var(--ink-2);
+        font-weight: 600;
+      }
+      select,
+      input[type='file'],
+      textarea,
+      button {
+        font: inherit;
+        color: var(--ink);
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        padding: 7px 9px;
+      }
+      textarea {
+        width: 100%;
+        min-height: 72px;
+        resize: vertical;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        line-height: 1.8;
+      }
+      button {
+        cursor: pointer;
+        font-weight: 600;
+        background: var(--accent);
+        border-color: transparent;
+        color: var(--bg);
+        padding: 8px 16px;
+      }
+      button.ghost {
+        background: transparent;
+        color: var(--ink);
+        border-color: var(--line);
+      }
+      button[disabled] {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      #drop {
+        border: 1.5px dashed var(--line);
+        border-radius: var(--radius);
+        padding: 26px;
+        text-align: center;
+        color: var(--ink-2);
+        transition: border-color 0.15s;
+      }
+      #drop.over {
+        border-color: var(--accent);
+        color: var(--ink);
+      }
+      #drop strong {
+        color: var(--ink);
+      }
+      .status {
+        color: var(--ink-2);
+        font-size: 0.86rem;
+        min-height: 1.4em;
+      }
+      .status.error {
+        color: var(--bad);
+      }
+      table.summary {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.9rem;
+      }
+      table.summary th,
+      table.summary td {
+        text-align: left;
+        padding: 7px 10px;
+        border-bottom: 1px solid var(--line);
+      }
+      table.summary th {
+        color: var(--ink-2);
+        font-weight: 600;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+      table.summary td.n {
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+        gap: 12px;
+      }
+      .cell {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        padding: 10px;
+        text-align: center;
+      }
+      .cell svg {
+        display: block;
+        width: 100%;
+        height: 104px;
+      }
+      .cell .ch {
+        font-size: 0.78rem;
+        color: var(--ink-2);
+        font-variant-numeric: tabular-nums;
+        margin-top: 6px;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        text-transform: uppercase;
+        padding: 2px 6px;
+        border-radius: 999px;
+        border: 1px solid currentColor;
+        margin-top: 5px;
+      }
+      .badge.source-adapted {
+        color: var(--adapted);
+      }
+      .badge.source-ordered {
+        color: var(--ordered);
+      }
+      .badge.generated {
+        color: var(--generated);
+      }
+      .badge.missing {
+        color: var(--bad);
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 0.84rem;
+        color: var(--ink-2);
+        margin-top: 12px;
+      }
+      .legend b {
+        color: var(--ink);
+      }
+      progress {
+        width: 100%;
+        height: 5px;
+        appearance: none;
+        border: 0;
+        border-radius: 999px;
+        background: var(--line);
+      }
+      progress::-webkit-progress-bar {
+        background: var(--line);
+        border-radius: 999px;
+      }
+      progress::-webkit-progress-value {
+        background: var(--accent);
+        border-radius: 999px;
+      }
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.86em;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 1px 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Font coverage</h1>
+      <p class="lede">
+        Check what stroke order Scribing can produce for a font you already have. Nothing
+        is uploaded; the font is read in this page and every glyph is prepared by the same
+        runtime the library ships. Each character reports which of the three tiers it
+        reached, and the result can be exported as JSON.
+      </p>
+
+      <div class="panel">
+        <div id="drop">
+          <strong>Drop a TTF or OTF here</strong>, or
+          <input id="file" type="file" accept=".ttf,.otf,.TTF,.OTF" />
+          <div class="status" id="font-status">No font loaded.</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="row">
+          <label
+            >Script
+            <select id="script"></select>
+          </label>
+          <button id="detect" class="ghost" type="button">Detect from font</button>
+          <button id="reset-chars" class="ghost" type="button">Reset characters</button>
+        </div>
+        <label style="margin-top: 14px"
+          >Characters
+          <textarea id="chars" spellcheck="false"></textarea>
+        </label>
+        <div class="status" id="chars-status"></div>
+        <div class="row" style="margin-top: 12px">
+          <button id="run" type="button" disabled>Run</button>
+          <button id="cancel" class="ghost" type="button" disabled>Cancel</button>
+          <button id="export" class="ghost" type="button" disabled>Download JSON</button>
+        </div>
+        <progress id="progress" value="0" max="1" style="margin-top: 12px"></progress>
+        <div class="status" id="run-status"></div>
+      </div>
+
+      <div class="panel" id="summary-panel" hidden>
+        <table class="summary">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th class="n">Characters</th>
+              <th class="n">Share</th>
+              <th>What it means</th>
+            </tr>
+          </thead>
+          <tbody id="summary"></tbody>
+        </table>
+        <div class="legend">
+          <span><b>Stroke colour</b> runs first to last in drawing order.</span>
+          <span><b>Dot</b> marks a stroke with a single point.</span>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </main>
+    <script type="module" src="app.mjs"></script>
+  </body>
+</html>

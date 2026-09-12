@@ -119,6 +119,10 @@ jobs:
           name: Font source workflow
           command: yarn check-font-sources
           no_output_timeout: 30m
+      - run:
+          name: Font coverage tool
+          command: yarn check-font-coverage-tool
+          no_output_timeout: 30m
 
 # Publishing is intentionally manual until the fork's npm ownership and release
 # policy are established. CI must never publish automatically from master.
