@@ -44,8 +44,15 @@ async function progressGradients(
       gx[i] = (xp * yy - yp * xy) / det;
       gy[i] = (yp * xx - xp * xy) / det;
     } else {
-      gx[i] = xx ? xp / xx : 0;
-      gy[i] = yy ? yp / yy : 0;
+      // A zero determinant means every contributing neighbour lies along one direction,
+      // so the system has a line of solutions rather than none. Solving each axis on its
+      // own returned the full step for both, predicting twice the real difference for a
+      // single diagonal neighbour. For a rank-one positive-semidefinite A the
+      // minimum-norm solution is A·b / trace², which reduces to xp/xx on a purely
+      // horizontal neighbourhood and agrees with the general case everywhere else.
+      const trace = xx + yy;
+      gx[i] = trace ? (xx * xp + xy * yp) / (trace * trace) : 0;
+      gy[i] = trace ? (xy * xp + yy * yp) / (trace * trace) : 0;
     }
   }
   return { gx, gy };
@@ -71,23 +78,44 @@ async function progressGradients(
  * and unlike a mean it cannot be inflated by the large jumps where a stroke doubles back
  * on itself — which is the discontinuity the cutoff exists to keep out.
  */
-function neighbourCutoffs(tile: FontAnimationTile) {
-  const { width, height, owners, progress } = tile;
+/** Right, down, and both forward diagonals: the forward half of the eight-neighbourhood. */
+const FORWARD_NEIGHBOURS: ReadonlyArray<readonly [number, number]> = [
+  [1, 0],
+  [0, 1],
+  [1, 1],
+  [-1, 1],
+];
+
+/** The largest owner present, which is what the per-owner scratch arrays must address. */
+function highestOwner(owners: Uint16Array): number {
   let maxOwner = 0;
   for (let i = 0; i < owners.length; i++) if (owners[i] > maxOwner) maxOwner = owners[i];
+  return maxOwner;
+}
+
+function neighbourCutoffs(tile: FontAnimationTile) {
+  const { width, height, owners, progress } = tile;
+  const maxOwner = highestOwner(owners);
   const finest = new Float64Array(maxOwner + 1).fill(Infinity);
   const consider = (owner: number, delta: number) => {
     if (delta > 0 && delta < finest[owner]) finest[owner] = delta;
   };
-  // Right and down only, so each neighbouring pair is measured once.
+  // Forward half of the neighbourhood only, so each pair is measured once. The two
+  // diagonals belong here because `neighbourMoments` reads all eight neighbours: a
+  // stroke whose cells touch only at their corners had no pair measured at all, so its
+  // cutoff fell back, every neighbour was rejected, and it revealed in one jump.
   for (let i = 0; i < owners.length; i++) {
     const owner = owners[i];
     if (!owner) continue;
-    const x = i % width;
-    if (x + 1 < width && owners[i + 1] === owner)
-      consider(owner, Math.abs(progress[i + 1] - progress[i]));
-    if (Math.floor(i / width) + 1 < height && owners[i + width] === owner)
-      consider(owner, Math.abs(progress[i + width] - progress[i]));
+    const x = i % width,
+      y = Math.floor(i / width);
+    for (const [dx, dy] of FORWARD_NEIGHBOURS) {
+      const nx = x + dx,
+        ny = y + dy;
+      if (nx < 0 || nx >= width || ny >= height) continue;
+      const j = i + dy * width + dx;
+      if (owners[j] === owner) consider(owner, Math.abs(progress[j] - progress[i]));
+    }
   }
   const cutoffs = new Float64Array(maxOwner + 1);
   for (let owner = 1; owner <= maxOwner; owner++) {
@@ -174,7 +202,10 @@ async function cornerProgress(
           count++;
         }
       }
-      corners[i * 4 + corner] = count ? total / count : progress[i];
+      // `count` is never zero: whichever corner this is, the offsets reach cell `i`
+      // itself, which shares its own owner and differs from itself by zero. Every
+      // cutoff is at least 16384, so that contributor is always admitted.
+      corners[i * 4 + corner] = total / count;
     });
   }
   return corners;
@@ -195,8 +226,7 @@ async function normalizeCorners(
   // Size the scratch to the owners actually present. `owners` is a Uint16Array, but
   // validateAnimation caps strokes at 8,192 and rejects any larger owner, so a fixed
   // 65,536-entry pair allocated 1 MB per tile to address at most 8,193 slots.
-  let maxOwner = 0;
-  for (let i = 0; i < owners.length; i++) if (owners[i] > maxOwner) maxOwner = owners[i];
+  const maxOwner = highestOwner(owners);
   const minima = new Float64Array(maxOwner + 1),
     maxima = new Float64Array(maxOwner + 1);
   minima.fill(Infinity);
@@ -253,8 +283,9 @@ async function completedOutline(tile: FontAnimationTile, checkpoint: () => void)
         const box = boxes.get(owner);
         if (!box) boxes.set(owner, [x, y, x, y]);
         else {
+          // No minimum-y update: rows are walked in ascending order and the box is
+          // created on the first row this owner appears in, so y never goes below it.
           if (x < box[0]) box[0] = x;
-          if (y < box[1]) box[1] = y;
           if (x > box[2]) box[2] = x;
           if (y > box[3]) box[3] = y;
         }
@@ -273,7 +304,7 @@ async function completedOutline(tile: FontAnimationTile, checkpoint: () => void)
     // An absent stroke gets an empty box: minX above maxX, so no row is scanned.
     strokeBounds.set(box ?? [1, 0, -1, -1], i * 4);
   }
-  return { first, last, strokeBounds, full: outline(runs) };
+  return { first, last, strokeBounds, full: await outlinePaced(runs, checkpoint) };
 }
 
 /**
@@ -310,7 +341,10 @@ export async function prepareMaskField(
 }
 
 const rect = (x: number, y: number, w: number) => `M${x} ${y}h${w}v1h-${w}Z`;
-const number = (n: number) => String(Math.round(n * 100000) / 100000);
+/** One rounding contract for emitted coordinates and for quantized edge endpoints. */
+/** One rounding contract, shared by emitted coordinates and quantized edge endpoints. */
+const EDGE_SCALE = 100000;
+const number = (n: number) => String(Math.round(n * EDGE_SCALE) / EDGE_SCALE);
 type Vertex = [number, number, number];
 function clippedTriangle(vertices: Vertex[], threshold: number): string {
   const out: Vertex[] = [];
@@ -336,7 +370,6 @@ type Edge = { a: XY; b: XY; used?: boolean };
 const edgeKey = (p: XY) => `${p[0]},${p[1]}`;
 
 /** Coordinates are scaled to integers so shared edges compare exactly. */
-const EDGE_SCALE = 100000;
 
 /**
  * Accumulate the directed edges of a set of primitives, cancelling shared ones.
@@ -480,8 +513,35 @@ function compactRing(points: XY[]): XY[] {
  * its outer boundary cannot, which is why the shared edges are removed rather than
  * relying on the fill rule.
  */
+/**
+ * Preparation's outline pass, paced so cancellation can land between its stages.
+ *
+ * Playback calls the synchronous `outline` below on every frame and cannot yield, but
+ * preparation can and must: on a 1024x512 tile whose ownership alternates per cell,
+ * collecting, tracing and serialising ran end to end with nothing between them, and
+ * the gap between preparation's checkpoints reached about twelve seconds. Splitting
+ * the stages does not make any one of them interruptible, but it bounds the span an
+ * abort has to wait out to a single stage instead of all three.
+ */
+async function outlinePaced(parts: string[], checkpoint: () => void): Promise<string> {
+  checkpoint();
+  const edges = collectEdges(parts);
+  checkpoint();
+  await yieldWork();
+  checkpoint();
+  const rings = traceRings(edges);
+  checkpoint();
+  await yieldWork();
+  checkpoint();
+  return serializeRings(rings);
+}
+
 function outline(parts: string[]): string {
-  return traceRings(collectEdges(parts))
+  return serializeRings(traceRings(collectEdges(parts)));
+}
+
+function serializeRings(rings: XY[][]): string {
+  return rings
     .map(
       (points) =>
         `M${compactRing(points)
@@ -551,18 +611,39 @@ function activeStrokeAt(
         start = -1;
       }
       if (cell && !cell.full && cell.partial) {
-        runs.push(...cellTriangles(cell.corners, x, y, threshold));
+        // Only this branch needs the corners, so it reads them itself.
+        const base = i * 4;
+        runs.push(
+          ...cellTriangles(
+            [
+              field.corners[base],
+              field.corners[base + 1],
+              field.corners[base + 2],
+              field.corners[base + 3],
+            ],
+            x,
+            y,
+            threshold,
+          ),
+        );
       }
     }
   }
   return runs;
 }
 
-/** Whether a cell is fully or partly reached, with its four corner values. */
+/**
+ * Whether a cell is fully or partly reached.
+ *
+ * The corner values are deliberately not returned. Only a partly-reached cell needs
+ * them, and it can read them straight out of the field, so classifying a cell allocates
+ * nothing. The previous version read the corners into locals and then packed them back
+ * into a tuple for every cell on every frame, including the fully-revealed and
+ * unreached ones that never looked at it, which is the allocation its own comment
+ * claimed to have removed.
+ */
 function cellState(field: MaskField, index: number, progress: number, threshold: number) {
   const at = index * 4;
-  // Read the corners into locals rather than an array: this is the innermost loop of
-  // playback, and the array was allocated once per cell on every frame.
   const v0 = field.corners[at],
     v1 = field.corners[at + 1],
     v2 = field.corners[at + 2],
@@ -570,7 +651,6 @@ function cellState(field: MaskField, index: number, progress: number, threshold:
   const every = v0 <= threshold && v1 <= threshold && v2 <= threshold && v3 <= threshold;
   const some = v0 <= threshold || v1 <= threshold || v2 <= threshold || v3 <= threshold;
   return {
-    corners: [v0, v1, v2, v3] as const,
     full: progress >= 1 || (progress > 0 && every),
     partial: progress > 0 && some,
   };

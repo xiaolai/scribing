@@ -160,7 +160,6 @@ function assertTileCoversGlyphs(
 type TileState = {
   cells: number;
   covered: Set<number>;
-  used: Uint8Array;
   /** Tile that claimed each stroke, or -1. See the cross-tile check in readTile. */
   owningTile: Int32Array;
   /** Index of the tile currently being read. */
@@ -225,10 +224,14 @@ async function readTile(
   const cells = (tile.width as number) * (tile.height as number);
   // A tile is permitted two million cells, and each of these reads materializes one own
   // property name per cell to prove the instance carries no extra properties. That is
-  // a fifth of a second apiece and cannot be broken up, so cancellation is checked
-  // either side of them and the scan below is paced like every other loop here.
+  // a fifth of a second apiece and cannot be broken up, so the loop is handed back
+  // between them and the scan below is paced like every other loop here. `checkpoint`
+  // alone was not enough: it reads the abort flag without turning the event loop, so a
+  // cancellation raised on this same tick could not be observed until both had run.
   checkpoint();
   const owners = readUint16Array(tile.owners, cells, fail);
+  checkpoint();
+  await yieldWork();
   checkpoint();
   const progress = readUint16Array(tile.progress, cells, fail);
   checkpoint();
@@ -251,7 +254,6 @@ async function readTile(
       if (state.owningTile[owner - 1] >= 0 && state.owningTile[owner - 1] !== state.tile)
         fail();
       state.owningTile[owner - 1] = state.tile;
-      state.used[owner - 1] = 1;
     } else if (progress[i]) fail();
   }
   tile.owners = owners;
@@ -302,7 +304,6 @@ export default async function validateAnimation(
   const state: TileState = {
     cells: 0,
     covered: new Set<number>(),
-    used: new Uint8Array(strokes.length),
     owningTile: new Int32Array(strokes.length).fill(-1),
     tile: 0,
   };
@@ -317,7 +318,7 @@ export default async function validateAnimation(
   // Every declared stroke must be drawn somewhere, and every glyph that has ink must
   // belong to some tile; otherwise playback would leave part of the shape unrevealed.
   if (
-    strokes.some((_stroke, i) => !state.used[i]) ||
+    strokes.some((_stroke, i) => state.owningTile[i] < 0) ||
     shape.glyphs.some((glyph, i) => glyph.path && !state.covered.has(i))
   ) {
     fail();

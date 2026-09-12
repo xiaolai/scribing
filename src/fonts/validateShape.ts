@@ -130,7 +130,6 @@ function clusterOffsets(value: string): number[] {
 
 function assertGlyph(glyph: FontShape['glyphs'][number], clusters: number[]) {
   if (
-    !glyph ||
     !Number.isInteger(glyph.id) ||
     glyph.id <= 0 ||
     glyph.id > 65535 ||
@@ -147,7 +146,7 @@ function assertGlyph(glyph: FontShape['glyphs'][number], clusters: number[]) {
 /** Union of every glyph outline, in shape coordinates. */
 function measureGlyphs(shape: FontShape, clusters: number[]) {
   let pathChars = 0;
-  let visible = false;
+  let extended = false;
   let minX = Infinity,
     minY = Infinity,
     maxX = -Infinity,
@@ -164,11 +163,16 @@ function measureGlyphs(shape: FontShape, clusters: number[]) {
     minY = Math.min(minY, glyph.y + geometry.minY);
     maxX = Math.max(maxX, glyph.x + geometry.maxX);
     maxY = Math.max(maxY, glyph.y + geometry.maxY);
-    if (geometry.maxX > geometry.minX && geometry.maxY > geometry.minY) visible = true;
+    if (geometry.maxX > geometry.minX && geometry.maxY > geometry.minY) extended = true;
   }
 
-  // A shape with no area would render as nothing and can never be traced.
-  if (!visible) fail();
+  // Extent, not fill. A bounding box with both sides positive says only that some
+  // outline covers ground in both axes: `M0 0L10 10Z` passes and encloses nothing.
+  // Proving ink requires rasterizing under the nonzero rule, which FontWriter.setShape
+  // does, rejecting with "FontShape has no visible nonzero-filled outline". Testing it
+  // here by summing contour areas would be worse than not testing it, because a
+  // self-intersecting outline can enclose ink while its signed areas cancel to zero.
+  if (!extended) fail();
   return { minX, minY, maxX, maxY };
 }
 

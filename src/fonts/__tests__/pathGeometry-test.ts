@@ -187,6 +187,19 @@ describe('numerical conditioning', () => {
     expect(usedMb).toBeLessThan(60);
   });
 
+  it('measures the same area wherever the contour sits', () => {
+    // The shoelace sum was taken about the origin, so for a small contour far from it
+    // each term was a difference of large nearly-equal products. A hundredth-unit
+    // square measured 1e-4 at the origin and exactly zero at (1e7, 1e7), which is
+    // inside the accepted coordinate range, and a zero area fires the density shortcut
+    // that suppresses every probe for the contour.
+    const near = pathGeometry('M0 0h.01v.01h-.01Z')!.contours[0].area;
+    const far = pathGeometry('M9999999 9999999h.01v.01h-.01Z')!.contours[0].area;
+    expect(near).toBeCloseTo(1e-4, 12);
+    expect(far).toBeGreaterThan(0);
+    expect(far).toBeCloseTo(near, 9);
+  });
+
   it('does not return a probe per retracing of the same edge', () => {
     // Crossings arrive once per retracing, so the sorted list holds runs of identical
     // values. Pairing neighbours across those runs produced a probe for every pair,

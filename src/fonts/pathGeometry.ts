@@ -190,14 +190,25 @@ function createBoundsAccumulator() {
     },
 
     closeContour() {
+      // Each cross product is taken about the contour's own corner, not the origin.
+      // Taken about the origin the two products are large and nearly equal, and their
+      // difference loses the area entirely: a 0.01 by 0.01 square reports 1e-4 at the
+      // origin and exactly zero once moved to (1e7, 1e7), which is inside the
+      // coordinate range this parser accepts. The translated sum is identical in exact
+      // arithmetic, because the shoelace formula is invariant under translation.
       let sum = 0;
+      const ox = contourX,
+        oy = contourY;
       for (let i = 0; i < contour.length; i += 1) {
         const a = contour[i],
           b = contour[(i + 1) % contour.length];
-        sum += a[0] * b[1] - b[0] * a[1];
+        sum += (a[0] - ox) * (b[1] - oy) - (b[0] - ox) * (a[1] - oy);
       }
       area += Math.abs(sum) / 2;
-      // Degenerate rings have no interior and would only add noise to probe selection.
+      // A positive bounding box is not an interior: `M0 0L10 10Z` spans ten units on
+      // both axes and encloses nothing. The area is what decides, and it is kept as a
+      // separate test because a self-intersecting outline can enclose ink while its
+      // signed contributions cancel, so a zero here is recorded rather than rejected.
       if (Number.isFinite(contourX) && contourR > contourX && contourT > contourY) {
         contours.push({
           minX: contourX,
@@ -330,6 +341,50 @@ export default function pathGeometry(path: string) {
 }
 
 /** Interior candidates for sparse/thin contours, checked against the exact nonzero path by callers. */
+/**
+ * Rings sorted by their left edge, built once per glyph rather than once per contour.
+ *
+ * Keyed on the caller's own array, which `contourProbes` is handed unchanged for every
+ * contour of a glyph, so the sort is paid once and reused across the whole glyph.
+ */
+const sortedRings = new WeakMap<ReadonlyArray<Contour>, Contour[]>();
+
+/**
+ * Total area of the rings that sit inside `box`.
+ *
+ * An enclosed ring cannot begin left of `box` nor start right of its right edge, so
+ * only the window between those two bounds can contain one. Scanning the whole list for
+ * every contour meant a glyph of N contours performed N squared comparisons even when
+ * the contours were disjoint and each was rejected on its first test.
+ */
+function enclosedArea(box: Contour, rings: ReadonlyArray<Contour>): number {
+  if (!rings.length) return 0;
+  let order = sortedRings.get(rings);
+  if (!order) {
+    order = [...rings].sort((a, b) => a.minX - b.minX);
+    sortedRings.set(rings, order);
+  }
+  let low = 0,
+    high = order.length;
+  while (low < high) {
+    const mid = (low + high) >> 1;
+    if (order[mid].minX < box.minX) low = mid + 1;
+    else high = mid;
+  }
+  let total = 0;
+  for (let i = low; i < order.length && order[i].minX <= box.maxX; i++) {
+    const ring = order[i];
+    if (
+      ring !== box &&
+      ring.maxX <= box.maxX &&
+      ring.minY >= box.minY &&
+      ring.maxY <= box.maxY
+    )
+      total += ring.area;
+  }
+  return total;
+}
+
 /** Sorted x where this row's scanline cuts each active edge. */
 function crossings(box: Contour, active: number[], y: number): number[] {
   const xs: number[] = [];
@@ -355,17 +410,7 @@ export function contourProbes(
   // reads as nearly solid on its own: the shortcut fired for both, and the sliver of ink
   // that is actually there was never probed. Passing no rings keeps the old reading,
   // which is why every caller passes the glyph's complete contour list.
-  const enclosed = rings.reduce(
-    (total, ring) =>
-      ring !== box &&
-      ring.minX >= box.minX &&
-      ring.maxX <= box.maxX &&
-      ring.minY >= box.minY &&
-      ring.maxY <= box.maxY
-        ? total + ring.area
-        : total,
-    0,
-  );
+  const enclosed = enclosedArea(box, rings);
   const filled = Math.max(0, box.area - enclosed);
   if (w >= step * 2 && h >= step * 2 && filled >= w * h * 0.12) return [];
   const out: Point[] = [];
